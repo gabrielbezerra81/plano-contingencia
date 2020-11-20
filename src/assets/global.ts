@@ -1,8 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import styled, { createGlobalStyle, css } from "styled-components";
+import * as Styled from "styled-components";
 
-const GlobalStyle = createGlobalStyle`
-${css`
+const GlobalStyle = Styled.createGlobalStyle`
+${Styled.css`
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
