@@ -1,5 +1,4 @@
 import { createGlobalStyle, css } from "styled-components";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 const GlobalStyle = createGlobalStyle`
 ${css`
