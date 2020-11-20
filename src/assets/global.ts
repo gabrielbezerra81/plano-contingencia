@@ -1,4 +1,5 @@
-import { createGlobalStyle, css } from "styled-components";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import styled, { createGlobalStyle, css } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
 ${css`
