@@ -9,7 +9,7 @@ export const Container = styled.div<ContainerProps>`
   height: 100%;
   transition: width 0.2s;
   overflow: hidden;
-  width: 30px;
+  width: 80px;
   pointer-events: none;
 
   ${({ isOpen }) =>
@@ -35,8 +35,15 @@ export const Container = styled.div<ContainerProps>`
 
       svg {
         position: absolute;
-        left: 6px;
+        left: 31px;
         top: 6px;
+        transition: left 0.2s;
+
+        ${({ isOpen }) =>
+          isOpen &&
+          css`
+            left: 6px;
+          `}
       }
 
       h6 {
@@ -48,21 +55,14 @@ export const Container = styled.div<ContainerProps>`
   main {
     background-color: #212121;
     height: 100%;
-    opacity: 0;
-    transition: opacity 0.2s;
     padding-top: 3px;
     display: flex;
-
-    ${({ isOpen }) =>
-      isOpen &&
-      css`
-        opacity: 1;
-      `}
 
     aside {
       width: 80px;
       height: 100%;
       background-color: ${colors.darkBlue};
+      pointer-events: all;
 
       button {
         display: flex;
@@ -86,8 +86,27 @@ export const Container = styled.div<ContainerProps>`
 
     div.rightMenuContent {
       flex: 1;
+      opacity: 0;
+      transition: opacity 0.2s;
+      width: 0;
 
-      input {
+      ${({ isOpen }) =>
+        isOpen &&
+        css`
+          opacity: 1;
+          width: unset;
+        `}
+
+      .filterInput {
+        input {
+          color: #c6c6c6;
+        }
+
+        svg {
+          path {
+            stroke: #c6c6c6;
+          }
+        }
       }
     }
   }

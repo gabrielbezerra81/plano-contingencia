@@ -27,7 +27,7 @@ export const Container = styled.div<ContainerProps>`
         margin: auto 0;
 
         path {
-          stroke: #c6c6c6;
+          stroke: #000000;
         }
       }
     `}
@@ -70,11 +70,26 @@ interface CustomInputProps {
 export const CustomInput = styled(FormControl)<CustomInputProps>`
   background-color: transparent;
   border: none;
-  color: #c6c6c6;
+  color: #3d3d3d;
   box-shadow: none !important;
 
+  &.form-control::-webkit-input-placeholder {
+    color: #8c8c8c;
+  } /* WebKit, Blink, Edge */
+  &.form-control:-moz-placeholder {
+    color: #8c8c8c;
+  } /* Mozilla Firefox 4 to 18 */
+  &.form-control::-moz-placeholder {
+    color: #8c8c8c;
+  } /* Mozilla Firefox 19+ */
+  &.form-control:-ms-input-placeholder {
+    color: #8c8c8c;
+  } /* Internet Explorer 10-11 */
+  &.form-control::-ms-input-placeholder {
+    color: #8c8c8c;
+  } /* Microsoft Edge */
+
   &:focus {
-    color: #c6c6c6;
     background-color: transparent;
   }
 

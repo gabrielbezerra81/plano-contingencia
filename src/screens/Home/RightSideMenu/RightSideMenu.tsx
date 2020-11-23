@@ -57,6 +57,7 @@ const RightSideMenu: React.FC = () => {
 
         <div className="rightMenuContent">
           <Input
+            containerClass="filterInput"
             placeholder="Filtro"
             borderBottomOnly
             value={filterText}

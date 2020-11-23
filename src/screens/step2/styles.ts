@@ -55,7 +55,6 @@ export const MembersContainer = styled.div`
 
     > svg {
       path {
-        stroke: #3d3d3d;
         stroke-width: 3px;
       }
     }
