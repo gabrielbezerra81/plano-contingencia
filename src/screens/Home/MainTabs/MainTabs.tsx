@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from "react";
 
 import { Tab, Nav } from "react-bootstrap";
-import StepOne from "screens/stepOne/StepOne";
-import StepTwo from "screens/stepTwo/StepTwo";
+import StepOne from "screens/step1/StepOne";
+import StepTwo from "screens/step2/StepTwo";
+import StepThree from "screens/step3/StepThree";
 
 import { TabHeader, TabItem, Content } from "./styles";
 
@@ -65,6 +66,11 @@ const MainTabs = () => {
         <Tab.Pane eventKey="tab2">
           <h3>2: GRUPO DE TRABALHO</h3>
           <StepTwo />
+        </Tab.Pane>
+
+        <Tab.Pane eventKey="tab3">
+          <h3>3: ESPECIFIQUE O ENDEREÇO DOS LOCAIS DE RISCO</h3>
+          <StepThree />
         </Tab.Pane>
       </Content>
     </Tab.Container>

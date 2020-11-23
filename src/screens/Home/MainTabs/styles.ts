@@ -38,6 +38,7 @@ export const TabItem = styled(Nav.Item)`
 
 export const Content = styled.main`
   flex: 1;
+  height: 600px;
 
   .tab-pane {
     padding: 16px 0;

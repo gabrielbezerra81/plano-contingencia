@@ -1,5 +1,6 @@
 import { css, createGlobalStyle } from "styled-components";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "leaflet/dist/leaflet.css";
 
 const GlobalStyle = createGlobalStyle`
   ${css`
