@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 import { Nav } from "react-bootstrap";
 import colors from "assets/colors";
@@ -9,7 +9,11 @@ export const TabHeader = styled(Nav)`
   margin: 0 auto;
 `;
 
-export const TabItem = styled(Nav.Item)`
+interface TabItemProps {
+  stepHasPassed: boolean;
+}
+
+export const TabItem = styled(Nav.Item)<TabItemProps>`
   text-decoration: none;
   flex: 1;
   position: relative;
@@ -33,6 +37,12 @@ export const TabItem = styled(Nav.Item)`
     &.active {
       background-color: ${colors.orangePrimary};
     }
+
+    ${({ stepHasPassed }) =>
+      stepHasPassed &&
+      css`
+        background-color: ${colors.orangePrimary};
+      `}
   }
 `;
 

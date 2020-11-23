@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import { Tab, Nav } from "react-bootstrap";
 import StepOne from "screens/step1/StepOne";
@@ -25,30 +25,34 @@ const MainTabs = () => {
     }
   }, []);
 
+  const selectedTabIndex = useMemo(() => {
+    return Number(selectedTab.replace("tab", ""));
+  }, [selectedTab]);
+
   return (
     <Tab.Container activeKey={selectedTab} onSelect={handleTabChange}>
       <TabHeader>
-        <TabItem>
+        <TabItem stepHasPassed={1 < selectedTabIndex}>
           <Nav.Link eventKey="tab1"></Nav.Link>
         </TabItem>
 
-        <TabItem>
+        <TabItem stepHasPassed={2 < selectedTabIndex}>
           <Nav.Link eventKey="tab2"></Nav.Link>
         </TabItem>
 
-        <TabItem>
+        <TabItem stepHasPassed={3 < selectedTabIndex}>
           <Nav.Link eventKey="tab3"></Nav.Link>
         </TabItem>
 
-        <TabItem>
+        <TabItem stepHasPassed={4 < selectedTabIndex}>
           <Nav.Link eventKey="tab4"></Nav.Link>
         </TabItem>
 
-        <TabItem>
+        <TabItem stepHasPassed={5 < selectedTabIndex}>
           <Nav.Link eventKey="tab5"></Nav.Link>
         </TabItem>
 
-        <TabItem>
+        <TabItem stepHasPassed={6 < selectedTabIndex}>
           <Nav.Link eventKey="tab6"></Nav.Link>
         </TabItem>
 
