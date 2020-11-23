@@ -1,14 +1,20 @@
 import React, { InputHTMLAttributes } from "react";
+import { FormControl, FormControlProps } from "react-bootstrap";
+import { Container } from "./styles";
 
-import { Container, CustomInput } from "./styles";
-
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps
+  extends FormControlProps,
+    Pick<
+      InputHTMLAttributes<HTMLInputElement>,
+      "name" | "placeholder" | "onBlur" | "onKeyPress"
+    > {
   rightIcon?: React.ReactNode;
   bordered?: boolean;
   borderBottomOnly?: boolean;
   labelOnInput?: string;
   containerClass?: string;
   inputClass?: string;
+  customInput?: React.ReactNode;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -18,6 +24,7 @@ const Input: React.FC<InputProps> = ({
   labelOnInput = false,
   containerClass = "",
   inputClass = "",
+  customInput,
   ...rest
 }) => {
   return (
@@ -29,7 +36,13 @@ const Input: React.FC<InputProps> = ({
       labelOnInput={!!labelOnInput}
     >
       {!!labelOnInput && <span>{labelOnInput}</span>}
-      <CustomInput rightIcon={!!RightIcon} className={inputClass} {...rest} />
+
+      {customInput ? (
+        customInput
+      ) : (
+        <FormControl className={inputClass} {...rest} />
+      )}
+
       {!!RightIcon && RightIcon}
     </Container>
   );

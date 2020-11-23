@@ -6,6 +6,6 @@ export default interface Address {
   city: string;
   state: string;
   refPoint: string;
-  lat: number;
-  long: number;
+  lat: string;
+  long: string;
 }

@@ -10,7 +10,7 @@ const SystemContext = React.createContext<SystemContextData>(
 );
 
 const SystemProvider: React.FC = ({ children }) => {
-  const [isOpenRightSideMenu, setIsOpenRightSideMenu] = useState(true);
+  const [isOpenRightSideMenu, setIsOpenRightSideMenu] = useState(false);
 
   const changeRightSideMenuVisibility = useCallback(() => {
     setIsOpenRightSideMenu((oldValue) => !oldValue);

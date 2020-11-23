@@ -18,6 +18,9 @@ import Input from "shared/components/Input/Input";
 import { Button } from "react-bootstrap";
 import Address from "types/Address";
 import produce from "immer";
+import axios from "axios";
+import NumberInput from "shared/components/NumberInput/NumberInput";
+import numberFormatter from "shared/utils/numberFormatter";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -34,12 +37,14 @@ const emptyAddress: Address = {
   city: "",
   state: "",
   refPoint: "",
-  lat: 0,
-  long: 0,
+  lat: "",
+  long: "",
 };
 
 const StepThree: React.FC = () => {
   const [map, setMap] = useState<L.Map | null>(null);
+
+  const [cep, setCep] = useState("");
   const [position, setPosition] = useState<LatLngLiteral | null>(null);
   const [addressList, setAddressList] = useState<Address[]>([
     {
@@ -50,8 +55,8 @@ const StepThree: React.FC = () => {
       city: "Pio IX",
       state: "Piauí",
       refPoint: "",
-      lat: -6,
-      long: -40,
+      lat: "-6",
+      long: "-40",
     },
   ]);
 
@@ -63,8 +68,8 @@ const StepThree: React.FC = () => {
     city: "",
     state: "",
     refPoint: "",
-    lat: 0,
-    long: 0,
+    lat: "",
+    long: "",
   });
 
   useEffect(() => {
@@ -74,9 +79,22 @@ const StepThree: React.FC = () => {
         setPosition(e.latlng);
         map.flyTo(e.latlng, 16);
 
+        const latitude = e.latlng.lat.toFixed(7);
+        const longitude = e.latlng.lng.toFixed(7);
+
         const latLong = {
-          lat: +e.latlng.lat.toFixed(8),
-          long: +e.latlng.lng.toFixed(8),
+          lat: numberFormatter({
+            value: latitude,
+            precision: 7,
+            fromSeparator: ".",
+            toSeparator: ",",
+          }),
+          long: numberFormatter({
+            value: longitude,
+            precision: 7,
+            fromSeparator: ".",
+            toSeparator: ",",
+          }),
         };
 
         setAddress((oldValue) => ({ ...oldValue, ...latLong }));
@@ -84,9 +102,22 @@ const StepThree: React.FC = () => {
       map.addEventListener("click", (e: any) => {
         setPosition(e.latlng);
 
+        const latitude = e.latlng.lat.toFixed(7);
+        const longitude = e.latlng.lng.toFixed(7);
+
         const latLong = {
-          lat: +e.latlng.lat.toFixed(8),
-          long: +e.latlng.lng.toFixed(8),
+          lat: numberFormatter({
+            value: latitude,
+            precision: 7,
+            fromSeparator: ".",
+            toSeparator: ",",
+          }),
+          long: numberFormatter({
+            value: longitude,
+            precision: 7,
+            fromSeparator: ".",
+            toSeparator: ",",
+          }),
         };
 
         setAddress((oldValue) => ({ ...oldValue, ...latLong }));
@@ -100,19 +131,34 @@ const StepThree: React.FC = () => {
     };
   }, [map]);
 
-  const handleSearchFromCEP = useCallback(() => {}, []);
+  const handleSearchFromCEP = useCallback(async () => {
+    try {
+      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+
+      const {
+        logradouro: address,
+        complemento: complement,
+        bairro: neighbor,
+        localidade: city,
+        uf: state,
+      } = response.data;
+
+      setAddress((oldValue) => ({
+        ...oldValue,
+        address: address || "",
+        complement: complement || "",
+        neighbor: neighbor || "",
+        city: city || "",
+        state: state || "",
+      }));
+    } catch (error) {}
+  }, [cep]);
 
   const handleEditCurrentAddress = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
 
-      let parsedValue: any = value;
-
-      if (["lat", "long"].includes(name)) {
-        parsedValue = Number(value);
-      }
-
-      setAddress((oldValue) => ({ ...oldValue, [name]: parsedValue }));
+      setAddress((oldValue) => ({ ...oldValue, [name]: value }));
     },
     [],
   );
@@ -145,6 +191,30 @@ const StepThree: React.FC = () => {
   }, [address, addressList]);
 
   const handleChooseFile = useCallback(() => {}, []);
+
+  const handleChangeLat = useCallback(
+    (value: any) => {
+      handleEditCurrentAddress({
+        target: {
+          name: "lat",
+          value,
+        },
+      } as any);
+    },
+    [handleEditCurrentAddress],
+  );
+
+  const handleChangeLong = useCallback(
+    (value: any) => {
+      handleEditCurrentAddress({
+        target: {
+          name: "long",
+          value,
+        },
+      } as any);
+    },
+    [handleEditCurrentAddress],
+  );
 
   return (
     <Container>
@@ -195,6 +265,8 @@ const StepThree: React.FC = () => {
         <AddLocationContainer>
           <Input
             rightIcon={<GrSearch />}
+            value={cep}
+            onChange={(e) => setCep(e.target.value)}
             placeholder="Digite o  CEP ou pesquise no mapa"
             borderBottomOnly
             onBlur={handleSearchFromCEP}
@@ -266,18 +338,34 @@ const StepThree: React.FC = () => {
             />
             <div className="latLongInputGroup">
               <Input
-                value={address.lat === 0 ? "" : address.lat}
                 labelOnInput="Latitude:"
-                name="lat"
                 borderBottomOnly
-                onChange={handleEditCurrentAddress}
+                customInput={
+                  <NumberInput
+                    name="lat"
+                    allowNegative
+                    precision={7}
+                    step={0.0000001}
+                    value={address.lat}
+                    onChange={handleChangeLat}
+                    type="negativeDecimal"
+                  />
+                }
               />
               <Input
-                value={address.long === 0 ? "" : address.long}
                 labelOnInput="Longitude:"
-                name="long"
                 borderBottomOnly
-                onChange={handleEditCurrentAddress}
+                customInput={
+                  <NumberInput
+                    name="long"
+                    allowNegative
+                    precision={7}
+                    step={0.0000001}
+                    value={address.long}
+                    onChange={handleChangeLong}
+                    type="negativeDecimal"
+                  />
+                }
               />
             </div>
 

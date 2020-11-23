@@ -1,4 +1,3 @@
-import { FormControl } from "react-bootstrap";
 import styled, { css } from "styled-components";
 
 interface ContainerProps {
@@ -61,41 +60,38 @@ export const Container = styled.div<ContainerProps>`
         padding-left: 4px;
       }
     `}
-`;
 
-interface CustomInputProps {
-  rightIcon: boolean;
-}
 
-export const CustomInput = styled(FormControl)<CustomInputProps>`
-  background-color: transparent;
-  border: none;
-  color: #3d3d3d;
-  box-shadow: none !important;
-
-  &.form-control::-webkit-input-placeholder {
-    color: #8c8c8c;
-  } /* WebKit, Blink, Edge */
-  &.form-control:-moz-placeholder {
-    color: #8c8c8c;
-  } /* Mozilla Firefox 4 to 18 */
-  &.form-control::-moz-placeholder {
-    color: #8c8c8c;
-  } /* Mozilla Firefox 19+ */
-  &.form-control:-ms-input-placeholder {
-    color: #8c8c8c;
-  } /* Internet Explorer 10-11 */
-  &.form-control::-ms-input-placeholder {
-    color: #8c8c8c;
-  } /* Microsoft Edge */
-
-  &:focus {
+>input {
     background-color: transparent;
-  }
+    border: none;
+    color: #3d3d3d;
+    box-shadow: none !important;
 
-  ${({ rightIcon }) =>
-    rightIcon &&
-    css`
-      padding-right: 40px;
-    `}
+    &.form-control::-webkit-input-placeholder {
+      color: #8c8c8c;
+    } /* WebKit, Blink, Edge */
+    &.form-control:-moz-placeholder {
+      color: #8c8c8c;
+    } /* Mozilla Firefox 4 to 18 */
+    &.form-control::-moz-placeholder {
+      color: #8c8c8c;
+    } /* Mozilla Firefox 19+ */
+    &.form-control:-ms-input-placeholder {
+      color: #8c8c8c;
+    } /* Internet Explorer 10-11 */
+    &.form-control::-ms-input-placeholder {
+      color: #8c8c8c;
+    } /* Microsoft Edge */
+
+    &:focus {
+      background-color: transparent;
+    }
+
+    ${({ rightIcon }) =>
+      rightIcon &&
+      css`
+        padding-right: 40px;
+      `}
+  }
 `;
