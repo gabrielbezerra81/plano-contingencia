@@ -99,6 +99,7 @@ export const AddLocationContainer = styled.div`
         background-color: ${colors.darkBlue};
         font-weight: 500;
         margin-right: 16px;
+        border-color: ${colors.darkBlue};
 
         &:hover {
           background-color: ${shade(0.2, colors.darkBlue)};

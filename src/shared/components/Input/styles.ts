@@ -40,7 +40,7 @@ export const Container = styled.div<ContainerProps>`
   ${({ borderBottomOnly }) =>
     borderBottomOnly &&
     css`
-      border-bottom: 1px solid #a8a8a8;
+      border-bottom: 1px solid #000;
       border-radius: 0;
     `}
 
@@ -52,12 +52,12 @@ export const Container = styled.div<ContainerProps>`
       /* border-radius: 4px; */
 
       span {
-        color: #c6c6c6;
+        color: #3d3d3d;
       }
 
       input {
         box-shadow: none !important;
-        padding-left: 4px;
+        padding-left: 6px;
       }
     `}
 

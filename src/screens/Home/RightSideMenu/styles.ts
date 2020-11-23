@@ -98,6 +98,12 @@ export const Container = styled.div<ContainerProps>`
         `}
 
       .filterInput {
+        border-bottom-color: #a8a8a8;
+
+        span {
+          color: #c6c6c6;
+        }
+
         input {
           color: #c6c6c6;
         }

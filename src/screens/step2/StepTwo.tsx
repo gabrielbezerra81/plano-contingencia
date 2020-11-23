@@ -1,14 +1,15 @@
-import React, { useState, useMemo } from "react";
-import { Button, Table } from "react-bootstrap";
+import React, { useState, useMemo, useCallback } from "react";
+import { Button, Modal } from "react-bootstrap";
 
 import { useTable, useSortBy } from "react-table";
+import addMemberImg from "assets/images/addMemberImg.png";
 
 import { GrSearch } from "react-icons/gr";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 
 import Input from "shared/components/Input/Input";
 
-import { Container, MembersContainer } from "./styles";
+import { Container, MembersContainer, ModalContent } from "./styles";
 
 interface Member {
   id: number;
@@ -42,6 +43,8 @@ const StepTwo = () => {
       status: 1,
     },
   ]);
+
+  const [showModal, setShowModal] = useState(false);
 
   const columns: TableColumn[] = useMemo(
     () => [
@@ -79,81 +82,129 @@ const StepTwo = () => {
     useSortBy,
   );
 
-  return (
-    <Container>
-      <span>
-        O <strong>grupo de trabalho</strong> consiste nas pessoas envolvidas na
-        elaboração deste Plano de Contingência
-      </span>
+  const handleShowModal = useCallback(() => {
+    setShowModal(true);
+  }, []);
 
-      <main>
-        <Button>ADICIONAR MEMBRO</Button>
-        <MembersContainer>
+  return (
+    <>
+      <Container>
+        <span>
+          O <strong>grupo de trabalho</strong> consiste nas pessoas envolvidas
+          na elaboração deste Plano de Contingência
+        </span>
+
+        <main>
+          <Button onClick={handleShowModal}>ADICIONAR MEMBRO</Button>
+          <MembersContainer>
+            <Input
+              value={searchText}
+              borderBottomOnly
+              rightIcon={<GrSearch />}
+              labelOnInput="Pesquisar:"
+              onChange={(e) => setSearchText(e.target.value)}
+              containerClass="memberFilter"
+            />
+            <table {...getTableProps()}>
+              <thead>
+                {headerGroups.map((headerGroup) => (
+                  <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column: any, index) => (
+                      <th
+                        {...column.getHeaderProps(
+                          index > 0 && column.getSortByToggleProps(),
+                        )}
+                      >
+                        {column.render("Header")}
+
+                        {index > 0 &&
+                          (column.isSorted ? (
+                            column.isSortedDesc ? (
+                              <FaSortDown style={{ top: 6 }} />
+                            ) : (
+                              <FaSortUp style={{ top: 10 }} />
+                            )
+                          ) : (
+                            <FaSort style={{ top: 8 }} />
+                          ))}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody {...getTableBodyProps()}>
+                {rows.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <tr {...row.getRowProps()}>
+                      {row.cells.map((cell) => {
+                        return (
+                          <td {...cell.getCellProps()}>
+                            {cell.render("Cell")}
+                            {cell.column.id === "name" && (
+                              <span
+                                style={{
+                                  backgroundColor:
+                                    cell.row.original.status === 1
+                                      ? "#1059C4"
+                                      : "#ff0000",
+                                }}
+                              ></span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </MembersContainer>
+        </main>
+      </Container>
+      <Modal centered show={showModal} onHide={() => setShowModal(false)}>
+        <ModalContent>
+          <h6>ADICIONAR MEMBRO AO GRUPO DE TRABALHO</h6>
+          <img src={addMemberImg} alt="Membros" />
+
           <Input
-            value={searchText}
+            labelOnInput={"Pesquisar: "}
+            placeholder="Digite o Email ou o número do telefone"
             borderBottomOnly
             rightIcon={<GrSearch />}
-            labelOnInput="Pesquisar:"
-            onChange={(e) => setSearchText(e.target.value)}
-            containerClass="memberFilter"
           />
-          <table {...getTableProps()}>
-            <thead>
-              {headerGroups.map((headerGroup) => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column: any, index) => (
-                    <th
-                      {...column.getHeaderProps(
-                        index > 0 && column.getSortByToggleProps(),
-                      )}
-                    >
-                      {column.render("Header")}
 
-                      {index > 0 &&
-                        (column.isSorted ? (
-                          column.isSortedDesc ? (
-                            <FaSortDown style={{ top: 6 }} />
-                          ) : (
-                            <FaSortUp style={{ top: 10 }} />
-                          )
-                        ) : (
-                          <FaSort style={{ top: 8 }} />
-                        ))}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody {...getTableBodyProps()}>
-              {rows.map((row) => {
-                prepareRow(row);
-                return (
-                  <tr {...row.getRowProps()}>
-                    {row.cells.map((cell) => {
-                      return (
-                        <td {...cell.getCellProps()}>
-                          {cell.render("Cell")}
-                          {cell.column.id === "name" && (
-                            <span
-                              style={{
-                                backgroundColor:
-                                  cell.row.original.status === 1
-                                    ? "#1059C4"
-                                    : "#ff0000",
-                              }}
-                            ></span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </MembersContainer>
-      </main>
-    </Container>
+          <div className="userNotFoundContainer">
+            <small>
+              Não existe nenhum um usuário cadastrado com esse email ou
+              telefone.
+            </small>
+            <div>
+              <Button size="sm">Adicionar novo usuário</Button>
+              <Button size="sm">Pesquisar novamente</Button>
+            </div>
+          </div>
+
+          <div className="userFoundContainer">
+            <small>
+              Usuário encontrado com sucesso. Por favor, defina sua função e
+              permisão de acesso.
+            </small>
+
+            <Input
+              containerClass="foundUserInput"
+              labelOnInput={"Nome: "}
+              borderBottomOnly
+            />
+            <Input
+              containerClass="foundUserInput"
+              labelOnInput={"Função: "}
+              borderBottomOnly
+            />
+          </div>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 
