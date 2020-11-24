@@ -41,7 +41,14 @@ const emptyAddress: Address = {
   long: "",
 };
 
-const StepThree: React.FC = () => {
+interface Props {
+  selectedTabIndex: number;
+}
+
+const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
+  const [loadMap, setLoadMap] = useState(false);
+  const [mapKey, setMapKey] = useState(Math.random());
+
   const [map, setMap] = useState<L.Map | null>(null);
 
   const [cep, setCep] = useState("");
@@ -220,6 +227,22 @@ const StepThree: React.FC = () => {
     [handleEditCurrentAddress],
   );
 
+  useEffect(() => {
+    if (selectedTabIndex !== 3) {
+      setLoadMap(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (selectedTabIndex === 3 && loadMap && map) {
+      setMapKey(Math.random());
+
+      setLoadMap(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTabIndex, loadMap, map]);
+
   return (
     <Container>
       <h6>Orientação: pode ser inserido mais de um endereço</h6>
@@ -233,6 +256,7 @@ const StepThree: React.FC = () => {
             whenCreated={(LMap) => {
               setMap(LMap);
             }}
+            key={mapKey}
           >
             <TileLayer
               attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
