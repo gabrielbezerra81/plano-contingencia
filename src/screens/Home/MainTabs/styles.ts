@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components";
 
-import { Nav } from "react-bootstrap";
+import { Nav, NavItem } from "react-bootstrap";
 import colors from "assets/colors";
 
 export const TabHeader = styled(Nav)`
@@ -38,7 +38,7 @@ export const TabItem = styled(Nav.Item)<TabItemProps>`
       background-color: ${colors.orangePrimary};
     }
 
-    ${({ stepHasPassed }) =>
+    ${({ styled: { stepHasPassed } }) =>
       stepHasPassed &&
       css`
         background-color: ${colors.orangePrimary};
@@ -48,14 +48,22 @@ export const TabItem = styled(Nav.Item)<TabItemProps>`
 
 export const Content = styled.main`
   flex: 1;
-  height: 600px;
+  /* height: 600px; */
 
   .tab-pane {
-    padding: 16px 0;
+    padding: 16px 0 80px;
+    position: relative;
+    height: 100%;
 
     > h3 {
       text-align: center;
       color: #212121;
     }
+  }
+
+  .nextButton {
+    position: absolute;
+    bottom: 40px;
+    right: 0px;
   }
 `;

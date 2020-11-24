@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const Container = styled.div`
   background-color: #212121;
-  height: calc(100vh - 24px);
+  min-height: calc(100vh - 24px);
   width: 300px;
 
   header {

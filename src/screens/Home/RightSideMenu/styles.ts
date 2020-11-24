@@ -6,7 +6,7 @@ interface ContainerProps {
 }
 
 export const Container = styled.div<ContainerProps>`
-  height: 100%;
+  min-height: calc(100vh - 24px);
   transition: width 0.2s;
   overflow: hidden;
   width: 80px;
