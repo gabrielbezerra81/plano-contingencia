@@ -1,9 +1,10 @@
 import React, { InputHTMLAttributes } from "react";
 import { FormControl, FormControlProps } from "react-bootstrap";
+import InputMask, { Props as MaskedProps } from "react-input-mask";
 import { Container } from "./styles";
 
 interface InputProps
-  extends FormControlProps,
+  extends Omit<FormControlProps, "size">,
     Pick<
       InputHTMLAttributes<HTMLInputElement>,
       "name" | "placeholder" | "onBlur" | "onKeyPress"
@@ -15,6 +16,9 @@ interface InputProps
   containerClass?: string;
   inputClass?: string;
   customInput?: React.ReactNode;
+  size?: "small" | "normal";
+  masked?: boolean;
+  maskProps?: MaskedProps;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -25,20 +29,26 @@ const Input: React.FC<InputProps> = ({
   containerClass = "",
   inputClass = "",
   customInput,
+  size = "normal",
+  masked = false,
+  maskProps,
   ...rest
 }) => {
   return (
     <Container
       rightIcon={!!RightIcon}
-      className={containerClass}
+      className={`inputContainer ${containerClass}`}
       bordered={bordered}
       borderBottomOnly={borderBottomOnly}
       labelOnInput={!!labelOnInput}
+      size={size}
     >
       {!!labelOnInput && <span>{labelOnInput}</span>}
 
       {customInput ? (
         customInput
+      ) : masked ? (
+        <InputMask className={inputClass} mask="" {...rest} {...maskProps} />
       ) : (
         <FormControl className={inputClass} {...rest} />
       )}

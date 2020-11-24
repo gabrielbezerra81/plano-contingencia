@@ -133,7 +133,11 @@ const StepThree: React.FC = () => {
 
   const handleSearchFromCEP = useCallback(async () => {
     try {
-      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+      const parsedCep = cep.replace("-", "");
+
+      const response = await axios.get(
+        `https://viacep.com.br/ws/${parsedCep}/json/`,
+      );
 
       const {
         logradouro: address,
@@ -275,13 +279,14 @@ const StepThree: React.FC = () => {
                 handleSearchFromCEP();
               }
             }}
+            masked
+            maskProps={{ mask: "99999-999" }}
           />
 
           <main>
             <label>DESCRIÇÃO DO LOCAL</label>
 
             <Input
-              containerClass="inputContainer"
               labelOnInput="Nome/Identificação:"
               borderBottomOnly
               name="name"
@@ -289,7 +294,6 @@ const StepThree: React.FC = () => {
               onChange={handleEditCurrentAddress}
             />
             <Input
-              containerClass="inputContainer"
               labelOnInput="Endereço:"
               borderBottomOnly
               name="address"
@@ -297,7 +301,6 @@ const StepThree: React.FC = () => {
               onChange={handleEditCurrentAddress}
             />
             <Input
-              containerClass="inputContainer"
               labelOnInput="Complemento:"
               borderBottomOnly
               name="complement"
@@ -305,7 +308,6 @@ const StepThree: React.FC = () => {
               onChange={handleEditCurrentAddress}
             />
             <Input
-              containerClass="inputContainer"
               labelOnInput="Bairro:"
               borderBottomOnly
               name="neighbor"
@@ -313,7 +315,6 @@ const StepThree: React.FC = () => {
               onChange={handleEditCurrentAddress}
             />
             <Input
-              containerClass="inputContainer"
               labelOnInput="Cidade:"
               borderBottomOnly
               name="city"
@@ -321,7 +322,6 @@ const StepThree: React.FC = () => {
               onChange={handleEditCurrentAddress}
             />
             <Input
-              containerClass="inputContainer"
               labelOnInput="Estado:"
               borderBottomOnly
               name="state"
@@ -329,7 +329,6 @@ const StepThree: React.FC = () => {
               onChange={handleEditCurrentAddress}
             />
             <Input
-              containerClass="inputContainer"
               labelOnInput="Ponto de Referência:"
               borderBottomOnly
               name="refPoint"
@@ -370,7 +369,7 @@ const StepThree: React.FC = () => {
             </div>
 
             <div className="buttonsContainer">
-              <Button onClick={handleAddAddress}>Cadastrar</Button>
+              <Button onClick={handleAddAddress}>Adicionar</Button>
 
               <Button onClick={handleChooseFile} size="sm" variant="secondary">
                 Escolher arquivo

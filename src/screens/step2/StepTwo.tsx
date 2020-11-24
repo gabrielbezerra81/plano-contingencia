@@ -1,15 +1,16 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Button, Modal } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 
 import { useTable, useSortBy } from "react-table";
-import addMemberImg from "assets/images/addMemberImg.png";
 
 import { GrSearch } from "react-icons/gr";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 
 import Input from "shared/components/Input/Input";
 
-import { Container, MembersContainer, ModalContent } from "./styles";
+import { Container, MembersContainer } from "./styles";
+import AddUserModal from "./AddUserModal/AddUserModal";
+import AddToGroupModal from "./AddToGroupModal/AddToGroupModal";
 
 interface Member {
   id: number;
@@ -44,7 +45,8 @@ const StepTwo = () => {
     },
   ]);
 
-  const [showModal, setShowModal] = useState(false);
+  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
 
   const columns: TableColumn[] = useMemo(
     () => [
@@ -82,8 +84,8 @@ const StepTwo = () => {
     useSortBy,
   );
 
-  const handleShowModal = useCallback(() => {
-    setShowModal(true);
+  const handleOpenAddToGroupModal = useCallback(() => {
+    setShowAddToGroupModal(true);
   }, []);
 
   return (
@@ -95,7 +97,7 @@ const StepTwo = () => {
         </span>
 
         <main>
-          <Button onClick={handleShowModal}>ADICIONAR MEMBRO</Button>
+          <Button onClick={handleOpenAddToGroupModal}>ADICIONAR MEMBRO</Button>
           <MembersContainer>
             <Input
               value={searchText}
@@ -162,48 +164,14 @@ const StepTwo = () => {
           </MembersContainer>
         </main>
       </Container>
-      <Modal centered show={showModal} onHide={() => setShowModal(false)}>
-        <ModalContent>
-          <h6>ADICIONAR MEMBRO AO GRUPO DE TRABALHO</h6>
-          <img src={addMemberImg} alt="Membros" />
 
-          <Input
-            labelOnInput={"Pesquisar: "}
-            placeholder="Digite o Email ou o número do telefone"
-            borderBottomOnly
-            rightIcon={<GrSearch />}
-          />
+      <AddToGroupModal
+        show={showAddToGroupModal}
+        setShow={setShowAddToGroupModal}
+        setShowAddUserModal={setShowAddUserModal}
+      />
 
-          <div className="userNotFoundContainer">
-            <small>
-              Não existe nenhum um usuário cadastrado com esse email ou
-              telefone.
-            </small>
-            <div>
-              <Button size="sm">Adicionar novo usuário</Button>
-              <Button size="sm">Pesquisar novamente</Button>
-            </div>
-          </div>
-
-          <div className="userFoundContainer">
-            <small>
-              Usuário encontrado com sucesso. Por favor, defina sua função e
-              permisão de acesso.
-            </small>
-
-            <Input
-              containerClass="foundUserInput"
-              labelOnInput={"Nome: "}
-              borderBottomOnly
-            />
-            <Input
-              containerClass="foundUserInput"
-              labelOnInput={"Função: "}
-              borderBottomOnly
-            />
-          </div>
-        </ModalContent>
-      </Modal>
+      <AddUserModal show={showAddUserModal} setShow={setShowAddUserModal} />
     </>
   );
 };

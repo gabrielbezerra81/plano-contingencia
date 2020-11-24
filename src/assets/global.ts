@@ -1,6 +1,8 @@
 import { css, createGlobalStyle } from "styled-components";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
+import colors from "./colors";
+import { shade } from "polished";
 
 const GlobalStyle = createGlobalStyle`
   ${css`
@@ -30,6 +32,23 @@ const GlobalStyle = createGlobalStyle`
 
       &:focus {
         outline: none !important;
+      }
+    }
+
+    button.darkBlueButton {
+      background-color: ${colors.darkBlue};
+      border-color: ${colors.darkBlue};
+
+      &:focus {
+        background-color: ${colors.darkBlue};
+      }
+
+      &:hover {
+        background-color: ${shade(0.2, colors.darkBlue)} !important;
+      }
+
+      &:active {
+        background-color: ${shade(0.3, colors.darkBlue)} !important;
       }
     }
   `}

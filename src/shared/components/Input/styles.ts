@@ -5,12 +5,19 @@ interface ContainerProps {
   bordered: boolean;
   labelOnInput: boolean;
   borderBottomOnly: boolean;
+  size: "small" | "normal";
 }
 
 export const Container = styled.div<ContainerProps>`
   position: relative;
   display: flex;
   align-items: center;
+
+  ${({ size }) =>
+    size === "small" &&
+    css`
+      height: 25px;
+    `}
 
   ${({ rightIcon }) =>
     rightIcon &&
@@ -61,12 +68,25 @@ export const Container = styled.div<ContainerProps>`
       }
     `}
 
-
->input {
+    > select {
     background-color: transparent;
     border: none;
     color: #3d3d3d;
     box-shadow: none !important;
+    height: 100%;
+    padding: 0 12px 0 6px;
+
+    &:focus {
+      background-color: transparent;
+    }
+  }
+
+  > input {
+    background-color: transparent;
+    border: none;
+    color: #3d3d3d;
+    box-shadow: none !important;
+    flex: 1;
 
     &.form-control::-webkit-input-placeholder {
       color: #8c8c8c;
@@ -86,6 +106,7 @@ export const Container = styled.div<ContainerProps>`
 
     &:focus {
       background-color: transparent;
+      outline: none;
     }
 
     ${({ rightIcon }) =>
