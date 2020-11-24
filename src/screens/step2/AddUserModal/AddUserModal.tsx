@@ -306,6 +306,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
                 name="phones"
                 onRemove={handleRemoveItemOfList}
                 renderText={(phoneItem: any) => phoneItem.phone}
+                size="small"
               />
             </section>
 
@@ -333,6 +334,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
                 name="emails"
                 onRemove={handleRemoveItemOfList}
                 renderText={(email: string) => email}
+                size="small"
               />
             </section>
           </div>
@@ -461,6 +463,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
               renderText={(addressItem: UserAddress) => {
                 return `${addressItem.street}, ${addressItem.number}, ${addressItem.city}, ${addressItem.state}.`;
               }}
+              size="small"
             />
           </div>
 
@@ -511,6 +514,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
               renderText={(documentItem: UserDocument) => {
                 return `${documentItem.type} ${documentItem.number}`;
               }}
+              size="small"
             />
           </div>
 

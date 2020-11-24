@@ -37,20 +37,9 @@ export const MapAndAddressListContainer = styled.div`
     }
   }
 
-  > div {
-    .addressItem {
-      display: flex;
-      align-items: flex-start;
-
-      & + .addressItem {
-        margin-top: 4px;
-      }
-    }
-
-    svg {
-      fill: ${colors.darkBlue};
-      stroke: #fff;
-      stroke-width: 3px;
+  > .attributeListContainer {
+    small {
+      background-color: #fff;
     }
   }
 `;

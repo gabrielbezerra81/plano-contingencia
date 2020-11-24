@@ -1,7 +1,11 @@
 import colors from "assets/colors";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
-export const Container = styled.div`
+interface ContainerProps {
+  size: "small" | "normal";
+}
+
+export const Container = styled.div<ContainerProps>`
   position: relative;
   border-top: 1px solid #a8a8a8;
   padding-top: 4px;
@@ -31,7 +35,17 @@ export const Container = styled.div`
     }
 
     span {
-      font-size: 14px;
+      font-size: 16px;
     }
   }
+
+  ${({ size }) =>
+    size === "small" &&
+    css`
+      .attributeListItem {
+        span {
+          font-size: 14px;
+        }
+      }
+    `}
 `;

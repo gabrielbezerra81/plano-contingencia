@@ -5,8 +5,6 @@ import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { GrSearch } from "react-icons/gr";
 
-import { FiXCircle } from "react-icons/fi";
-
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 import {
@@ -21,6 +19,7 @@ import produce from "immer";
 import axios from "axios";
 import NumberInput from "shared/components/NumberInput/NumberInput";
 import numberFormatter from "shared/utils/numberFormatter";
+import AttributeListing from "shared/components/AttributeListing/AttributeListing";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -270,24 +269,19 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
             )}
           </MapContainer>
 
-          <div>
-            <label>Endereços cadastrados</label>
+          <AttributeListing
+            title="Endereços cadastrados"
+            items={addressList}
+            name="addressItem"
+            onRemove={(e, index) => handleRemoveAddress(index)}
+            renderText={(addressItem: Address) => {
+              const complement = addressItem.complement
+                ? `${addressItem.complement},`
+                : "";
 
-            {addressList.map((addressItem, index) => (
-              <div className="addressItem" key={`${addressItem.name}${index}`}>
-                <button onClick={() => handleRemoveAddress(index)}>
-                  <FiXCircle></FiXCircle>
-                </button>
-
-                <span>
-                  {addressItem.name}, {addressItem.address},{" "}
-                  {addressItem.neighbor},{" "}
-                  {!!addressItem.complement && `${addressItem.complement},`}{" "}
-                  {addressItem.city}, {addressItem.state}
-                </span>
-              </div>
-            ))}
-          </div>
+              return `${addressItem.name}, ${addressItem.address}, ${addressItem.neighbor}, ${complement} ${addressItem.city}, ${addressItem.state}`;
+            }}
+          />
         </MapAndAddressListContainer>
 
         <AddLocationContainer>

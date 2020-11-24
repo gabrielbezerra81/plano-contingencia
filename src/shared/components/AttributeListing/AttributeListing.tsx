@@ -11,6 +11,7 @@ interface Props {
   renderText?: (data: any) => string;
   textComponent?: React.ReactNode;
   containerClass?: string;
+  size?: "small" | "normal";
 }
 
 const AttributeListing: React.FC<Props> = ({
@@ -21,9 +22,13 @@ const AttributeListing: React.FC<Props> = ({
   renderText,
   textComponent,
   containerClass,
+  size = "normal",
 }) => {
   return (
-    <Container className={`attributeListContainer ${containerClass}`}>
+    <Container
+      size={size}
+      className={`attributeListContainer ${containerClass}`}
+    >
       <small className="attributeListTitle">{title}</small>
 
       {items.map((item, index) => (
