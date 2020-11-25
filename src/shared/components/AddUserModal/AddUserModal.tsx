@@ -214,7 +214,12 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
   }, [setShow]);
 
   return (
-    <Modal show={show} centered onHide={() => setShow(false)}>
+    <Modal
+      backdropClassName="addUserModalWrapper"
+      show={show}
+      centered
+      onHide={() => setShow(false)}
+    >
       <Container>
         <div className="borderedContainer userDataContainer">
           <label>Dados</label>

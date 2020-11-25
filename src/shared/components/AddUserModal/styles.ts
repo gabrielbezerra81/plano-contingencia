@@ -6,6 +6,10 @@ export const Modal = styled(BSModal)`
   .modal-dialog {
     max-width: 700px;
   }
+
+  &.modal {
+    z-index: 1070;
+  }
 `;
 
 export const Container = styled.div`

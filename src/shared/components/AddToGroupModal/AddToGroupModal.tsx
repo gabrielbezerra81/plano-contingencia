@@ -30,7 +30,7 @@ const AddToGroupModal: React.FC<Props> = ({
   }, [setShow]);
 
   return (
-    <Modal centered show={show} onHide={() => setShow(false)}>
+    <Modal backdropClassName="addToGroupModalWrapper" centered show={show} onHide={() => setShow(false)}>
       <Container>
         <h6>ADICIONAR MEMBRO AO GRUPO DE TRABALHO</h6>
         <img src={addMemberImg} alt="Membros" />

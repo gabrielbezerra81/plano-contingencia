@@ -55,6 +55,14 @@ const GlobalStyle = createGlobalStyle`
     .addVehicleModalWrapper {
       z-index: 1055;
     }
+
+    .addToGroupModalWrapper {
+      z-index: 1055;
+    }
+
+    .addUserModalWrapper {
+      z-index: 1065;
+    }
   `}
 
 
