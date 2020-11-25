@@ -1,4 +1,3 @@
-import colors from "assets/colors";
 import styled from "styled-components";
 
 import { Modal as BSModal } from "react-bootstrap";

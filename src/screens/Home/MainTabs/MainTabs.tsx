@@ -4,6 +4,7 @@ import { Tab, Nav, Button } from "react-bootstrap";
 import StepOne from "screens/step1/StepOne";
 import StepTwo from "screens/step2/StepTwo";
 import StepThree from "screens/step3/StepThree";
+import StepFour from "screens/step4/StepFour";
 
 import { TabHeader, TabItem, Content } from "./styles";
 
@@ -91,6 +92,17 @@ const MainTabs = () => {
         <Tab.Pane eventKey="tab3">
           <h3>3: ESPECIFIQUE O ENDEREÇO DOS LOCAIS DE RISCO</h3>
           <StepThree selectedTabIndex={selectedTabIndex} />
+          <Button
+            onClick={handleClickNext}
+            className="darkBlueButton nextButton"
+          >
+            Próximo
+          </Button>
+        </Tab.Pane>
+
+        <Tab.Pane eventKey="tab4">
+          <h3>4: CONSTRUÇÃO DE CENÁRIO</h3>
+          <StepFour />
           <Button
             onClick={handleClickNext}
             className="darkBlueButton nextButton"

@@ -9,6 +9,7 @@ export const Container = styled.div<ContainerProps>`
   min-height: calc(100vh - 24px);
   transition: width 0.2s;
   overflow: hidden;
+  min-width: 80px;
   width: 80px;
   pointer-events: none;
 

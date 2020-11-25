@@ -51,7 +51,14 @@ const GlobalStyle = createGlobalStyle`
         background-color: ${shade(0.3, colors.darkBlue)} !important;
       }
     }
+
+    .addVehicleModalWrapper {
+      z-index: 1055;
+    }
   `}
+
+
+
 `;
 
 export default GlobalStyle;

@@ -77,6 +77,10 @@ export const AddLocationContainer = styled.div`
     .latLongInputGroup {
       display: flex;
       margin-top: 16px;
+
+      .inputContainer {
+        flex: 1;
+      }
     }
 
     .buttonsContainer {

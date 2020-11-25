@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components";
 
-import { Nav, NavItem } from "react-bootstrap";
+import { Nav } from "react-bootstrap";
 import colors from "assets/colors";
 
 export const TabHeader = styled(Nav)`

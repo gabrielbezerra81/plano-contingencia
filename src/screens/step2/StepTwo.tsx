@@ -9,8 +9,8 @@ import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import Input from "shared/components/Input/Input";
 
 import { Container, MembersContainer } from "./styles";
-import AddUserModal from "./AddUserModal/AddUserModal";
-import AddToGroupModal from "./AddToGroupModal/AddToGroupModal";
+import AddUserModal from "../../shared/components/AddUserModal/AddUserModal";
+import AddToGroupModal from "../../shared/components/AddToGroupModal/AddToGroupModal";
 
 interface Member {
   id: number;
