@@ -14,12 +14,12 @@ import {
 } from "./styles";
 import Input from "shared/components/Input/Input";
 import { Button } from "react-bootstrap";
-import Address from "types/Address";
 import produce from "immer";
 import axios from "axios";
 import NumberInput from "shared/components/NumberInput/NumberInput";
 import numberFormatter from "shared/utils/numberFormatter";
 import AttributeListing from "shared/components/AttributeListing/AttributeListing";
+import { RiskLocation } from "types/Plan";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -28,7 +28,7 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const emptyAddress: Address = {
+const emptyAddress: RiskLocation = {
   name: "",
   address: "",
   complement: "",
@@ -52,7 +52,7 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
 
   const [cep, setCep] = useState("");
   const [position, setPosition] = useState<LatLngLiteral | null>(null);
-  const [addressList, setAddressList] = useState<Address[]>([
+  const [addressList, setAddressList] = useState<RiskLocation[]>([
     {
       name: "Titulo",
       address: "Rua Major Vitalino, 370",
@@ -66,7 +66,7 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
     },
   ]);
 
-  const [address, setAddress] = useState<Address>({
+  const [address, setAddress] = useState<RiskLocation>({
     name: "",
     address: "",
     complement: "",
@@ -274,7 +274,7 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
             items={addressList}
             name="addressItem"
             onRemove={(e, index) => handleRemoveAddress(index)}
-            renderText={(addressItem: Address) => {
+            renderText={(addressItem: RiskLocation) => {
               const complement = addressItem.complement
                 ? `${addressItem.complement},`
                 : "";

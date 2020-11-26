@@ -4,13 +4,13 @@ import { Form } from "react-bootstrap";
 import { FiPlus } from "react-icons/fi";
 import { GrSearch } from "react-icons/gr";
 import Input from "shared/components/Input/Input";
-import Address from "types/Address";
+import { RiskLocation } from "types/Plan";
 import ResourceModal from "./ResourceModal/ResourceModal";
 
 import { Container } from "./styles";
 
 const StepFour: React.FC = () => {
-  const [addressList, setAddressList] = useState<Address[]>([
+  const [addressList, setAddressList] = useState<RiskLocation[]>([
     {
       name: "Titulo",
       address: "Rua Major Vitalino, 370",

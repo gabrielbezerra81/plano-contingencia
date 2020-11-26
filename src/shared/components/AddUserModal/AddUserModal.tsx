@@ -4,44 +4,13 @@ import { Button, Form } from "react-bootstrap";
 
 import AttributeListing from "shared/components/AttributeListing/AttributeListing";
 import Input from "shared/components/Input/Input";
+import { User, UserAddress, UserDocument } from "types/Plan";
 
 import { Modal, Container } from "./styles";
 
 interface Props {
   show: boolean;
   setShow: (...data: any) => any;
-}
-
-interface UserAddress {
-  cep: string;
-  city: string;
-  state: string;
-  street: string;
-  neighbor: string;
-  number: string;
-  complement: string;
-}
-
-interface UserDocument {
-  type: string;
-  number: string;
-  emitter: string;
-}
-
-interface User {
-  name: string;
-  role: string;
-  permissions: "editor" | "visualizar" | "nenhuma";
-  phones: Array<{
-    phone: string;
-    type: "cel" | "fixo";
-    obs: string;
-  }>;
-  emails: string[];
-  birthDate: string;
-  gender: "female" | "male";
-  addresses: Array<UserAddress>;
-  documents: Array<UserDocument>;
 }
 
 const emptyAddress: UserAddress = {
@@ -62,6 +31,8 @@ const emptyDocument: UserDocument = {
 
 const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
   const [user, setUser] = useState<User>({
+    id: 1,
+    status: 1,
     name: "",
     role: "",
     permissions: "editor",

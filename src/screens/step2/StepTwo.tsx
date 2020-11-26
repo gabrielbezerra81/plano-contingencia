@@ -11,6 +11,7 @@ import Input from "shared/components/Input/Input";
 import { Container, MembersContainer } from "./styles";
 import AddUserModal from "../../shared/components/AddUserModal/AddUserModal";
 import AddToGroupModal from "../../shared/components/AddToGroupModal/AddToGroupModal";
+import { usePlanData } from "context/PlanData/planDataContext";
 
 interface Member {
   id: number;
@@ -26,24 +27,25 @@ interface TableColumn {
 }
 
 const StepTwo = () => {
+  const { planData } = usePlanData();
+
   const [searchText, setSearchText] = useState("");
 
-  const [members, setMembers] = useState<Member[]>([
-    {
-      id: 1,
-      name: "Francisco da Cunha",
-      role: "Secretário do Meio Ambiente",
-      phone: "(62) 91000-3210",
-      status: 0,
-    },
-    {
-      id: 2,
-      name: "Sandro Melos",
-      role: "Secretário Administrativo",
-      phone: "(61) 81893-0293",
-      status: 1,
-    },
-  ]);
+  const members: Member[] = useMemo(() => {
+    return planData.workGroup.map((memberItem) => {
+      const phone = memberItem.phones[0] ? memberItem.phones[0].phone : "";
+
+      const member: Member = {
+        id: memberItem.id,
+        name: memberItem.name,
+        role: memberItem.role,
+        status: memberItem.status,
+        phone,
+      };
+
+      return member;
+    });
+  }, [planData.workGroup]);
 
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
