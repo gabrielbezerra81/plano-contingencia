@@ -17,6 +17,11 @@ export const TabItem = styled(Nav.Item)<TabItemProps>`
   text-decoration: none;
   flex: 1;
   position: relative;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.7;
+  }
 
   clip-path: polygon(95% 0, 100% 50%, 95% 100%, 0% 100%, 0 53%, 0% 0%);
 

@@ -15,6 +15,11 @@ export const Container = styled.div`
     > button {
       padding: 0;
       width: 105%;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 0.9;
+      }
 
       header {
         background: #3d3d3d;

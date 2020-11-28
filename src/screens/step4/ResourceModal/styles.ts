@@ -33,6 +33,11 @@ export const Container = styled.div`
       justify-content: center;
       position: relative;
       padding-bottom: 9px;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 0.6;
+      }
 
       & + button {
         border-left: 1px solid #a8a8a8;
