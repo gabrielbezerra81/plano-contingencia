@@ -19,4 +19,48 @@ export const Container = styled.div`
       width: 50px;
     }
   }
+
+  > div {
+    > .menuItem {
+      padding: 12px;
+      border-bottom: 1px solid #919191;
+      width: 100%;
+      text-align: left;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 0.6;
+      }
+
+      h6 {
+        color: #a8a8a8;
+        font-weight: 400;
+      }
+    }
+
+    > .menuItem:first-child {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+
+      &:hover {
+        opacity: 1;
+      }
+
+      button {
+        position: absolute;
+        left: 8px;
+        transition: opacity 0.2s;
+
+        &:hover {
+          opacity: 0.6;
+        }
+
+        img {
+          height: 30px;
+        }
+      }
+    }
+  }
 `;
