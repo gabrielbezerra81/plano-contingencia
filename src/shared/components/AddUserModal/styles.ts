@@ -73,11 +73,13 @@ export const Container = styled.div`
         flex-direction: column;
         position: relative;
 
+        /* Telefone */
         &:first-child {
           border-right: 1px solid #a8a8a8;
           padding-right: 8px;
         }
 
+        /* Email */
         &:last-child {
           padding-left: 8px;
 
@@ -137,6 +139,10 @@ export const Container = styled.div`
               line-height: 12px;
             }
           }
+        }
+
+        > .form-check {
+          margin-top: 4px;
         }
       }
     }

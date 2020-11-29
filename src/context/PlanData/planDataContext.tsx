@@ -1,20 +1,13 @@
 import produce from "immer";
 import React, { useCallback, useContext, useState } from "react";
-import { User, RiskLocation, Resources } from "types/Plan";
-
-interface PlanData {
-  generalDescription: {
-    title: string;
-    description: string;
-  };
-  workGroup: Array<User>;
-  riskLocations: Array<RiskLocation>;
-}
+import mapLocalDataToUpdatePayload from "shared/utils/mapLocalDataToUpdatePayload";
+import { Person, RiskLocation, Resources, Member, PlanData } from "types/Plan";
 
 interface PlanDataContextData {
   planData: PlanData;
   resources: Resources;
-  users: Array<User>;
+  persons: Array<Person>;
+  includedPersons: Array<Person>;
   updatePlanData: (data: Partial<PlanData>) => void;
   addUserToWorkGroup: () => void;
   addNewUser: () => void;
@@ -35,7 +28,11 @@ const PlanDataProvider: React.FC = ({ children }) => {
     riskLocations: [],
   });
 
-  const [users, setUsers] = useState<User[]>([]);
+  const [wasPlanCreated, setWasPlanCreated] = useState(false);
+
+  const [includedPersons, setIncludedPersons] = useState<Person[]>([]);
+
+  const [persons, setPersons] = useState<Person[]>([]);
 
   const [resources, setResources] = useState<Resources>({
     people: [],
@@ -51,6 +48,8 @@ const PlanDataProvider: React.FC = ({ children }) => {
       const updatedPlanData = produce(data, (draft) => {
         Object.assign(draft, planData);
       });
+
+      const payload = mapLocalDataToUpdatePayload(data);
 
       setData(updatedPlanData);
     },
@@ -69,10 +68,11 @@ const PlanDataProvider: React.FC = ({ children }) => {
         planData: data,
         addUserToWorkGroup,
         addNewUser,
-        users,
+        persons,
         addRiskLocation,
         resources,
         updatePlanData,
+        includedPersons,
       }}
     >
       {children}

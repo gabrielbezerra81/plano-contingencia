@@ -2,7 +2,6 @@ import React, { useState, useMemo, useCallback } from "react";
 import { Button } from "react-bootstrap";
 
 import { useTable, useSortBy } from "react-table";
-
 import { GrSearch } from "react-icons/gr";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 
@@ -12,18 +11,13 @@ import { Container, MembersContainer } from "./styles";
 import AddUserModal from "../../shared/components/AddUserModal/AddUserModal";
 import AddToGroupModal from "../../shared/components/AddToGroupModal/AddToGroupModal";
 import { usePlanData } from "context/PlanData/planDataContext";
+import { Member } from "types/Plan";
 
-interface Member {
-  id: number;
-  name: string;
-  status: number;
-  role: string;
-  phone: string;
-}
+type ReducedMember = Omit<Member, "group" | "permission" | "personId">;
 
 interface TableColumn {
   Header: string;
-  accessor: keyof Member;
+  accessor: keyof ReducedMember;
 }
 
 const StepTwo = () => {
@@ -31,16 +25,14 @@ const StepTwo = () => {
 
   const [searchText, setSearchText] = useState("");
 
-  const members: Member[] = useMemo(() => {
+  const members: ReducedMember[] = useMemo(() => {
     return planData.workGroup.map((memberItem) => {
-      const phone = memberItem.phones[0] ? memberItem.phones[0].phone : "";
-
-      const member: Member = {
+      const member: ReducedMember = {
         id: memberItem.id,
         name: memberItem.name,
         role: memberItem.role,
         status: memberItem.status,
-        phone,
+        phone: memberItem.phone,
       };
 
       return member;

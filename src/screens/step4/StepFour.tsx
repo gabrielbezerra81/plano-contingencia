@@ -12,8 +12,10 @@ import { Container } from "./styles";
 const StepFour: React.FC = () => {
   const [addressList, setAddressList] = useState<RiskLocation[]>([
     {
+      id: "1",
+      cep: "64660000",
       name: "Titulo",
-      address: "Rua Major Vitalino, 370",
+      street: "Rua Major Vitalino, 370",
       neighbor: "Centro",
       complement: "Complemento",
       city: "Pio IX",
@@ -23,8 +25,10 @@ const StepFour: React.FC = () => {
       long: "-40",
     },
     {
+      id: "1",
+      cep: "64660000",
       name: "Titulo",
-      address: "Rua Major Vitalino, 370",
+      street: "Rua Major Vitalino, 370",
       neighbor: "Centro",
       complement: "Complemento",
       city: "Pio IX",
@@ -89,7 +93,7 @@ const StepFour: React.FC = () => {
                 <h6>
                   {addressItem.name},
                   <br />
-                  {addressItem.address}, {addressItem.neighbor}
+                  {addressItem.street}, {addressItem.neighbor}
                   <br />
                   {addressItem.complement ? `${addressItem.complement}, ` : ""}
                   {addressItem.city}, {addressItem.state}

@@ -14,6 +14,13 @@ export const Container = styled.div`
   border-radius: 4px;
   position: relative;
   padding: 4px;
+  padding-bottom: 32px;
+
+  .darkBlueButton {
+    position: absolute;
+    bottom: 12px;
+    right: 29px;
+  }
 
   > header {
     display: flex;
@@ -33,7 +40,6 @@ export const Container = styled.div`
       justify-content: center;
       position: relative;
       padding-bottom: 9px;
-      transition: opacity 0.2s;
 
       &:hover {
         opacity: 0.6;
@@ -120,8 +126,10 @@ export const MembersContainer = styled.div`
       }
 
       &:first-child {
+        border-bottom: none;
         background-color: #fff;
-        padding-right: 4px;
+        padding: 0;
+        padding-right: 5px;
       }
 
       &:nth-child(2) {

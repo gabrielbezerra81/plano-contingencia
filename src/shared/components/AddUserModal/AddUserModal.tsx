@@ -4,7 +4,7 @@ import { Button, Form } from "react-bootstrap";
 
 import AttributeListing from "shared/components/AttributeListing/AttributeListing";
 import Input from "shared/components/Input/Input";
-import { User, UserAddress, UserDocument } from "types/Plan";
+import { Person, UserAddress, UserDocument } from "types/Plan";
 
 import { Modal, Container } from "./styles";
 
@@ -14,6 +14,7 @@ interface Props {
 }
 
 const emptyAddress: UserAddress = {
+  id: "",
   cep: "",
   city: "",
   state: "",
@@ -30,17 +31,17 @@ const emptyDocument: UserDocument = {
 };
 
 const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
-  const [user, setUser] = useState<User>({
-    id: 1,
+  const [user, setUser] = useState<Person>({
+    id: "1",
     status: 1,
     name: "",
     role: "",
-    permissions: "editor",
     phones: [
       {
         phone: "(62) 98118-7720",
-        type: "cel",
+        type: "celular",
         obs: "",
+        priority: 0,
       },
     ],
     emails: ["gabriel_alencar_bezerra@yahoo.com.br"],
@@ -48,6 +49,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
     gender: "male",
     addresses: [
       {
+        id: "12",
         cep: "64660000",
         city: "Pio IX",
         state: "PI",
@@ -69,9 +71,14 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
   const [currentEmail, setCurrentEmail] = useState("");
   const [currentPhone, setCurrentPhone] = useState("");
   const [obs, setObs] = useState("");
-  const [phoneType, setPhoneType] = useState<"cel" | "fixo">("cel");
+  const [phoneType, setPhoneType] = useState<"celular" | "fixo">("celular");
+
+  const [permission, setPermission] = useState<
+    "editor" | "visualizar" | "nenhuma"
+  >("editor");
 
   const [currentAddress, setCurrentAddress] = useState<UserAddress>({
+    id: "123",
     cep: "",
     city: "",
     state: "",
@@ -85,22 +92,29 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
     number: "",
     emitter: "",
   });
+  const [phonePriority, setPhonePriority] = useState(0);
 
   const handleEditUser = useCallback(
     (e) => {
       const { name, value } = e.target;
 
       const updatedUser = produce(user, (draft) => {
-        const attr: keyof User = name;
+        const attr: keyof Person = name;
 
         if (attr === "emails") {
           draft.emails.push(currentEmail);
           setCurrentEmail("");
         } //
         else if (attr === "phones") {
-          draft.phones.push({ phone: currentPhone, obs, type: phoneType });
+          draft.phones.push({
+            phone: currentPhone,
+            obs,
+            type: phoneType,
+            priority: phonePriority,
+          });
           setCurrentPhone("");
           setObs("");
+          setPhonePriority(0);
         } //
         else if (attr === "addresses") {
           draft.addresses.push(currentAddress);
@@ -125,6 +139,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
       currentEmail,
       currentAddress,
       currentDocument,
+      phonePriority,
     ],
   );
 
@@ -133,7 +148,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
       const { name, value } = e.target;
 
       const updatedAddress = produce(currentAddress, (draft) => {
-        draft[name as keyof UserAddress] = value;
+        Object.assign(draft, { [name]: value });
       });
 
       setCurrentAddress(updatedAddress);
@@ -159,7 +174,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
       const { name } = e.currentTarget;
 
       const updatedUser = produce(user, (draft) => {
-        const attr = name as keyof User;
+        const attr = name as keyof Person;
 
         if (attr === "emails") {
           draft.emails.splice(index, 1);
@@ -218,8 +233,8 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
               size="small"
               borderBottomOnly
               labelOnInput="Permissão: "
-              value={user.permissions}
-              onChange={handleEditUser}
+              value={permission}
+              onChange={(e) => setPermission(e.target.value as any)}
             >
               <option value="editor">Editor</option>
               <option value="visualizar">Visualizar</option>
@@ -235,7 +250,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
                 <Form.Check type="radio">
                   <Form.Check.Label>Celular</Form.Check.Label>
                   <Form.Check.Input
-                    onChange={() => setPhoneType("cel")}
+                    onChange={() => setPhoneType("celular")}
                     name="phoneTypeRadio"
                     type="radio"
                   />
@@ -267,6 +282,21 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
                 value={obs}
                 onChange={(e) => setObs(e.target.value)}
               />
+
+              <Form.Check
+                type="checkbox"
+                checked={phonePriority === 1}
+                label="Principal"
+                onChange={() => {
+                  setPhonePriority((oldValue) => {
+                    if (oldValue === 1) {
+                      return 0;
+                    }
+                    return 1;
+                  });
+                }}
+              />
+
               <Button
                 onClick={handleEditUser}
                 name="phones"

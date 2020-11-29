@@ -51,7 +51,6 @@ export const Container = styled.div`
       button {
         position: absolute;
         left: 8px;
-        transition: opacity 0.2s;
 
         &:hover {
           opacity: 0.6;

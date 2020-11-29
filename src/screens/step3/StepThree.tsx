@@ -29,8 +29,10 @@ const DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const emptyAddress: RiskLocation = {
+  id: "",
+  cep: "",
   name: "",
-  address: "",
+  street: "",
   complement: "",
   neighbor: "",
   city: "",
@@ -50,12 +52,13 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
 
   const [map, setMap] = useState<L.Map | null>(null);
 
-  const [cep, setCep] = useState("");
   const [position, setPosition] = useState<LatLngLiteral | null>(null);
   const [addressList, setAddressList] = useState<RiskLocation[]>([
     {
+      id: "123",
+      cep: "64660-000",
       name: "Titulo",
-      address: "Rua Major Vitalino, 370",
+      street: "Rua Major Vitalino, 370",
       neighbor: "Centro",
       complement: "Complemento",
       city: "Pio IX",
@@ -67,8 +70,10 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
   ]);
 
   const [address, setAddress] = useState<RiskLocation>({
+    id: "",
+    cep: "",
     name: "",
-    address: "",
+    street: "",
     complement: "",
     neighbor: "",
     city: "",
@@ -139,14 +144,14 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
 
   const handleSearchFromCEP = useCallback(async () => {
     try {
-      const parsedCep = cep.replace("-", "");
+      const parsedCep = address.cep.replace("-", "");
 
       const response = await axios.get(
         `https://viacep.com.br/ws/${parsedCep}/json/`,
       );
 
       const {
-        logradouro: address,
+        logradouro: street,
         complemento: complement,
         bairro: neighbor,
         localidade: city,
@@ -155,14 +160,14 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
 
       setAddress((oldValue) => ({
         ...oldValue,
-        address: address || "",
+        street: street || "",
         complement: complement || "",
         neighbor: neighbor || "",
         city: city || "",
         state: state || "",
       }));
     } catch (error) {}
-  }, [cep]);
+  }, [address.cep]);
 
   const handleEditCurrentAddress = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -279,7 +284,7 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
                 ? `${addressItem.complement},`
                 : "";
 
-              return `${addressItem.name}, ${addressItem.address}, ${addressItem.neighbor}, ${complement} ${addressItem.city}, ${addressItem.state}`;
+              return `${addressItem.name}, ${addressItem.street}, ${addressItem.neighbor}, ${complement} ${addressItem.city}, ${addressItem.state}`;
             }}
           />
         </MapAndAddressListContainer>
@@ -287,8 +292,9 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
         <AddLocationContainer>
           <Input
             rightIcon={<GrSearch />}
-            value={cep}
-            onChange={(e) => setCep(e.target.value)}
+            value={address.cep}
+            name="cep"
+            onChange={handleEditCurrentAddress}
             placeholder="Digite o  CEP ou pesquise no mapa"
             borderBottomOnly
             onBlur={handleSearchFromCEP}
@@ -314,8 +320,8 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
             <Input
               labelOnInput="Endereço:"
               borderBottomOnly
-              name="address"
-              value={address.address}
+              name="street"
+              value={address.street}
               onChange={handleEditCurrentAddress}
             />
             <Input

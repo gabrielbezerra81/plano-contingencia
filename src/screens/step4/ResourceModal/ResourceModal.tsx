@@ -16,38 +16,33 @@ import { FaSortDown, FaSortUp, FaSort } from "react-icons/fa";
 import AddToGroupModal from "shared/components/AddToGroupModal/AddToGroupModal";
 import AddUserModal from "shared/components/AddUserModal/AddUserModal";
 import AddVehicleMachineModal from "shared/components/AddVehicleMachineModal/AddVehicleMachineModal";
+import { Member } from "types/Plan";
+
+type ReducedMember = Omit<Member, "group" | "permission" | "personId">;
 
 interface Props {
   show: boolean;
   setShow: (...data: any) => any;
 }
 
-interface Member {
-  id: number;
-  name: string;
-  status: number;
-  role: string;
-  phone: string;
-}
-
 interface TableColumn {
   Header: string;
-  accessor: keyof Member;
+  accessor: keyof ReducedMember;
 }
 
 const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
   const [searchText, setSearchText] = useState("");
 
-  const [members, setMembers] = useState<Member[]>([
+  const [members, setMembers] = useState<ReducedMember[]>([
     {
-      id: 1,
+      id: "1",
       name: "Francisco da Cunha",
       role: "Secretário do Meio Ambiente",
       phone: "(62) 91000-3210",
       status: 0,
     },
     {
-      id: 2,
+      id: "2",
       name: "Sandro Melos",
       role: "Secretário Administrativo",
       phone: "(61) 81893-0293",
@@ -66,6 +61,8 @@ const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
   const handleOpenVehicleModal = useCallback(() => {
     setShowVehicleModal(true);
   }, []);
+
+  const handleInclude = useCallback(() => {}, []);
 
   const columns: TableColumn[] = useMemo(
     () => [
@@ -107,6 +104,11 @@ const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
       hooks.visibleColumns.push((columns) => [
         {
           id: "selection",
+          Header: ({ getToggleAllRowsSelectedProps }: any) => (
+            <div>
+              <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+            </div>
+          ),
           Cell: ({ row }: any) => (
             <div>
               <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
@@ -227,6 +229,9 @@ const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
               </table>
             </MembersContainer>
           </div>
+          <Button onClick={handleInclude} className="darkBlueButton">
+            Incluir
+          </Button>
         </Container>
       </Modal>
 

@@ -1,4 +1,5 @@
 export interface UserAddress {
+  id: string;
   cep: string;
   city: string;
   state: string;
@@ -6,24 +7,33 @@ export interface UserAddress {
   neighbor: string;
   number: string;
   complement: string;
+
+  identification?: string;
+  latitude?: number;
+  longitude?: number;
+  priority?: number;
 }
 
+// TODO: pendente de validação
 export interface UserDocument {
   type: string;
   number: string;
   emitter: string;
 }
-export interface User {
-  id: number;
+
+export interface Phone {
+  phone: string;
+  type: "celular" | "fixo";
+  obs: string;
+  priority: number;
+}
+
+export interface Person {
+  id: string;
   name: string;
   role: string;
-  permissions: "editor" | "visualizar" | "nenhuma";
-  phones: Array<{
-    phone: string;
-    type: "cel" | "fixo";
-    obs: string;
-  }>;
-  emails: string[];
+  phones: Array<Phone>;
+  emails: Array<string>;
   birthDate: string;
   gender: "female" | "male";
   addresses: Array<UserAddress>;
@@ -31,9 +41,23 @@ export interface User {
   status: number;
 }
 
-export interface RiskLocation {
+export interface Member {
+  id: string;
   name: string;
-  address: string;
+  role: string;
+  permission: "editor" | "visualizar" | "nenhuma";
+  group: boolean;
+  personId: string;
+  phone: string;
+  status: number;
+}
+
+export interface RiskLocation {
+  id: string;
+  cep: string;
+  name: string;
+  street: string;
+  number?: string;
   complement: string;
   neighbor: string;
   city: string;
@@ -63,3 +87,12 @@ export interface ResourceFood {}
 export interface ResourceHome {}
 
 export interface ResourceMoney {}
+
+export interface PlanData {
+  generalDescription: {
+    title: string;
+    description: string;
+  };
+  workGroup: Array<Member>;
+  riskLocations: Array<RiskLocation>;
+}

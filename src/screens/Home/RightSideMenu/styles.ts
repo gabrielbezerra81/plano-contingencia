@@ -33,7 +33,6 @@ export const Container = styled.div<ContainerProps>`
     > button {
       width: 100%;
       height: 100%;
-      transition: opacity 0.2s;
 
       &:hover {
         opacity: 0.8;
@@ -78,7 +77,6 @@ export const Container = styled.div<ContainerProps>`
         width: 100%;
         padding: 20px 0;
         border-bottom: 1px solid #a8a8a8;
-        transition: opacity 0.2s;
 
         &:hover {
           opacity: 0.6;

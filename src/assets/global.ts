@@ -29,6 +29,7 @@ const GlobalStyle = createGlobalStyle`
       border: none;
       background-color: transparent;
       line-height: normal;
+      transition: opacity 0.2s;
 
       &:focus {
         outline: none !important;
