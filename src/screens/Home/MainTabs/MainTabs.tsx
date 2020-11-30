@@ -1,4 +1,5 @@
-import React, { useCallback, useMemo, useState } from "react";
+import { usePlanData } from "context/PlanData/planDataContext";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Tab, Nav, Button } from "react-bootstrap";
 import StepOne from "screens/step1/StepOne";
@@ -9,8 +10,10 @@ import StepFour from "screens/step4/StepFour";
 import { TabHeader, TabItem, Content } from "./styles";
 
 const MainTabs = () => {
+  const { updateAPIPlanData } = usePlanData();
+
   const [selectedTab, setSelectedTab] = useState<string>(() => {
-    const tabKey = localStorage.getItem("@plano:selectedTab");
+    const tabKey = localStorage.getItem("@plan:selectedTab");
 
     if (tabKey) {
       return tabKey;
@@ -21,7 +24,7 @@ const MainTabs = () => {
 
   const handleTabChange = useCallback((key: string | null) => {
     if (key) {
-      localStorage.setItem("@plano:selectedTab", key);
+      localStorage.setItem("@plan:selectedTab", key);
       setSelectedTab(key);
     }
   }, []);
@@ -33,6 +36,10 @@ const MainTabs = () => {
   const handleClickNext = useCallback(() => {
     setSelectedTab(`tab${selectedTabIndex + 1}`);
   }, [selectedTabIndex]);
+
+  useEffect(() => {
+    updateAPIPlanData();
+  }, [updateAPIPlanData, selectedTab]);
 
   return (
     <Tab.Container activeKey={selectedTab} onSelect={handleTabChange}>
