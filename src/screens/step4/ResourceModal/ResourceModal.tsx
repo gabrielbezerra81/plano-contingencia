@@ -1,7 +1,13 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { GrSearch } from "react-icons/gr";
 import { Button } from "react-bootstrap";
-import { useTable, useSortBy, useRowSelect } from "react-table";
+import {
+  useTable,
+  useSortBy,
+  useRowSelect,
+  useAsyncDebounce,
+  useGlobalFilter,
+} from "react-table";
 
 import { Modal, Container, MembersContainer } from "./styles";
 import Input from "shared/components/Input/Input";
@@ -14,7 +20,6 @@ import homeIcon from "assets/images/abrigo.png";
 import moneyIcon from "assets/images/dinheiro.png";
 import { FaSortDown, FaSortUp, FaSort } from "react-icons/fa";
 import AddToGroupModal from "shared/components/AddToGroupModal/AddToGroupModal";
-import AddUserModal from "shared/components/AddUserModal/AddUserModal";
 import AddVehicleMachineModal from "shared/components/AddVehicleMachineModal/AddVehicleMachineModal";
 import { Member } from "types/Plan";
 
@@ -28,6 +33,11 @@ interface Props {
 interface TableColumn {
   Header: string;
   accessor: keyof ReducedMember;
+}
+
+interface GlobalFilterProps {
+  setGlobalFilter: (filterValue: string) => void;
+  globalFilter: string;
 }
 
 const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
@@ -51,7 +61,6 @@ const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
   ]);
 
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
 
   const handleOpenAddToGroupModal = useCallback(() => {
@@ -98,6 +107,7 @@ const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
       columns,
       data: members,
     },
+    useGlobalFilter,
     useSortBy,
     useRowSelect,
     (hooks) => {
@@ -122,7 +132,8 @@ const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
 
   const {
     selectedFlatRows,
-    state: { selectedRowIds },
+    state: { selectedRowIds, globalFilter },
+    setGlobalFilter,
   }: any = tableProps;
 
   return (
@@ -165,13 +176,9 @@ const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
               ADICIONAR MEMBRO
             </Button>
             <MembersContainer>
-              <Input
-                value={searchText}
-                borderBottomOnly
-                rightIcon={<GrSearch />}
-                labelOnInput="Pesquisar:"
-                onChange={(e) => setSearchText(e.target.value)}
-                containerClass="memberFilter"
+              <GlobalFilter
+                globalFilter={globalFilter}
+                setGlobalFilter={setGlobalFilter}
               />
               <table {...getTableProps()}>
                 <thead>
@@ -238,10 +245,8 @@ const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
       <AddToGroupModal
         show={showAddToGroupModal}
         setShow={setShowAddToGroupModal}
-        setShowAddUserModal={setShowAddUserModal}
       />
 
-      <AddUserModal show={showAddUserModal} setShow={setShowAddUserModal} />
       <AddVehicleMachineModal
         show={showVehicleModal}
         setShow={setShowVehicleModal}
@@ -268,3 +273,27 @@ const IndeterminateCheckbox = React.forwardRef(
     );
   },
 );
+
+const GlobalFilter: React.FC<GlobalFilterProps> = ({
+  globalFilter,
+  setGlobalFilter,
+}) => {
+  const [value, setValue] = React.useState(globalFilter);
+  const onChange = useAsyncDebounce((value) => {
+    setGlobalFilter(value || undefined);
+  }, 250);
+
+  return (
+    <Input
+      value={value || ""}
+      borderBottomOnly
+      rightIcon={<GrSearch />}
+      labelOnInput="Pesquisar:"
+      onChange={(e) => {
+        setValue(e.target.value);
+        onChange(e.target.value);
+      }}
+      containerClass="memberFilter"
+    />
+  );
+};

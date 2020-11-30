@@ -132,9 +132,26 @@ export const MembersContainer = styled.div`
         padding-right: 5px;
       }
 
+      /* Ordem */
       &:nth-child(2) {
         text-align: center;
         padding: 4px;
+        width: 58px;
+      }
+
+      /* Nome */
+      &:nth-child(3) {
+        width: 251px;
+      }
+
+      /* Função */
+      &:nth-child(4) {
+        width: 279px;
+      }
+
+      /* Telefone */
+      &:nth-child(5) {
+        width: 197px;
       }
 
       > svg {
