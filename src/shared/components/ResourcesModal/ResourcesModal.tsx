@@ -40,7 +40,7 @@ interface GlobalFilterProps {
   globalFilter: string;
 }
 
-const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
+const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
   const [members, setMembers] = useState<ReducedMember[]>([
     {
       id: "1",
@@ -253,7 +253,7 @@ const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
   );
 };
 
-export default ResourceModal;
+export default ResourcesModal;
 
 const IndeterminateCheckbox = React.forwardRef(
   ({ indeterminate, ...rest }: any, ref) => {
