@@ -54,7 +54,7 @@ export interface Member {
 }
 
 export interface RiskLocation {
-  id: string;
+  id?: string;
   cep: string;
   name: string;
   street: string;

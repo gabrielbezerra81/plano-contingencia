@@ -11,7 +11,7 @@ import usePrevious from "shared/utils/usePrevious";
 import { TabHeader, TabItem, Content } from "./styles";
 
 const MainTabs = () => {
-  const { updateAPIPlanData, planData } = usePlanData();
+  const { updateAPIPlanData, planData, updateLocalPlanFromAPI } = usePlanData();
 
   const previousData = usePrevious(planData);
 
@@ -46,13 +46,17 @@ const MainTabs = () => {
     if (previousData !== planData) {
       setAllowAPIUpdate(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planData]);
 
   useEffect(() => {
     if (allowAPIUpdate) {
       updateAPIPlanData();
       setAllowAPIUpdate(false);
+    } //
+
+    if (selectedTab === "tab2") {
+      updateLocalPlanFromAPI();
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

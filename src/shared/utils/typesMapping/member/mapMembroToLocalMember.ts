@@ -9,5 +9,6 @@ export default function mapMembroToLocalMember(membro: Membro): Member {
     phone: membro.telefone,
     role: membro.funcao_atribuicao,
     status: membro.aceite ? 1 : 0,
+    id: membro.id,
   };
 }

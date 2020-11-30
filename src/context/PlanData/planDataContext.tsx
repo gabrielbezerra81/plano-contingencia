@@ -7,8 +7,8 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import mapApiPlanToLocalPlan from "shared/utils/mapApiPlanToLocalPlan";
-import mapPlanToAPIPayload from "shared/utils/mapPlanToAPIPayload";
+import mapApiPlanToLocalPlan from "shared/utils/typesMapping/plan/mapApiPlanToLocalPlan";
+import mapPlanToAPIPayload from "shared/utils/typesMapping/plan/mapPlanToAPIPayload";
 import { Pessoa } from "types/ModelsAPI";
 import { Person, RiskLocation, Resources, Member, PlanData } from "types/Plan";
 
@@ -24,11 +24,13 @@ interface PlanDataContextData {
   includedPersons: Array<Person>;
   updateLocalPlanData: (data: Partial<PlanData>) => void;
   updateAPIPlanData: () => Promise<void>;
+  updateLocalPlanFromAPI: () => Promise<void>;
   addUserToWorkGroup: (
     person: Person & { permission: any; anotherRole?: string },
   ) => void;
   addNewUser: (person: Person) => Promise<Person | null>;
-  addRiskLocation: () => void;
+  addRiskLocation: (riskLocation: RiskLocation) => void;
+  removeRiskLocation: (index: number) => void;
   notIncludedPersons: Array<Person>;
 }
 
@@ -84,7 +86,19 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       if (currentPlanId) {
         await api.put(`planos/${currentPlanId}`, payload);
+      } //
+      else {
+        const response = await api.post("planos", payload);
 
+        setCurrentPlanId(response.data);
+        localStorage.setItem(planId_LocalStorageString, response.data);
+      }
+    } catch (error) {}
+  }, [currentPlanId, data]);
+
+  const updateLocalPlanFromAPI = useCallback(async () => {
+    try {
+      if (currentPlanId) {
         const response = await api.get(`planos/${currentPlanId}`);
 
         if (response.data) {
@@ -96,15 +110,9 @@ const PlanDataProvider: React.FC = ({ children }) => {
             JSON.stringify(updatedPlan),
           );
         }
-      } //
-      else {
-        const response = await api.post("planos", payload);
-
-        setCurrentPlanId(response.data);
-        localStorage.setItem(planId_LocalStorageString, response.data);
       }
     } catch (error) {}
-  }, [currentPlanId, data]);
+  }, [currentPlanId]);
 
   const addUserToWorkGroup = useCallback(
     (person: Person & { permission: any; anotherRole?: string }) => {
@@ -192,7 +200,33 @@ const PlanDataProvider: React.FC = ({ children }) => {
     [persons],
   );
 
-  const addRiskLocation = useCallback(() => {}, []);
+  const addRiskLocation = useCallback(
+    (riskLocation: RiskLocation) => {
+      const updatedPlanData = produce(data, (draft) => {
+        const [street, number] = riskLocation.street.split(",");
+
+        draft.riskLocations.push({
+          ...riskLocation,
+          street,
+          number: number ? number.trimStart() : "",
+        });
+      });
+
+      updateLocalPlanData(updatedPlanData);
+    },
+    [data, updateLocalPlanData],
+  );
+
+  const removeRiskLocation = useCallback(
+    (index: number) => {
+      const updatedPlanData = produce(data, (draft) => {
+        draft.riskLocations.splice(index, 1);
+      });
+
+      updateLocalPlanData(updatedPlanData);
+    },
+    [data, updateLocalPlanData],
+  );
 
   useEffect(() => {
     const id = localStorage.getItem(planId_LocalStorageString);
@@ -242,10 +276,12 @@ const PlanDataProvider: React.FC = ({ children }) => {
         addNewUser,
         persons,
         addRiskLocation,
+        removeRiskLocation,
         updateLocalPlanData,
         includedPersons,
         updateAPIPlanData,
         notIncludedPersons,
+        updateLocalPlanFromAPI,
       }}
     >
       {children}

@@ -70,7 +70,9 @@ export interface Endereco {
   longitude: number;
 }
 
-export interface LocalRisco extends Endereco {}
+export interface LocalRisco extends Omit<Endereco, "id"> {
+  id?: string;
+}
 
 interface Responsavel {
   aceite: string;

@@ -1,7 +1,7 @@
-import api from "api/config";
 import { Plano } from "types/ModelsAPI";
 import { PlanData } from "types/Plan";
-import mapMembroToLocalMember from "./mapMembroToLocalMember";
+import mapLocalRiscoToRiskLocation from "../riskLocation/mapLocalRiscoToRiskLocation";
+import mapMembroToLocalMember from "../member/mapMembroToLocalMember";
 
 export default function mapApiPlanToLocalPlan(apiPlan: Plano): PlanData {
   const plan: PlanData = {
@@ -15,6 +15,10 @@ export default function mapApiPlanToLocalPlan(apiPlan: Plano): PlanData {
 
   plan.workGroup = apiPlan.membros.map((apiMember) =>
     mapMembroToLocalMember(apiMember),
+  );
+
+  plan.riskLocations = apiPlan.locaisDeRisco.map((apiLocation) =>
+    mapLocalRiscoToRiskLocation(apiLocation),
   );
 
   return plan;

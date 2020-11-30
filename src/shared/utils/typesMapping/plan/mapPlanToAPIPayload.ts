@@ -19,5 +19,25 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
     pessoaId: member.personId,
   }));
 
+  payload.locaisDeRisco = planData.riskLocations.map((riskLocation) => {
+    const lat = Number(riskLocation.lat.split(".").join("").replace(",", "."));
+    const long = Number(
+      riskLocation.long.split(".").join("").replace(",", "."),
+    );
+
+    return {
+      bairro: riskLocation.neighbor,
+      cep: riskLocation.cep,
+      complemento: riskLocation.complement,
+      identificacao: riskLocation.name,
+      latitude: lat,
+      longitude: long,
+      localidade: riskLocation.city,
+      logradouro: riskLocation.street,
+      numero: riskLocation.number || "",
+      uf: riskLocation.state,
+    };
+  });
+
   return payload;
 }

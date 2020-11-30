@@ -20,6 +20,7 @@ import NumberInput from "shared/components/NumberInput/NumberInput";
 import numberFormatter from "shared/utils/numberFormatter";
 import AttributeListing from "shared/components/AttributeListing/AttributeListing";
 import { RiskLocation } from "types/Plan";
+import { usePlanData } from "context/PlanData/planDataContext";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -47,27 +48,14 @@ interface Props {
 }
 
 const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
+  const { planData, addRiskLocation, removeRiskLocation } = usePlanData();
+
   const [loadMap, setLoadMap] = useState(false);
   const [mapKey, setMapKey] = useState(Math.random());
 
   const [map, setMap] = useState<L.Map | null>(null);
 
   const [position, setPosition] = useState<LatLngLiteral | null>(null);
-  const [addressList, setAddressList] = useState<RiskLocation[]>([
-    {
-      id: "123",
-      cep: "64660-000",
-      name: "Titulo",
-      street: "Rua Major Vitalino, 370",
-      neighbor: "Centro",
-      complement: "Complemento",
-      city: "Pio IX",
-      state: "Piauí",
-      refPoint: "",
-      lat: "-6",
-      long: "-40",
-    },
-  ]);
 
   const [address, setAddress] = useState<RiskLocation>({
     id: "",
@@ -178,23 +166,8 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
     [],
   );
 
-  const handleRemoveAddress = useCallback(
-    (index: number) => {
-      const updatedAddressList = produce(addressList, (draft) => {
-        draft.splice(index, 1);
-      });
-
-      setAddressList(updatedAddressList);
-    },
-    [addressList],
-  );
-
   const handleAddAddress = useCallback(() => {
-    const updatedAddressList = produce(addressList, (draft) => {
-      draft.push(address);
-    });
-
-    setAddressList(updatedAddressList);
+    addRiskLocation(address);
 
     setAddress(() => {
       const clearedAddress = produce(address, (draft) => {
@@ -203,7 +176,7 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
 
       return clearedAddress;
     });
-  }, [address, addressList]);
+  }, [address, addRiskLocation]);
 
   const handleChooseFile = useCallback(() => {}, []);
 
@@ -276,9 +249,9 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
 
           <AttributeListing
             title="Endereços cadastrados"
-            items={addressList}
+            items={planData.riskLocations}
             name="addressItem"
-            onRemove={(e, index) => handleRemoveAddress(index)}
+            onRemove={(e, index) => removeRiskLocation(index)}
             renderText={(addressItem: RiskLocation) => {
               const complement = addressItem.complement
                 ? `${addressItem.complement},`
@@ -297,7 +270,6 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
             onChange={handleEditCurrentAddress}
             placeholder="Digite o  CEP ou pesquise no mapa"
             borderBottomOnly
-            onBlur={handleSearchFromCEP}
             onKeyPress={(e) => {
               if (e.key === "Enter") {
                 handleSearchFromCEP();
@@ -305,6 +277,7 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
             }}
             masked
             maskProps={{ mask: "99999-999" }}
+            onRightIconClick={handleSearchFromCEP}
           />
 
           <main>
