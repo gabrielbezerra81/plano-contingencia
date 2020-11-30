@@ -1,8 +1,10 @@
 import styled, { css } from "styled-components";
 import colors from "assets/colors";
+import { shade } from "polished";
 
 interface ContainerProps {
   isOpen: boolean;
+  activeItemNumber: number;
 }
 
 export const Container = styled.div<ContainerProps>`
@@ -57,10 +59,10 @@ export const Container = styled.div<ContainerProps>`
     }
   }
 
-  main {
+  div.main {
     background-color: #212121;
     height: 100%;
-    padding-top: 3px;
+    padding-top: 4px;
     display: flex;
 
     aside {
@@ -77,6 +79,19 @@ export const Container = styled.div<ContainerProps>`
         width: 100%;
         padding: 20px 0;
         border-bottom: 1px solid #a8a8a8;
+        transition: background-color 0.3s;
+
+        ${({ activeItemNumber }) =>
+          activeItemNumber !== -1 &&
+          css`
+            &:nth-child(${activeItemNumber}) {
+              background-color: #ff7802;
+
+              &:hover {
+                opacity: 1;
+              }
+            }
+          `}
 
         &:hover {
           opacity: 0.6;
@@ -106,6 +121,24 @@ export const Container = styled.div<ContainerProps>`
           width: unset;
         `}
 
+      .resourceCrudButtonsRow {
+        display: flex;
+        justify-content: space-between;
+
+        > button {
+          background: #363535;
+          border: 1px solid #8d8d8d;
+          color: #ff7802 !important;
+          border-radius: 1px;
+          flex: 1;
+          margin-left: 8px;
+
+          &:hover {
+            background: ${shade(0.3, "#363535")};
+          }
+        }
+      }
+
       .filterInput {
         border-bottom-color: #a8a8a8;
 
@@ -121,6 +154,25 @@ export const Container = styled.div<ContainerProps>`
           path {
             stroke: #c6c6c6;
           }
+        }
+      }
+
+      .resourceItemList {
+        background: #555656;
+        border-radius: 5px;
+        min-height: 45px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        margin-top: 16px;
+        margin-left: 6px;
+        padding: 0 12px;
+
+        h6 {
+          color: #d4d9e1;
+          font-size: 11px;
+          line-height: 13px;
+          font-weight: 400;
         }
       }
     }
