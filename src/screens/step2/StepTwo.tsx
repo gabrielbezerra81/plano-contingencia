@@ -34,7 +34,7 @@ interface GlobalFilterProps {
 const StepTwo = () => {
   const { planData } = usePlanData();
 
-  const members: ReducedMember[] = useMemo(() => {
+  const reducedMembers: ReducedMember[] = useMemo(() => {
     return planData.workGroup.map((memberItem, index) => {
       const member: ReducedMember = {
         id: memberItem.id,
@@ -83,7 +83,7 @@ const StepTwo = () => {
   } = useTable(
     {
       columns,
-      data: members,
+      data: reducedMembers,
     },
     useGlobalFilter,
     useSortBy,

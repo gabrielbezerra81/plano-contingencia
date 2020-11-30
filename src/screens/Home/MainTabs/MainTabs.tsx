@@ -6,11 +6,16 @@ import StepOne from "screens/step1/StepOne";
 import StepTwo from "screens/step2/StepTwo";
 import StepThree from "screens/step3/StepThree";
 import StepFour from "screens/step4/StepFour";
+import usePrevious from "shared/utils/usePrevious";
 
 import { TabHeader, TabItem, Content } from "./styles";
 
 const MainTabs = () => {
-  const { updateAPIPlanData } = usePlanData();
+  const { updateAPIPlanData, planData } = usePlanData();
+
+  const previousData = usePrevious(planData);
+
+  const [allowAPIUpdate, setAllowAPIUpdate] = useState(false);
 
   const [selectedTab, setSelectedTab] = useState<string>(() => {
     const tabKey = localStorage.getItem("@plan:selectedTab");
@@ -38,8 +43,20 @@ const MainTabs = () => {
   }, [selectedTabIndex]);
 
   useEffect(() => {
-    updateAPIPlanData();
-  }, [updateAPIPlanData, selectedTab]);
+    if (previousData !== planData) {
+      setAllowAPIUpdate(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planData]);
+
+  useEffect(() => {
+    if (allowAPIUpdate) {
+      updateAPIPlanData();
+      setAllowAPIUpdate(false);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTab]);
 
   return (
     <Tab.Container activeKey={selectedTab} onSelect={handleTabChange}>

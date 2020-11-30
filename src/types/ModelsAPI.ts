@@ -6,7 +6,7 @@ export interface Telefone {
 }
 
 export interface EnderecoPessoa {
-  id: string;
+  id?: string;
   cep: string;
   localidade: string;
   uf: string;
@@ -22,16 +22,17 @@ export interface EnderecoPessoa {
 }
 
 export interface Pessoa {
-  id: string;
+  id?: string;
   nome: string;
+  sobrenome: string;
   trabalhoFuncao: string;
   telefones: Array<Telefone>;
   emails: Array<string>;
-  nascimento: string;
+  nascimento?: string;
   sexo: string;
   enderecos: Array<EnderecoPessoa>;
-  atualizacao: string;
-  cadastro: string;
+  atualizacao?: string;
+  cadastro?: string;
 
   apelido?: string;
   cpf?: string;
@@ -41,16 +42,15 @@ export interface Pessoa {
     valor: string;
     valor2: string;
   }>;
-  sobrenome?: string;
   trabalhoFone?: string;
 }
 
 export interface Membro {
-  id: string;
+  id?: string;
   nome: string;
   funcao_atribuicao: string;
   permissao: string;
-  aceite: string;
+  aceite?: string;
   grupo?: boolean;
   pessoaId: string;
   telefone: string;

@@ -41,8 +41,6 @@ interface GlobalFilterProps {
 }
 
 const ResourceModal: React.FC<Props> = ({ show, setShow }) => {
-  const [searchText, setSearchText] = useState("");
-
   const [members, setMembers] = useState<ReducedMember[]>([
     {
       id: "1",

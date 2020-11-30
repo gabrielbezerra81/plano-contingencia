@@ -7,13 +7,15 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import mapApiPlanToLocalPlan from "shared/utils/mapApiPlanToLocalPlan";
 import mapPlanToAPIPayload from "shared/utils/mapPlanToAPIPayload";
-import usePrevious from "shared/utils/usePrevious";
+import { Pessoa } from "types/ModelsAPI";
 import { Person, RiskLocation, Resources, Member, PlanData } from "types/Plan";
 
-const planLocalStorageString = "@plan:planData";
-const personsLocalStorageString = "@plan:persons";
-const includedPersonsLocalStorageString = "@plan:includedPersons";
+const plan_LocalStorageString = "@plan:planData";
+const persons_LocalStorageString = "@plan:persons";
+const includedPersons_LocalStorageString = "@plan:includedPersons";
+const planId_LocalStorageString = "@plan:planId";
 
 interface PlanDataContextData {
   planData: PlanData;
@@ -25,7 +27,7 @@ interface PlanDataContextData {
   addUserToWorkGroup: (
     person: Person & { permission: any; anotherRole?: string },
   ) => void;
-  addNewUser: (person: Person) => void;
+  addNewUser: (person: Person) => Promise<Person | null>;
   addRiskLocation: () => void;
   notIncludedPersons: Array<Person>;
 }
@@ -44,8 +46,6 @@ const PlanDataProvider: React.FC = ({ children }) => {
     riskLocations: [],
   });
 
-  const previousData = usePrevious(data);
-
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
 
   const [includedPersons, setIncludedPersons] = useState<Person[]>([]);
@@ -62,7 +62,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
   // });
 
   const updateLocalPlanData = useCallback(
-    async (planData: Partial<PlanData>) => {
+    (planData: Partial<PlanData>) => {
       try {
         const updatedPlanData = produce(data, (draft) => {
           Object.assign(draft, planData);
@@ -70,7 +70,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
         setData(updatedPlanData);
         localStorage.setItem(
-          planLocalStorageString,
+          plan_LocalStorageString,
           JSON.stringify(updatedPlanData),
         );
       } catch (error) {}
@@ -79,26 +79,32 @@ const PlanDataProvider: React.FC = ({ children }) => {
   );
 
   const updateAPIPlanData = useCallback(async () => {
-    const payload = mapPlanToAPIPayload(data);
+    try {
+      const payload = mapPlanToAPIPayload(data);
 
-    if (previousData === data) {
-      return;
-    }
+      if (currentPlanId) {
+        await api.put(`planos/${currentPlanId}`, payload);
 
-    // if (currentPlanId) {
-    //   await api.put(`planos/${currentPlanId}`, payload);
-    // } //
-    // else {
-    //   const response = await api.post("planos", payload);
+        const response = await api.get(`planos/${currentPlanId}`);
 
-    //   // const id = response.headers.location.replace(
-    //   //   "	https://contingencia.defesacivil.site/planos/",
-    //   //   "",
-    //   // );
+        if (response.data) {
+          const updatedPlan = mapApiPlanToLocalPlan(response.data);
 
-    //   // setCurrentPlanId(id);
-    // }
-  }, [currentPlanId, data, previousData]);
+          setData(updatedPlan);
+          localStorage.setItem(
+            plan_LocalStorageString,
+            JSON.stringify(updatedPlan),
+          );
+        }
+      } //
+      else {
+        const response = await api.post("planos", payload);
+
+        setCurrentPlanId(response.data);
+        localStorage.setItem(planId_LocalStorageString, response.data);
+      }
+    } catch (error) {}
+  }, [currentPlanId, data]);
 
   const addUserToWorkGroup = useCallback(
     (person: Person & { permission: any; anotherRole?: string }) => {
@@ -129,7 +135,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
       }
 
       localStorage.setItem(
-        includedPersonsLocalStorageString,
+        includedPersons_LocalStorageString,
         JSON.stringify(updatedIncludedPersons),
       );
 
@@ -139,16 +145,49 @@ const PlanDataProvider: React.FC = ({ children }) => {
   );
 
   const addNewUser = useCallback(
-    (person: Person) => {
-      const updatedPersons = produce(persons, (draft) => {
-        draft.push(person);
-      });
+    async (person: Person) => {
+      try {
+        console.log(person.birthDate);
+        const payload: Partial<Pessoa> = {
+          nome: person.name,
+          sobrenome: person.surname,
+          emails: person.emails,
+          nascimento: person.birthDate,
+          sexo: person.gender,
+          enderecos: person.addresses.map((address) => ({
+            localidade: address.city,
+            bairro: address.neighbor,
+            cep: address.cep,
+            logradouro: address.street,
+            numero: address.number,
+            complemento: address.complement,
+            uf: address.state,
+            latitude: address.latitude,
+            longitude: address.longitude,
+            identificacao: address.identification,
+          })),
+        };
 
-      setPersons(updatedPersons);
-      localStorage.setItem(
-        personsLocalStorageString,
-        JSON.stringify(updatedPersons),
-      );
+        const response = await api.post("pessoas", payload);
+
+        const newPerson = { ...person, id: response.data };
+
+        const updatedPersons = produce(persons, (draft) => {
+          draft.push(newPerson);
+        });
+
+        setPersons(updatedPersons);
+        localStorage.setItem(
+          persons_LocalStorageString,
+          JSON.stringify(updatedPersons),
+        );
+
+        return newPerson;
+      } catch (error) {
+        console.log(error);
+        alert("Erro ao cadastrar usuário");
+        return null;
+      }
     },
     [persons],
   );
@@ -156,19 +195,27 @@ const PlanDataProvider: React.FC = ({ children }) => {
   const addRiskLocation = useCallback(() => {}, []);
 
   useEffect(() => {
-    const planString = localStorage.getItem(planLocalStorageString);
-    const personsString = localStorage.getItem(personsLocalStorageString);
-    const includedPersonsString = localStorage.getItem(
-      includedPersonsLocalStorageString,
-    );
+    const id = localStorage.getItem(planId_LocalStorageString);
+
+    if (id) {
+      setCurrentPlanId(id);
+    }
+
+    const planString = localStorage.getItem(plan_LocalStorageString);
 
     if (planString) {
       setData(JSON.parse(planString));
     }
 
+    const personsString = localStorage.getItem(persons_LocalStorageString);
+
     if (personsString) {
       setPersons(JSON.parse(personsString));
     }
+
+    const includedPersonsString = localStorage.getItem(
+      includedPersons_LocalStorageString,
+    );
 
     if (includedPersonsString) {
       setIncludedPersons(JSON.parse(includedPersonsString));

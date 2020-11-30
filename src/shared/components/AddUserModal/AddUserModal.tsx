@@ -19,6 +19,7 @@ const emptyPerson: Person = {
   id: "",
   status: 0,
   name: "",
+  surname: "",
   role: "",
   phones: [],
   emails: [],
@@ -56,6 +57,7 @@ const AddUserModal: React.FC<Props> = ({
     id: "",
     status: 0,
     name: "",
+    surname: "",
     role: "",
     phones: [],
     emails: [],
@@ -202,11 +204,14 @@ const AddUserModal: React.FC<Props> = ({
     [user],
   );
 
-  const handleAddUser = useCallback(() => {
-    addNewUser(user);
-    addUserToWorkGroup({ ...user, permission });
-    setShow(false);
-    setShowAddToGroupModal(false);
+  const handleAddUser = useCallback(async () => {
+    const person = await addNewUser(user);
+
+    if (person) {
+      addUserToWorkGroup({ ...person, permission });
+      setShow(false);
+      setShowAddToGroupModal(false);
+    }
   }, [
     setShow,
     addNewUser,
@@ -242,14 +247,25 @@ const AddUserModal: React.FC<Props> = ({
       <Container>
         <div className="borderedContainer userDataContainer">
           <label>Dados</label>
-          <Input
-            name="name"
-            size="small"
-            borderBottomOnly
-            labelOnInput="Nome: "
-            value={user.name}
-            onChange={handleEditUser}
-          />
+          <div className="nameInputsRow">
+            <Input
+              name="name"
+              size="small"
+              borderBottomOnly
+              labelOnInput="Nome: "
+              value={user.name}
+              onChange={handleEditUser}
+            />
+
+            <Input
+              name="surname"
+              size="small"
+              borderBottomOnly
+              labelOnInput="Sobrenome: "
+              value={user.surname}
+              onChange={handleEditUser}
+            />
+          </div>
 
           <div className="inputRowGroup">
             <Input

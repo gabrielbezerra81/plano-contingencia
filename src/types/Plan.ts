@@ -31,6 +31,7 @@ export interface Phone {
 export interface Person {
   id: string;
   name: string;
+  surname: string;
   role: string;
   phones: Array<Phone>;
   emails: Array<string>;

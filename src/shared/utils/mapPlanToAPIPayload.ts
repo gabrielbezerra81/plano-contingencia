@@ -4,20 +4,20 @@ import { PlanData } from "types/Plan";
 export default function mapPlanToAPIPayload(planData: PlanData) {
   const payload: Partial<Plano> = {};
 
-  Object.keys(planData).forEach((k) => {
-    const key = k as keyof PlanData;
+  if (planData.generalDescription.title) {
+    payload.titulo = planData.generalDescription.title;
+  }
+  if (planData.generalDescription.description) {
+    payload.descricao = planData.generalDescription.description;
+  }
 
-    if (key === "generalDescription") {
-      if (planData.generalDescription.title) {
-        payload.titulo = planData.generalDescription.title;
-      }
-      if (planData.generalDescription.description) {
-        payload.descricao = planData.generalDescription.description;
-      }
-    } //
-    else if (Array.isArray(planData[key])) {
-    }
-  });
+  payload.membros = planData.workGroup.map((member) => ({
+    nome: member.name,
+    funcao_atribuicao: member.role,
+    telefone: member.phone,
+    permissao: member.permission,
+    pessoaId: member.personId,
+  }));
 
   return payload;
 }

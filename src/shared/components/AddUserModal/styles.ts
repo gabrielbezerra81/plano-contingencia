@@ -1,4 +1,3 @@
-import colors from "assets/colors";
 import styled from "styled-components";
 import { Modal as BSModal } from "react-bootstrap";
 
@@ -50,6 +49,14 @@ export const Container = styled.div`
   }
 
   .userDataContainer {
+    .nameInputsRow {
+      display: flex;
+
+      .inputContainer {
+        flex: 1;
+      }
+    }
+
     > .inputRowGroup {
       display: flex;
       margin-top: 8px;
