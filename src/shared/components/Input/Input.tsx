@@ -19,6 +19,7 @@ interface InputProps
   size?: "small" | "normal";
   masked?: boolean;
   maskProps?: MaskedProps;
+  onRightIconClick?: (...data: any) => any;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -32,6 +33,7 @@ const Input: React.FC<InputProps> = ({
   size = "normal",
   masked = false,
   maskProps,
+  onRightIconClick = () => {},
   ...rest
 }) => {
   return (
@@ -53,7 +55,7 @@ const Input: React.FC<InputProps> = ({
         <FormControl className={inputClass} {...rest} />
       )}
 
-      {!!RightIcon && RightIcon}
+      {!!RightIcon && <button onClick={onRightIconClick}>{RightIcon}</button>}
     </Container>
   );
 };

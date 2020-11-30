@@ -22,15 +22,17 @@ export const Container = styled.div<ContainerProps>`
   ${({ rightIcon }) =>
     rightIcon &&
     css`
-      svg {
+      > button {
         position: absolute;
         right: 8px;
-        transform: rotateZ(90deg);
-        height: 18px;
-        width: 18px;
         top: 0;
         bottom: 0;
         margin: auto 0;
+      }
+      svg {
+        transform: rotateZ(90deg);
+        height: 18px;
+        width: 18px;
 
         path {
           stroke: #000000;
