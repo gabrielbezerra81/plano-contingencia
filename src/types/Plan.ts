@@ -42,7 +42,7 @@ export interface Person {
   status: number;
 }
 
-export interface Member {
+export interface GroupPerson {
   id?: string;
   name: string;
   role: string;
@@ -53,7 +53,9 @@ export interface Member {
   status: number;
 }
 
-export interface RiskLocation {
+export interface Member extends GroupPerson {}
+
+export interface Address {
   id?: string;
   cep: string;
   name: string;
@@ -68,26 +70,18 @@ export interface RiskLocation {
   long: string;
 }
 
-export interface Resources {
-  people: Array<ResourcePeople>;
-  vehicles: Array<ResourceVehicle>;
-  materials: Array<ResourceMaterials>;
-  foods: Array<ResourceFood>;
-  homes: Array<ResourceHome>;
-  moneys: Array<ResourceMoney>;
+export interface RiskLocation extends Address {}
+
+export interface Responsible extends GroupPerson {}
+
+export interface Resource {
+  id: string;
+  address: Address;
+  responsibles: Array<Responsible>;
+  value1?: string;
+  value2?: string;
+  value3?: string;
 }
-
-export interface ResourcePeople {}
-
-export interface ResourceVehicle {}
-
-export interface ResourceMaterials {}
-
-export interface ResourceFood {}
-
-export interface ResourceHome {}
-
-export interface ResourceMoney {}
 
 export interface PlanData {
   generalDescription: {
@@ -96,4 +90,5 @@ export interface PlanData {
   };
   workGroup: Array<Member>;
   riskLocations: Array<RiskLocation>;
+  resources: Array<Resource>;
 }

@@ -39,5 +39,7 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
     };
   });
 
+  payload.recursos = [];
+
   return payload;
 }

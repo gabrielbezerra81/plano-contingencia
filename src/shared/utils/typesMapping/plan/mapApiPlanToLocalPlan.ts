@@ -8,6 +8,7 @@ export default function mapApiPlanToLocalPlan(apiPlan: Plano): PlanData {
     generalDescription: { title: "", description: "" },
     riskLocations: [],
     workGroup: [],
+    resources: [],
   };
 
   plan.generalDescription.title = apiPlan.titulo;

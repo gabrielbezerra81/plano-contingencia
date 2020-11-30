@@ -10,7 +10,7 @@ import React, {
 import mapApiPlanToLocalPlan from "shared/utils/typesMapping/plan/mapApiPlanToLocalPlan";
 import mapPlanToAPIPayload from "shared/utils/typesMapping/plan/mapPlanToAPIPayload";
 import { Pessoa } from "types/ModelsAPI";
-import { Person, RiskLocation, Resources, Member, PlanData } from "types/Plan";
+import { Person, RiskLocation, Member, PlanData } from "types/Plan";
 
 const plan_LocalStorageString = "@plan:planData";
 const persons_LocalStorageString = "@plan:persons";
@@ -19,7 +19,6 @@ const planId_LocalStorageString = "@plan:planId";
 
 interface PlanDataContextData {
   planData: PlanData;
-  // resources: Resources;
   persons: Array<Person>;
   includedPersons: Array<Person>;
   updateLocalPlanData: (data: Partial<PlanData>) => void;
@@ -46,6 +45,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
     },
     workGroup: [],
     riskLocations: [],
+    resources: [],
   });
 
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
@@ -53,15 +53,6 @@ const PlanDataProvider: React.FC = ({ children }) => {
   const [includedPersons, setIncludedPersons] = useState<Person[]>([]);
 
   const [persons, setPersons] = useState<Person[]>([]);
-
-  // const [resources, setResources] = useState<Resources>({
-  //   people: [],
-  //   vehicles: [],
-  //   materials: [],
-  //   foods: [],
-  //   homes: [],
-  //   moneys: [],
-  // });
 
   const updateLocalPlanData = useCallback(
     (planData: Partial<PlanData>) => {
