@@ -5,20 +5,20 @@ import { Form } from "react-bootstrap";
 import { Container } from "./styles";
 
 const StepOne = () => {
-  const { planData, updatePlanData } = usePlanData();
+  const { planData, updateLocalPlanData } = usePlanData();
 
   const handleGeneralDescriptionUpdate = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
 
-      updatePlanData({
+      updateLocalPlanData({
         generalDescription: {
           ...planData.generalDescription,
           [name]: value,
         },
       });
     },
-    [updatePlanData, planData],
+    [updateLocalPlanData, planData],
   );
 
   return (
