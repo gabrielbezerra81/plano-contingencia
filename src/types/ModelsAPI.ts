@@ -51,7 +51,7 @@ export interface Membro {
   funcao_atribuicao: string;
   permissao: string;
   aceite: string;
-  grupo: boolean;
+  grupo?: boolean;
   pessoaId: string;
   telefone: string;
 }

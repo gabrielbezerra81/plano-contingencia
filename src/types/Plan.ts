@@ -42,11 +42,11 @@ export interface Person {
 }
 
 export interface Member {
-  id: string;
+  id?: string;
   name: string;
   role: string;
   permission: "editor" | "visualizar" | "nenhuma";
-  group: boolean;
+  group?: boolean;
   personId: string;
   phone: string;
   status: number;
