@@ -1,3 +1,4 @@
+import { usePlanData } from "context/PlanData/planDataContext";
 import produce from "immer";
 import React, { useCallback, useState } from "react";
 import { Button, Form } from "react-bootstrap";
@@ -11,7 +12,21 @@ import { Modal, Container } from "./styles";
 interface Props {
   show: boolean;
   setShow: (...data: any) => any;
+  setShowAddToGroupModal: (...data: any) => any;
 }
+
+const emptyPerson: Person = {
+  id: "",
+  status: 0,
+  name: "",
+  role: "",
+  phones: [],
+  emails: [],
+  birthDate: "",
+  gender: "male",
+  addresses: [],
+  documents: [],
+};
 
 const emptyAddress: UserAddress = {
   id: "",
@@ -30,42 +45,24 @@ const emptyDocument: UserDocument = {
   emitter: "",
 };
 
-const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
+const AddUserModal: React.FC<Props> = ({
+  show,
+  setShow,
+  setShowAddToGroupModal,
+}) => {
+  const { addNewUser, addUserToWorkGroup } = usePlanData();
+
   const [user, setUser] = useState<Person>({
-    id: "1",
-    status: 1,
+    id: "",
+    status: 0,
     name: "",
     role: "",
-    phones: [
-      {
-        phone: "(62) 98118-7720",
-        type: "celular",
-        obs: "",
-        priority: 0,
-      },
-    ],
-    emails: ["gabriel_alencar_bezerra@yahoo.com.br"],
+    phones: [],
+    emails: [],
     birthDate: "",
     gender: "male",
-    addresses: [
-      {
-        id: "12",
-        cep: "64660000",
-        city: "Pio IX",
-        state: "PI",
-        street: "Rua Major Vitalino Bezerra",
-        neighbor: "Centro",
-        number: "370",
-        complement: "",
-      },
-    ],
-    documents: [
-      {
-        type: "CPF",
-        number: "123.123.123-00",
-        emitter: "SSP",
-      },
-    ],
+    addresses: [],
+    documents: [],
   });
 
   const [currentEmail, setCurrentEmail] = useState("");
@@ -106,6 +103,16 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
           setCurrentEmail("");
         } //
         else if (attr === "phones") {
+          const alreadyHasMainPhone = draft.phones.some(
+            (phoneItem) => phoneItem.priority === 1,
+          );
+
+          if (phonePriority === 1 && alreadyHasMainPhone) {
+            draft.phones.forEach((phoneItem) => {
+              phoneItem.priority = 0;
+            });
+          }
+
           draft.phones.push({
             phone: currentPhone,
             obs,
@@ -196,8 +203,33 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
   );
 
   const handleAddUser = useCallback(() => {
+    addNewUser(user);
+    addUserToWorkGroup({ ...user, permission });
     setShow(false);
-  }, [setShow]);
+    setShowAddToGroupModal(false);
+  }, [
+    setShow,
+    addNewUser,
+    user,
+    addUserToWorkGroup,
+    permission,
+    setShowAddToGroupModal,
+  ]);
+
+  const handleCleanOnExit = useCallback(() => {
+    const clearedUser = produce(user, (draft) => {
+      Object.assign(draft, emptyPerson);
+    });
+
+    setCurrentEmail("");
+    setCurrentPhone("");
+    setObs("");
+    setCurrentAddress({ ...emptyAddress });
+    setCurrentDocument({ ...emptyDocument });
+    setPhonePriority(0);
+
+    setUser(clearedUser);
+  }, [user]);
 
   return (
     <Modal
@@ -205,6 +237,7 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
       show={show}
       centered
       onHide={() => setShow(false)}
+      onExit={handleCleanOnExit}
     >
       <Container>
         <div className="borderedContainer userDataContainer">
@@ -524,7 +557,9 @@ const AddUserModal: React.FC<Props> = ({ show, setShow }) => {
             />
           </div>
 
-          <Button className="darkBlueButton">Cadastrar</Button>
+          <Button onClick={handleAddUser} className="darkBlueButton">
+            Cadastrar
+          </Button>
         </div>
       </Container>
     </Modal>

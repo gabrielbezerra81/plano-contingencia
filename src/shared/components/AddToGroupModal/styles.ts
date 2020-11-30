@@ -18,6 +18,7 @@ export const Container = styled.div`
   border-radius: 4px;
   position: relative;
   padding: 24px 16px;
+  height: 436px;
 
   > h6 {
     text-align: center;

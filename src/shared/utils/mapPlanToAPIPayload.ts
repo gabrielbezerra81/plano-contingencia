@@ -1,7 +1,7 @@
 import { Plano } from "types/ModelsAPI";
 import { PlanData } from "types/Plan";
 
-export default function mapLocalDataToUpdatePayload(planData: PlanData) {
+export default function mapPlanToAPIPayload(planData: PlanData) {
   const payload: Partial<Plano> = {};
 
   Object.keys(planData).forEach((k) => {

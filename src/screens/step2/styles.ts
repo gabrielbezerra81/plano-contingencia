@@ -38,7 +38,7 @@ export const MembersContainer = styled.div`
   flex-direction: column;
 
   .memberFilter {
-    width: 200px;
+    width: 250px;
     margin-bottom: 16px;
     margin-left: auto;
     margin-right: 16px;
