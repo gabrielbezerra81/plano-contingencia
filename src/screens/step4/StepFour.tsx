@@ -1,43 +1,16 @@
+import { usePlanData } from "context/PlanData/planDataContext";
 import React, { useCallback, useState } from "react";
 import { Form } from "react-bootstrap";
 
 import { FiPlus } from "react-icons/fi";
 import { GrSearch } from "react-icons/gr";
 import Input from "shared/components/Input/Input";
-import { RiskLocation } from "types/Plan";
-import ResourceModal from "./ResourceModal/ResourceModal";
+import ResourcesModal from "shared/components/ResourcesModal/ResourcesModal";
 
 import { Container } from "./styles";
 
 const StepFour: React.FC = () => {
-  const [addressList, setAddressList] = useState<RiskLocation[]>([
-    {
-      id: "1",
-      cep: "64660000",
-      name: "Titulo",
-      street: "Rua Major Vitalino, 370",
-      neighbor: "Centro",
-      complement: "Complemento",
-      city: "Pio IX",
-      state: "Piauí",
-      refPoint: "",
-      lat: "-6",
-      long: "-40",
-    },
-    {
-      id: "1",
-      cep: "64660000",
-      name: "Titulo",
-      street: "Rua Major Vitalino, 370",
-      neighbor: "Centro",
-      complement: "Complemento",
-      city: "Pio IX",
-      state: "Piauí",
-      refPoint: "",
-      lat: "-6",
-      long: "-40",
-    },
-  ]);
+  const { planData } = usePlanData();
 
   const [threats, setThreats] = useState<string[]>([
     "Geológico (Deslizamento de encosta)",
@@ -62,12 +35,6 @@ const StepFour: React.FC = () => {
     "Sandro Brito",
   ]);
 
-  const [resources, setResources] = useState<string[]>([
-    "1 milhão",
-    "20 veículos",
-    "4 milhões",
-  ]);
-
   const [showResourceModal, setShowResourceModal] = useState(false);
 
   const handleClickResources = useCallback(() => {
@@ -87,16 +54,18 @@ const StepFour: React.FC = () => {
           </button>
           <main>
             <Input borderBottomOnly rightIcon={<GrSearch />} />
-            {addressList.map((addressItem, index) => (
+            {planData.riskLocations.map((locationItem, index) => (
               <div key={index} className="itemListing">
                 <Form.Check custom type="checkbox" />
                 <h6>
-                  {addressItem.name},
+                  {locationItem.name},
                   <br />
-                  {addressItem.street}, {addressItem.neighbor}
+                  {locationItem.street}, {locationItem.neighbor}
                   <br />
-                  {addressItem.complement ? `${addressItem.complement}, ` : ""}
-                  {addressItem.city}, {addressItem.state}
+                  {locationItem.complement
+                    ? `${locationItem.complement}, `
+                    : ""}
+                  {locationItem.city}, {locationItem.state}
                 </h6>
               </div>
             ))}
@@ -118,7 +87,6 @@ const StepFour: React.FC = () => {
           <main>
             {threats.map((threatItem, index) => (
               <div key={index} className="itemListing">
-                <Form.Check custom type="checkbox" />
                 <h6>{threatItem}</h6>
               </div>
             ))}
@@ -136,7 +104,6 @@ const StepFour: React.FC = () => {
           <main>
             {risks.map((riskItem, index) => (
               <div key={index} className="itemListing">
-                <Form.Check custom type="checkbox" />
                 <h6>{riskItem}</h6>
               </div>
             ))}
@@ -154,7 +121,6 @@ const StepFour: React.FC = () => {
           <main>
             {hypothesis.map((hypotheseItem, index) => (
               <div key={index} className="itemListing">
-                <Form.Check custom type="checkbox" />
                 <h6>{hypotheseItem}</h6>
               </div>
             ))}
@@ -176,7 +142,6 @@ const StepFour: React.FC = () => {
           <main>
             {measures.map((measureItem, index) => (
               <div key={index} className="itemListing">
-                <Form.Check custom type="checkbox" />
                 <h6>{measureItem}</h6>
               </div>
             ))}
@@ -194,7 +159,6 @@ const StepFour: React.FC = () => {
           <main>
             {responsibles.map((responsibleItem, index) => (
               <div key={index} className="itemListing">
-                <Form.Check custom type="checkbox" />
                 <h6>{responsibleItem}</h6>
               </div>
             ))}
@@ -210,16 +174,15 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {resources.map((resourceItem, index) => (
+            {planData.resources.map((resourceItem, index) => (
               <div key={index} className="itemListing">
-                <Form.Check custom type="checkbox" />
-                <h6>{resourceItem}</h6>
+                <h6>{resourceItem.value1}</h6>
               </div>
             ))}
           </main>
         </div>
       </Container>
-      <ResourceModal show={showResourceModal} setShow={setShowResourceModal} />
+      <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
     </>
   );
 };
