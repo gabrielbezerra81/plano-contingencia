@@ -20,8 +20,8 @@ import homeIcon from "assets/images/abrigo.png";
 import moneyIcon from "assets/images/dinheiro.png";
 import { FaSortDown, FaSortUp, FaSort } from "react-icons/fa";
 import AddToGroupModal from "shared/components/AddToGroupModal/AddToGroupModal";
-import AddVehicleMachineModal from "shared/components/AddVehicleMachineModal/AddVehicleMachineModal";
 import { Member } from "types/Plan";
+import CreateResourceModal from "../CreateResourceModal/CreateResourceModal";
 
 type ReducedMember = Omit<Member, "group" | "permission" | "personId">;
 
@@ -59,14 +59,14 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
   ]);
 
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
-  const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const [showCreateResourceModal, setShowCreateResourceModal] = useState(true);
 
   const handleOpenAddToGroupModal = useCallback(() => {
     setShowAddToGroupModal(true);
   }, []);
 
-  const handleOpenVehicleModal = useCallback(() => {
-    setShowVehicleModal(true);
+  const handleOpenCreateResourceModal = useCallback(() => {
+    setShowCreateResourceModal(true);
   }, []);
 
   const handleInclude = useCallback(() => {}, []);
@@ -139,12 +139,12 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
       <Modal centered show={show} onHide={() => setShow(false)}>
         <Container>
           <header>
-            <button>
+            <button onClick={handleOpenCreateResourceModal}>
               <img src={peopleIcon} alt="PESSOAL" />
               <span>PESSOAL</span>
             </button>
 
-            <button onClick={handleOpenVehicleModal}>
+            <button onClick={handleOpenCreateResourceModal}>
               <img src={vehiclesIcon} alt="VEÍCULOS E MAQUINÁRIOS" />
               <span>VEÍCULOS E MAQUINÁRIOS</span>
             </button>
@@ -245,9 +245,9 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
         setShow={setShowAddToGroupModal}
       />
 
-      <AddVehicleMachineModal
-        show={showVehicleModal}
-        setShow={setShowVehicleModal}
+      <CreateResourceModal
+        show={showCreateResourceModal}
+        setShow={setShowCreateResourceModal}
       />
     </>
   );

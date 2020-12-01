@@ -35,7 +35,7 @@ const StepFour: React.FC = () => {
     "Sandro Brito",
   ]);
 
-  const [showResourceModal, setShowResourceModal] = useState(false);
+  const [showResourceModal, setShowResourceModal] = useState(true);
 
   const handleClickResources = useCallback(() => {
     setShowResourceModal(true);
