@@ -59,7 +59,7 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
   ]);
 
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
-  const [showCreateResourceModal, setShowCreateResourceModal] = useState(true);
+  const [showCreateResourceModal, setShowCreateResourceModal] = useState(false);
 
   const handleOpenAddToGroupModal = useCallback(() => {
     setShowAddToGroupModal(true);
