@@ -7,13 +7,14 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import getMainPhoneFromPerson from "shared/utils/getMainPhoneFromPerson";
+import mapPessoaToLocalPerson from "shared/utils/typesMapping/person/mapPessoaToLocalPerson";
 import mapApiPlanToLocalPlan from "shared/utils/typesMapping/plan/mapApiPlanToLocalPlan";
 import mapPlanToAPIPayload from "shared/utils/typesMapping/plan/mapPlanToAPIPayload";
 import { Pessoa } from "types/ModelsAPI";
 import { Person, RiskLocation, Member, PlanData } from "types/Plan";
 
 const plan_LocalStorageString = "@plan:planData";
-const persons_LocalStorageString = "@plan:persons";
 const includedPersons_LocalStorageString = "@plan:includedPersons";
 const planId_LocalStorageString = "@plan:planId";
 
@@ -45,7 +46,60 @@ const PlanDataProvider: React.FC = ({ children }) => {
     },
     workGroup: [],
     riskLocations: [],
-    resources: [],
+    resources: [
+      {
+        id: "",
+        address: {
+          cep: "64660-000",
+          city: "Pio IX",
+          complement: "",
+          lat: "0",
+          long: "0",
+          name: "Pio IX",
+          neighbor: "Centro",
+          refPoint: "",
+          state: "PI",
+          street: "Rua Major Vitalino Bezerra",
+          number: "370",
+        },
+        responsibles: [
+          {
+            name: "Gabriel",
+            permission: "editor",
+            personId: "",
+            phone: "(86) 99831-9883",
+            role: "Dev web",
+            status: 0,
+          },
+        ],
+      },
+      {
+        id: "",
+        address: {
+          cep: "64660-000",
+          city: "Pio IX",
+          complement: "",
+          lat: "0",
+          long: "0",
+          name: "Pio IX",
+          neighbor: "Centro",
+          refPoint: "",
+          state: "PI",
+          street: "Rua Major Vitalino Bezerra",
+          number: "370",
+        },
+        responsibles: [
+          {
+            name: "Gabriel",
+            permission: "editor",
+            personId: "",
+            phone: "(86) 99831-9883",
+            role: "Dev web",
+            status: 0,
+          },
+        ],
+      },
+    ],
   });
 
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
@@ -122,16 +176,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
         phone: "",
       };
 
-      const mainPhone = person.phones.find(
-        (phoneItem) => phoneItem.priority === 1,
-      );
-
-      if (mainPhone) {
-        newMember.phone = mainPhone.phone;
-      } //
-      else if (person.phones.length > 0) {
-        newMember.phone = person.phones[0].phone;
-      }
+      newMember.phone = getMainPhoneFromPerson(person);
 
       localStorage.setItem(
         includedPersons_LocalStorageString,
@@ -165,6 +210,12 @@ const PlanDataProvider: React.FC = ({ children }) => {
             longitude: address.longitude,
             identificacao: address.identification,
           })),
+          telefones: person.phones.map((phone) => ({
+            ddd_numero: phone.phone,
+            observacao: phone.obs,
+            prioridade: phone.priority,
+            tipo: phone.type,
+          })),
         };
 
         const response = await api.post("pessoas", payload);
@@ -176,10 +227,6 @@ const PlanDataProvider: React.FC = ({ children }) => {
         });
 
         setPersons(updatedPersons);
-        localStorage.setItem(
-          persons_LocalStorageString,
-          JSON.stringify(updatedPersons),
-        );
 
         return newPerson;
       } catch (error) {
@@ -232,12 +279,6 @@ const PlanDataProvider: React.FC = ({ children }) => {
       setData(JSON.parse(planString));
     }
 
-    const personsString = localStorage.getItem(persons_LocalStorageString);
-
-    if (personsString) {
-      setPersons(JSON.parse(personsString));
-    }
-
     const includedPersonsString = localStorage.getItem(
       includedPersons_LocalStorageString,
     );
@@ -258,6 +299,19 @@ const PlanDataProvider: React.FC = ({ children }) => {
       return !alreadyIncluded;
     });
   }, [persons, includedPersons]);
+
+  useEffect(() => {
+    api
+      .get<Pessoa[]>("pessoas")
+      .then((response) => {
+        if (response.data) {
+          setPersons(
+            response.data.map((endereco) => mapPessoaToLocalPerson(endereco)),
+          );
+        }
+      })
+      .catch();
+  }, []);
 
   return (
     <PlanDataContext.Provider

@@ -39,7 +39,7 @@ export interface Person {
   gender: "female" | "male";
   addresses: Array<UserAddress>;
   documents: Array<UserDocument>;
-  status: number;
+  status?: number;
 }
 
 export interface GroupPerson {

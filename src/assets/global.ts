@@ -64,6 +64,10 @@ const GlobalStyle = createGlobalStyle`
     .addUserModalWrapper {
       z-index: 1065;
     }
+
+    .createResourceModalWrapper {
+      z-index: 1055;
+    }
   `}
 
 
