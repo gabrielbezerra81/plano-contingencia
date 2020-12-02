@@ -1,25 +1,45 @@
-import colors from "assets/colors";
 import styled from "styled-components";
+import { Modal as BSModal } from "react-bootstrap";
+import colors from "assets/colors";
 import { shade } from "polished";
 
-export const Container = styled.div`
-  padding: 8px 0 16px;
-
-  > h6:first-child {
-    color: #8c8c8c;
-    text-align: center;
-    font-size: 14px;
+export const Modal = styled(BSModal)`
+  .modal-dialog {
+    max-width: 950px;
   }
 
-  > main {
-    margin-top: 32px;
+  &.modal {
+    z-index: 1070;
+  }
+`;
+
+export const Container = styled.div`
+  padding: 32px 24px;
+
+  > .borderedContainer {
+    border: 1px solid #a8a8a8;
+    border-radius: 4px;
+    padding: 24px 16px 96px;
+    position: relative;
     display: flex;
+    flex-direction: row;
+    min-height: 400px;
+
+    > label {
+      color: #18325c;
+      font-size: 21px;
+      line-height: 24px;
+      margin-bottom: 0px;
+      position: absolute;
+      top: -16px;
+      left: 16px;
+      padding: 0 4px;
+      background-color: #fff;
+    }
   }
 `;
 
 export const MapAndAddressListContainer = styled.div`
-  flex: 1;
-
   > div:last-child {
     margin-top: 24px;
     border-top: 1px solid #a8a8a8;
@@ -49,7 +69,10 @@ export const MapAndAddressListContainer = styled.div`
 export const AddLocationContainer = styled.div`
   flex: 1;
   padding-left: 8px;
-  max-width: 420px;
+
+  .inputContainer {
+    border-bottom-color: #a8a8a8;
+  }
 
   > main {
     padding-left: 8px;
@@ -71,6 +94,10 @@ export const AddLocationContainer = styled.div`
 
     .inputContainer {
       margin-top: 12px;
+
+      span {
+        font-weight: 600;
+      }
 
       input {
         flex: 1;

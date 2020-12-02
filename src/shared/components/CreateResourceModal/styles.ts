@@ -1,14 +1,26 @@
 import styled, { css } from "styled-components";
 import { Modal as BSModal } from "react-bootstrap";
-import { shade } from "polished";
 
-export const Modal = styled(BSModal)`
+interface ModalProps {
+  styled?: {
+    isBehindModal?: boolean;
+  };
+}
+
+export const Modal = styled(BSModal)<ModalProps>`
   .modal-dialog {
     max-width: 850px;
   }
 
   &.modal {
     z-index: 1060;
+
+    ${({ styled }) =>
+      !!styled &&
+      styled.isBehindModal &&
+      css`
+        z-index: 1050;
+      `}
   }
 `;
 
@@ -175,9 +187,17 @@ export const ResourceAccordionItem = styled.div<Props>`
     padding-top: 8px;
 
     .attributeListContainer {
+      margin-top: 20px;
+
       small {
         background-color: #fff;
       }
+    }
+
+    > .darkBlueButton {
+      margin-left: auto;
+      display: block;
+      margin-top: 8px;
     }
   }
 
@@ -208,6 +228,7 @@ export const ResourceAccordionItem = styled.div<Props>`
     > .darkBlueButton {
       margin-left: auto;
       display: block;
+      margin-top: 8px;
     }
   }
 `;

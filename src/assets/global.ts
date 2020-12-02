@@ -68,6 +68,10 @@ const GlobalStyle = createGlobalStyle`
     .createResourceModalWrapper {
       z-index: 1055;
     }
+
+    .addAddressModalWrapper {
+      z-index: 1065;
+    }
   `}
 
 

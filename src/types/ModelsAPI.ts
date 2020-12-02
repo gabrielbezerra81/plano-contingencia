@@ -57,11 +57,11 @@ export interface Membro {
 }
 
 export interface Endereco {
-  id: string;
+  id?: string;
   cep: string;
   identificacao: string;
   logradouro: string;
-  numero: string;
+  numero?: string;
   complemento: string;
   bairro: string;
   localidade: string;
@@ -75,10 +75,10 @@ export interface LocalRisco extends Omit<Endereco, "id"> {
 }
 
 interface Responsavel {
-  aceite: string;
+  aceite?: string;
   funcao_atribuicao: string;
-  grupo: true;
-  id: string;
+  grupo: boolean;
+  id?: string;
   nome: string;
   permissao: string;
   pessoaId: string;
@@ -92,6 +92,7 @@ export interface Recurso {
   valor1?: string;
   valor2?: string;
   valor3?: string;
+  tipo: string;
 }
 
 export interface Plano {
@@ -102,4 +103,5 @@ export interface Plano {
   locaisDeRisco: Array<LocalRisco>;
   membros: Array<Membro>;
   recursos: Array<Recurso>;
+  tipo: string;
 }

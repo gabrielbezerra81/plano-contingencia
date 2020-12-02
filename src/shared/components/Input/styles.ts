@@ -12,6 +12,7 @@ export const Container = styled.div<ContainerProps>`
   position: relative;
   display: flex;
   align-items: center;
+  height:32px;
 
   ${({ size }) =>
     size === "small" &&

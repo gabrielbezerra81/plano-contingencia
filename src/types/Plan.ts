@@ -74,6 +74,14 @@ export interface RiskLocation extends Address {}
 
 export interface Responsible extends GroupPerson {}
 
+export type ResourceType =
+  | "pessoa"
+  | "veiculo"
+  | "material"
+  | "alimentacao"
+  | "abrigo"
+  | "dinheiro";
+
 export interface Resource {
   id: string;
   address: Address;
@@ -81,6 +89,7 @@ export interface Resource {
   value1?: string;
   value2?: string;
   value3?: string;
+  type: ResourceType;
 }
 
 export interface PlanData {

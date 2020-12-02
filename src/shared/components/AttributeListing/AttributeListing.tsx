@@ -12,6 +12,7 @@ interface Props {
   textComponent?: React.ReactNode;
   containerClass?: string;
   size?: "small" | "normal";
+  showCloseButton?: boolean;
 }
 
 const AttributeListing: React.FC<Props> = ({
@@ -23,6 +24,7 @@ const AttributeListing: React.FC<Props> = ({
   textComponent,
   containerClass,
   size = "normal",
+  showCloseButton = true,
 }) => {
   return (
     <Container
@@ -33,9 +35,11 @@ const AttributeListing: React.FC<Props> = ({
 
       {items.map((item, index) => (
         <div key={index} className="attributeListItem">
-          <button name={name} onClick={(e) => onRemove(e, index)}>
-            <FiXCircle></FiXCircle>
-          </button>
+          {showCloseButton && (
+            <button name={name} onClick={(e) => onRemove(e, index)}>
+              <FiXCircle></FiXCircle>
+            </button>
+          )}
 
           {!!renderText && <span>{renderText(item)}</span>}
           {!!textComponent && textComponent}

@@ -1,11 +1,12 @@
 import { usePlanData } from "context/PlanData/planDataContext";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
 
 import { FiPlus } from "react-icons/fi";
 import { GrSearch } from "react-icons/gr";
 import Input from "shared/components/Input/Input";
 import ResourcesModal from "shared/components/ResourcesModal/ResourcesModal";
+import formatResources from "shared/utils/formatResources";
 
 import { Container } from "./styles";
 
@@ -30,16 +31,16 @@ const StepFour: React.FC = () => {
     "Fornecer Alimentação",
   ]);
 
-  const [responsibles, setResponsible] = useState<string[]>([
-    "Alex Barros",
-    "Sandro Brito",
-  ]);
-
   const [showResourceModal, setShowResourceModal] = useState(false);
 
   const handleClickResources = useCallback(() => {
     setShowResourceModal(true);
   }, []);
+
+  const formattedResources = useMemo(
+    () => formatResources(planData.resources),
+    [planData],
+  );
 
   return (
     <>
@@ -157,11 +158,13 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {responsibles.map((responsibleItem, index) => (
-              <div key={index} className="itemListing">
-                <h6>{responsibleItem}</h6>
-              </div>
-            ))}
+            {planData.resources.map((resource) =>
+              resource.responsibles.map((responsible, index) => (
+                <div key={index} className="itemListing">
+                  <h6>{responsible.name}</h6>
+                </div>
+              )),
+            )}
           </main>
         </div>
 
@@ -174,9 +177,9 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {planData.resources.map((resourceItem, index) => (
+            {formattedResources.map((resourceItem, index) => (
               <div key={index} className="itemListing">
-                <h6>{resourceItem.value1}</h6>
+                <h6>{resourceItem.formattedValue2 || resourceItem.value1}</h6>
               </div>
             ))}
           </main>

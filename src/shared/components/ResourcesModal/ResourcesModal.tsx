@@ -20,7 +20,7 @@ import homeIcon from "assets/images/abrigo.png";
 import moneyIcon from "assets/images/dinheiro.png";
 import { FaSortDown, FaSortUp, FaSort } from "react-icons/fa";
 import AddToGroupModal from "shared/components/AddToGroupModal/AddToGroupModal";
-import { Member } from "types/Plan";
+import { Member, ResourceType } from "types/Plan";
 import CreateResourceModal from "../CreateResourceModal/CreateResourceModal";
 
 type ReducedMember = Omit<Member, "group" | "permission" | "personId">;
@@ -41,7 +41,7 @@ interface GlobalFilterProps {
 }
 
 const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
-  const [members, setMembers] = useState<ReducedMember[]>([
+  const [members] = useState<ReducedMember[]>([
     {
       id: "1",
       name: "Francisco da Cunha",
@@ -61,12 +61,15 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
   const [showCreateResourceModal, setShowCreateResourceModal] = useState(false);
 
+  const [resourceType, setResourceType] = useState<ResourceType | null>(null);
+
   const handleOpenAddToGroupModal = useCallback(() => {
     setShowAddToGroupModal(true);
   }, []);
 
-  const handleOpenCreateResourceModal = useCallback(() => {
+  const handleOpenCreateResourceModal = useCallback((e) => {
     setShowCreateResourceModal(true);
+    setResourceType(e.currentTarget.name);
   }, []);
 
   const handleInclude = useCallback(() => {}, []);
@@ -139,32 +142,32 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
       <Modal centered show={show} onHide={() => setShow(false)}>
         <Container>
           <header>
-            <button onClick={handleOpenCreateResourceModal}>
+            <button onClick={handleOpenAddToGroupModal}>
               <img src={peopleIcon} alt="PESSOAL" />
               <span>PESSOAL</span>
             </button>
 
-            <button onClick={handleOpenCreateResourceModal}>
+            <button name="veiculo" onClick={handleOpenCreateResourceModal}>
               <img src={vehiclesIcon} alt="VEÍCULOS E MAQUINÁRIOS" />
               <span>VEÍCULOS E MAQUINÁRIOS</span>
             </button>
 
-            <button>
+            <button name="material" onClick={handleOpenCreateResourceModal}>
               <img src={materialsIcon} alt="MATERIAIS" />
               <span>MATERIAIS</span>
             </button>
 
-            <button>
+            <button name="alimentacao" onClick={handleOpenCreateResourceModal}>
               <img src={foodIcon} alt="ALIMENTAÇÃO" />
               <span>ALIMENTAÇÃO</span>
             </button>
 
-            <button>
+            <button name="abrigo" onClick={handleOpenCreateResourceModal}>
               <img src={homeIcon} alt="ABRIGO" />
               <span>ABRIGO</span>
             </button>
 
-            <button>
+            <button name="dinheiro" onClick={handleOpenCreateResourceModal}>
               <img src={moneyIcon} alt="DINHEIRO" />
               <span>DINHEIRO</span>
             </button>
@@ -245,10 +248,13 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
         setShow={setShowAddToGroupModal}
       />
 
-      <CreateResourceModal
-        show={showCreateResourceModal}
-        setShow={setShowCreateResourceModal}
-      />
+      {!!resourceType && (
+        <CreateResourceModal
+          show={showCreateResourceModal}
+          setShow={setShowCreateResourceModal}
+          type={resourceType}
+        />
+      )}
     </>
   );
 };

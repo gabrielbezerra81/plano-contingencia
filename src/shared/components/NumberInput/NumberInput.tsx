@@ -109,7 +109,7 @@ const NumberInput: React.FC<Props> = ({
       decimalSeparator=","
       value={value}
       type="text"
-      onChange={(event) => handleChange(event.target.value)}
+      onChange={(event) => handleChange(event.target.value, event)}
       onKeyPress={(event) => {
         const selection = document.getSelection();
 

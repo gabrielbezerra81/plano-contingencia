@@ -12,7 +12,7 @@ import { Modal, Container } from "./styles";
 interface Props {
   show: boolean;
   setShow: (...data: any) => any;
-  setShowAddToGroupModal: (...data: any) => any;
+  setShowAddToGroupModal?: (...data: any) => any;
 }
 
 const emptyPerson: Person = {
@@ -210,7 +210,9 @@ const AddUserModal: React.FC<Props> = ({
     if (person) {
       addUserToWorkGroup({ ...person, permission });
       setShow(false);
-      setShowAddToGroupModal(false);
+      if (setShowAddToGroupModal) {
+        setShowAddToGroupModal(false);
+      }
     }
   }, [
     setShow,

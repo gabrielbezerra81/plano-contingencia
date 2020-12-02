@@ -1,5 +1,6 @@
 import { Plano } from "types/ModelsAPI";
 import { PlanData } from "types/Plan";
+import mapAddressToEndereco from "../address/mapAddressToEndereco";
 
 export default function mapPlanToAPIPayload(planData: PlanData) {
   const payload: Partial<Plano> = {};
@@ -39,7 +40,22 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
     };
   });
 
-  payload.recursos = [];
+  payload.recursos = planData.resources.map((resource) => ({
+    id: resource.id,
+    endereco: mapAddressToEndereco(resource.address),
+    valor1: resource.value1,
+    valor2: resource.value2,
+    valor3: resource.value3,
+    responsaveis: resource.responsibles.map((responsible) => ({
+      funcao_atribuicao: responsible.role,
+      grupo: !!responsible.group,
+      nome: responsible.name,
+      permissao: responsible.permission,
+      pessoaId: responsible.personId,
+      telefone: responsible.phone,
+    })),
+    tipo: resource.type,
+  }));
 
   return payload;
 }

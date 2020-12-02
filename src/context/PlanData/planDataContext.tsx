@@ -12,7 +12,7 @@ import mapPessoaToLocalPerson from "shared/utils/typesMapping/person/mapPessoaTo
 import mapApiPlanToLocalPlan from "shared/utils/typesMapping/plan/mapApiPlanToLocalPlan";
 import mapPlanToAPIPayload from "shared/utils/typesMapping/plan/mapPlanToAPIPayload";
 import { Pessoa } from "types/ModelsAPI";
-import { Person, RiskLocation, Member, PlanData } from "types/Plan";
+import { Person, RiskLocation, Member, PlanData, Resource } from "types/Plan";
 
 const plan_LocalStorageString = "@plan:planData";
 const includedPersons_LocalStorageString = "@plan:includedPersons";
@@ -32,6 +32,7 @@ interface PlanDataContextData {
   addRiskLocation: (riskLocation: RiskLocation) => void;
   removeRiskLocation: (index: number) => void;
   notIncludedPersons: Array<Person>;
+  addResource: (resource: Resource) => void;
 }
 
 const PlanDataContext = React.createContext<PlanDataContextData>(
@@ -49,6 +50,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
     resources: [
       {
         id: "",
+        type: "pessoa",
         address: {
           cep: "64660-000",
           city: "Pio IX",
@@ -75,6 +77,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
       },
       {
         id: "",
+        type: "veiculo",
         address: {
           cep: "64660-000",
           city: "Pio IX",
@@ -266,6 +269,18 @@ const PlanDataProvider: React.FC = ({ children }) => {
     [data, updateLocalPlanData],
   );
 
+  const addResource = useCallback(
+    (resource: Resource) => {
+      const updatedPlanData = produce(data, (draft) => {
+        draft.resources.push(resource);
+      });
+
+      updateLocalPlanData(updatedPlanData);
+    },
+    [data, updateLocalPlanData],
+  );
+
+  // carregar dados do armazenamento local
   useEffect(() => {
     const id = localStorage.getItem(planId_LocalStorageString);
 
@@ -327,6 +342,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
         updateAPIPlanData,
         notIncludedPersons,
         updateLocalPlanFromAPI,
+        addResource,
       }}
     >
       {children}

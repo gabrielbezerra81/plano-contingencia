@@ -228,7 +228,7 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
         <MapAndAddressListContainer>
           <MapContainer
             center={[-15.77972, -47.92972]}
-            style={{ height: 460, width: 600 }}
+            style={{ height: 500, minWidth: 500, flex: 1 }}
             zoom={3}
             whenCreated={(LMap) => {
               setMap(LMap);
@@ -298,13 +298,6 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
               onChange={handleEditCurrentAddress}
             />
             <Input
-              labelOnInput="Complemento:"
-              borderBottomOnly
-              name="complement"
-              value={address.complement}
-              onChange={handleEditCurrentAddress}
-            />
-            <Input
               labelOnInput="Bairro:"
               borderBottomOnly
               name="neighbor"
@@ -323,6 +316,13 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
               borderBottomOnly
               name="state"
               value={address.state}
+              onChange={handleEditCurrentAddress}
+            />
+            <Input
+              labelOnInput="Complemento:"
+              borderBottomOnly
+              name="complement"
+              value={address.complement}
               onChange={handleEditCurrentAddress}
             />
             <Input

@@ -1,24 +1,67 @@
 import { usePlanData } from "context/PlanData/planDataContext";
 import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
+
+import Select from "react-select";
+
 import { Button, Accordion, Form } from "react-bootstrap";
 import { GrSearch } from "react-icons/gr";
-import getMainPhoneFromPerson from "shared/utils/getMainPhoneFromPerson";
-import { Responsible } from "types/Plan";
+import { Address, Resource, ResourceType } from "types/Plan";
 import AttributeListing from "../AttributeListing/AttributeListing";
 import Input from "../Input/Input";
 
 import { Modal, Container, ResourceAccordionItem } from "./styles";
+import AddToGroupModal from "../AddToGroupModal/AddToGroupModal";
+import AddressModal from "../AddressModal/AddressModal";
+import formatResourceAddress from "shared/utils/formatResourceAddress";
+import numberFormatter from "shared/utils/numberFormatter";
+import formatResources from "shared/utils/formatResources";
+import NumberInput from "../NumberInput/NumberInput";
 
 interface Props {
   show: boolean;
   setShow: (...data: any) => any;
+  type: ResourceType;
 }
 
-const CreateResourceModal: React.FC<Props> = ({ show, setShow }) => {
-  const { planData, persons } = usePlanData();
+const emptyAddress: Address = {
+  id: "",
+  cep: "",
+  name: "",
+  street: "",
+  complement: "",
+  neighbor: "",
+  city: "",
+  state: "",
+  refPoint: "",
+  lat: "",
+  long: "",
+};
+
+const emptyResource: Resource = {
+  id: "",
+  address: { ...emptyAddress },
+  responsibles: [],
+  type: "" as any,
+  value1: "",
+  value2: "",
+  value3: "",
+};
+
+const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
+  const { planData, addResource } = usePlanData();
 
   const [activeKey, setActiveKey] = useState<string | null>("0");
+
+  const [resource, setResource] = useState<Resource>({
+    id: "",
+    address: { ...emptyAddress },
+    responsibles: [],
+    type,
+    value1: "",
+    value2: "",
+    value3: "",
+  });
 
   const [addressFilterText, setAddressFilterText] = useState("");
   const [resourceListFilterText, setResourceListFilterText] = useState("");
@@ -26,55 +69,87 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow }) => {
     number | null
   >(planData.resources.length ? 0 : null);
 
-  const [addedResponsibles, setAddedResponsibles] = useState<Responsible[]>([]);
+  const [
+    currentAddedAddress,
+    setCurrentAddedAddress,
+  ] = useState<Address | null>(null);
 
-  const handleAddResponsible = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const { value } = e.target;
+  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+  const [showAddAddressModal, setShowAddAddressModal] = useState(false);
 
-      const index = Number(value);
+  const handleEditCurrentResource = useCallback(
+    (e) => {
+      const { name, value } = e.target;
 
-      if (index !== -1) {
-        const updatedResponsibles = produce(addedResponsibles, (draft) => {
-          draft.push({
-            name: persons[index].name,
-            permission: "editor",
-            personId: persons[index].id,
-            phone: getMainPhoneFromPerson(persons[index]),
-            role: persons[index].role,
-            status: 0,
-          });
-        });
+      const updatedResource = produce(resource, (draft) => {
+        if (name === "responsibles") {
+          draft.responsibles.push(value);
+        } //
+        else {
+          Object.assign(draft, { [name]: value });
+        }
+      });
 
-        setAddedResponsibles(updatedResponsibles);
-      }
+      setResource(updatedResource);
     },
-    [addedResponsibles, persons],
+    [resource],
   );
 
   const handleRemoveResponsible = useCallback(
     (index: number) => {
-      const updatedAddedResponsibles = produce(addedResponsibles, (draft) => {
-        draft.splice(index, 1);
+      const updatedResource = produce(resource, (draft) => {
+        draft.responsibles.splice(index, 1);
       });
 
-      setAddedResponsibles(updatedAddedResponsibles);
+      setResource(updatedResource);
     },
-    [addedResponsibles],
+    [resource],
   );
 
-  const formattedResources = useMemo(() => {
-    const formatted = planData.resources.map((resourceItem) => {
-      const { address } = resourceItem;
+  const openAddToGroupModal = useCallback(() => {
+    setShowAddToGroupModal(true);
+  }, []);
 
-      const number = address.number ? `${address.number}, ` : "";
+  const openAddAddressModal = useCallback(() => {
+    setShowAddAddressModal(true);
+  }, []);
 
-      const complement = address.complement ? `${address.complement}, ` : "";
-
-      const formatttedAddress = `${address.street}, ${number}${address.neighbor}, ${complement}${address.city} - ${address.state}`;
-
-      return { ...resourceItem, formatttedAddress };
+  const clearInputs = useCallback(() => {
+    const clearedResource = produce(resource, (draft) => {
+      Object.assign(draft, emptyResource);
     });
+
+    setResource(clearedResource);
+  }, [resource]);
+
+  const handleIncludeResourceInPlan = useCallback(() => {
+    let address = resource.address;
+
+    if (!!currentAddedAddress && selectedAddressIndex === -2) {
+      address = currentAddedAddress;
+    } //
+    else if (
+      typeof selectedAddressIndex === "number" &&
+      selectedAddressIndex >= 0
+    ) {
+      address = planData.resources[selectedAddressIndex].address;
+    }
+
+    addResource({ ...resource, address, type });
+
+    clearInputs();
+  }, [
+    addResource,
+    resource,
+    selectedAddressIndex,
+    currentAddedAddress,
+    type,
+    clearInputs,
+    planData,
+  ]);
+
+  const formattedResources = useMemo(() => {
+    const formatted = formatResources(planData.resources);
 
     if (formatted.length) {
       setSelectedAddressIndex(0);
@@ -84,15 +159,27 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow }) => {
   }, [planData]);
 
   const filteredByAddressResources = useMemo(() => {
+    const filterRepeated: Array<Resource & { formattedAddress: string }> = [];
+
+    formattedResources.forEach((resourceItem) => {
+      const alreadyAdded = filterRepeated.some(
+        (added) => added.formattedAddress === resourceItem.formattedAddress,
+      );
+
+      if (!alreadyAdded) {
+        filterRepeated.push(resourceItem);
+      }
+    });
+
     if (addressFilterText) {
-      return formattedResources.filter((resourceItem) =>
-        resourceItem.formatttedAddress
+      return filterRepeated.filter((resourceItem) =>
+        resourceItem.formattedAddress
           .toLocaleLowerCase()
           .includes(addressFilterText.toLocaleLowerCase()),
       );
     }
 
-    return formattedResources;
+    return filterRepeated;
   }, [formattedResources, addressFilterText]);
 
   const filteredByAnyResources = useMemo(() => {
@@ -112,7 +199,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow }) => {
           resourceItem.value3 &&
           resourceItem.value3.toLocaleLowerCase().includes(filterText);
 
-        const addressCondition = resourceItem.formatttedAddress
+        const addressCondition = resourceItem.formattedAddress
           .toLocaleLowerCase()
           .includes(filterText);
 
@@ -128,53 +215,185 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow }) => {
     return formattedResources;
   }, [formattedResources, resourceListFilterText]);
 
+  const contactSelectOptions = useMemo(() => {
+    return planData.workGroup.map((member, index) => ({
+      value: member,
+      label: member.name,
+    }));
+  }, [planData]);
+
+  const formattedCurrentAddedAddress = useMemo(() => {
+    if (!currentAddedAddress) {
+      return "";
+    }
+
+    const formatted = formatResourceAddress(currentAddedAddress);
+
+    if (addressFilterText) {
+      const includes = formatted
+        .toLocaleLowerCase()
+        .includes(addressFilterText.toLocaleLowerCase());
+
+      if (includes) {
+        return formatted;
+      }
+
+      return "";
+    }
+
+    return formatted;
+  }, [currentAddedAddress, addressFilterText]);
+
+  const inputLabels = useMemo(() => {
+    const labels = {
+      label1: "",
+      label2: "",
+      label3: "",
+    };
+
+    switch (type) {
+      case "veiculo":
+        labels.label1 = "Tipo/Modelo: ";
+        labels.label2 = "Descrição/Características: ";
+        labels.label3 = "Quantidade: ";
+        break;
+      case "abrigo":
+        labels.label1 = "Tipo do Local: ";
+        labels.label2 = "Capacidade de Pessoas: ";
+        break;
+      case "dinheiro":
+        labels.label1 = "Destinação: ";
+        labels.label2 = "Valor: ";
+        break;
+      default:
+        break;
+    }
+
+    if (["material", "alimentacao"].includes(type)) {
+      labels.label1 = "Descrição/Características: ";
+      labels.label2 = "Quantidade: ";
+    }
+
+    return labels;
+  }, [type]);
+
+  const titles = useMemo(() => {
+    const titles = {
+      modalTitle: "",
+      listTitle: "",
+    };
+
+    switch (type) {
+      case "veiculo":
+        titles.modalTitle = "Veículo";
+        titles.listTitle = "LISTA DE VEÍCULOS";
+        break;
+      case "material":
+        titles.modalTitle = "Material";
+        titles.listTitle = "LISTA DE MATERIAIS";
+        break;
+      case "alimentacao":
+        titles.modalTitle = "Alimentação";
+        titles.listTitle = "RECURSOS DE ALIMENTAÇÃO";
+        break;
+      case "abrigo":
+        titles.modalTitle = "Abrigo";
+        titles.listTitle = "LISTA DE ABRIGOS";
+        break;
+      case "dinheiro":
+        titles.modalTitle = "Dinheiro";
+        titles.listTitle = "RECURSOS DE DINHEIRO";
+        break;
+      default:
+        break;
+    }
+
+    return titles;
+  }, [type]);
+
   return (
-    <Modal
-      backdropClassName="createResourceModalWrapper"
-      centered
-      show={show}
-      onHide={() => setShow(false)}
-    >
-      <Container>
-        <div className="borderedContainer">
-          <label>Veículo</label>
+    <>
+      <Modal
+        backdropClassName="createResourceModalWrapper"
+        centered
+        show={show}
+        onHide={() => setShow(false)}
+        styled={{ isBehindModal: showAddToGroupModal }}
+        onExit={clearInputs}
+      >
+        <Container>
+          <div className="borderedContainer">
+            <label>{titles.modalTitle}</label>
 
-          <div>
-            <Input labelOnInput="Tipo/Modelo: " borderBottomOnly />
-            <Input
-              labelOnInput="Descrição/Características: "
-              borderBottomOnly
-            />
-            <Input labelOnInput="Quantidade: " borderBottomOnly />
-          </div>
-          <div>
-            <Accordion
-              onSelect={setActiveKey}
-              activeKey={activeKey || undefined}
-            >
-              <ResourceAccordionItem selected={activeKey === "0"}>
-                <Accordion.Toggle as="div" eventKey="0">
-                  <header>
-                    <h5>Contato</h5>
-                  </header>
-                </Accordion.Toggle>
+            <div>
+              <Input
+                name="value1"
+                labelOnInput={inputLabels.label1}
+                borderBottomOnly
+                value={resource.value1}
+                onChange={handleEditCurrentResource}
+              />
 
-                <Accordion.Collapse eventKey="0">
-                  <div className="accordionItemContent contactContent">
-                    <div className="contactSelector">
-                      <select
-                        value="Adicionar um responsavel"
-                        onChange={handleAddResponsible}
-                      >
-                        <option value={-1}>Adicionar um responsavel</option>
-                        {persons.map((personItem, index) => (
-                          <option key={personItem.id} value={index}>
-                            {personItem.name}
-                          </option>
-                        ))}
-                      </select>
+              <Input
+                name="value2"
+                labelOnInput={inputLabels.label2}
+                borderBottomOnly
+                value={resource.value2}
+                onChange={handleEditCurrentResource}
+                customInput={
+                  type === "dinheiro" ? (
+                    <NumberInput
+                      name="value2"
+                      precision={2}
+                      step={1}
+                      value={resource.value2}
+                      onChange={(_, event) => handleEditCurrentResource(event)}
+                      type="negativeDecimal"
+                    />
+                  ) : null
+                }
+              />
+              {!!inputLabels.label3 && (
+                <Input
+                  name="value3"
+                  labelOnInput={inputLabels.label3}
+                  borderBottomOnly
+                  value={resource.value3}
+                  onChange={handleEditCurrentResource}
+                />
+              )}
+            </div>
+            <div>
+              <Accordion
+                onSelect={setActiveKey}
+                activeKey={activeKey || undefined}
+              >
+                <ResourceAccordionItem selected={activeKey === "0"}>
+                  <Accordion.Toggle as="div" eventKey="0">
+                    <header>
+                      <h5>Contato</h5>
+                    </header>
+                  </Accordion.Toggle>
+
+                  <Accordion.Collapse eventKey="0">
+                    <div className="accordionItemContent contactContent">
+                      <Select
+                        value={"" as any}
+                        name="responsibles"
+                        placeholder="Adicionar um responsavel"
+                        options={contactSelectOptions}
+                        onChange={({ value }: any) => {
+                          handleEditCurrentResource({
+                            target: {
+                              name: "responsibles",
+                              value,
+                            },
+                          });
+                        }}
+                      />
+
                       <AttributeListing
-                        items={addedResponsibles}
+                        items={resource.responsibles}
                         size="small"
                         title="Responsáveis cadastrados"
                         name=""
@@ -183,96 +402,157 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow }) => {
                           responsibleItem.name
                         }
                       />
+                      <Button
+                        onClick={openAddToGroupModal}
+                        className="darkBlueButton"
+                        size="sm"
+                      >
+                        Novo +
+                      </Button>
                     </div>
-                  </div>
-                </Accordion.Collapse>
-              </ResourceAccordionItem>
+                  </Accordion.Collapse>
+                </ResourceAccordionItem>
 
-              <ResourceAccordionItem selected={activeKey === "1"}>
-                <Accordion.Toggle as="div" eventKey="1">
-                  <header>
-                    <h5>Endereço do Recurso</h5>
-                  </header>
-                </Accordion.Toggle>
+                <ResourceAccordionItem selected={activeKey === "1"}>
+                  <Accordion.Toggle as="div" eventKey="1">
+                    <header>
+                      <h5>Endereço do Recurso</h5>
+                    </header>
+                  </Accordion.Toggle>
 
-                <Accordion.Collapse eventKey="1">
-                  <div className="accordionItemContent addressContent">
-                    <Input
-                      labelOnInput="Pesquisar: "
-                      rightIcon={<GrSearch />}
-                      value={addressFilterText}
-                      onChange={(e) => setAddressFilterText(e.target.value)}
-                    />
-
-                    {filteredByAddressResources.map((resourceItem, index) => (
-                      <Form.Check
-                        key={index}
-                        type="radio"
-                        label={resourceItem.formatttedAddress}
-                        name="resourceAddressRadio"
-                        checked={selectedAddressIndex === index}
-                        onChange={() => setSelectedAddressIndex(index)}
+                  <Accordion.Collapse eventKey="1">
+                    <div className="accordionItemContent addressContent">
+                      <Input
+                        labelOnInput="Pesquisar: "
+                        rightIcon={<GrSearch />}
+                        value={addressFilterText}
+                        onChange={(e) => setAddressFilterText(e.target.value)}
                       />
-                    ))}
 
-                    <Button className="darkBlueButton" size="sm">
-                      Novo +
-                    </Button>
-                  </div>
-                </Accordion.Collapse>
-              </ResourceAccordionItem>
-            </Accordion>
+                      {filteredByAddressResources.map((resourceItem, index) => (
+                        <Form.Check
+                          key={index}
+                          type="radio"
+                          label={resourceItem.formattedAddress}
+                          name="resourceAddressRadio"
+                          checked={selectedAddressIndex === index}
+                          onChange={() => {
+                            setSelectedAddressIndex(index);
+                            handleEditCurrentResource({
+                              target: {
+                                name: "address",
+                                value: resourceItem.address,
+                              },
+                            });
+                          }}
+                        />
+                      ))}
+                      {!!currentAddedAddress && !!formattedCurrentAddedAddress && (
+                        <Form.Check
+                          type="radio"
+                          label={formattedCurrentAddedAddress}
+                          name="resourceAddressRadio"
+                          checked={selectedAddressIndex === -2}
+                          onChange={() => {
+                            setSelectedAddressIndex(-2);
+                            handleEditCurrentResource({
+                              target: {
+                                name: "address",
+                                value: currentAddedAddress,
+                              },
+                            });
+                          }}
+                        />
+                      )}
+
+                      <Button
+                        onClick={openAddAddressModal}
+                        className="darkBlueButton"
+                        size="sm"
+                      >
+                        Novo +
+                      </Button>
+                    </div>
+                  </Accordion.Collapse>
+                </ResourceAccordionItem>
+              </Accordion>
+            </div>
+
+            <Button
+              onClick={handleIncludeResourceInPlan}
+              className="darkBlueButton"
+            >
+              Incluir Recurso
+            </Button>
           </div>
 
-          <Button className="darkBlueButton">Incluir Recurso</Button>
-        </div>
+          <div className="resourceListing">
+            <h5>{titles.listTitle}</h5>
+            <Input
+              placeholder="Filtro"
+              rightIcon={<GrSearch />}
+              borderBottomOnly
+              value={resourceListFilterText}
+              onChange={(e) => setResourceListFilterText(e.target.value)}
+              size="small"
+            />
+            {filteredByAnyResources.map((resourceItem, index) => {
+              if (resourceItem.type !== type) {
+                return null;
+              }
 
-        <div className="resourceListing">
-          <h5>LISTA DE VEÍCULOS</h5>
-          <Input
-            placeholder="Filtro"
-            rightIcon={<GrSearch />}
-            borderBottomOnly
-            value={resourceListFilterText}
-            onChange={(e) => setResourceListFilterText(e.target.value)}
-            size="small"
-          />
-          {filteredByAnyResources.map((resourceItem, index) => (
-            <div
-              className="resourceListItem"
-              key={`${resourceItem.id}${index}`}
-            >
-              <div>
-                <h6>Tipo/Modelo:</h6>
-                <span>{resourceItem.value1}</span>
-              </div>
-              <div>
-                <h6>Descrição/Características:</h6>
-                <span>{resourceItem.value2}</span>
-              </div>
-              <div>
-                <h6>Quantidade:</h6>
-                <span>{resourceItem.value3}</span>
-              </div>
-              <div>
-                <h6>Endereço:</h6>
-                <span>{resourceItem.formatttedAddress}</span>
-              </div>
-              <div>
-                <h6>Contato:</h6>
-                <div className="contactAttributeContainer">
-                  {resourceItem.responsibles.map((responsible, index) => (
-                    <span key={`${responsible.personId}${index}`}>
-                      {responsible.name}, {responsible.phone}
+              return (
+                <div
+                  className="resourceListItem"
+                  key={`${resourceItem.id}${index}`}
+                >
+                  <div>
+                    <h6>{inputLabels.label1}</h6>
+                    <span>{resourceItem.value1}</span>
+                  </div>
+                  <div>
+                    <h6>{inputLabels.label2}</h6>
+                    <span>
+                      {resourceItem.formattedValue2 || resourceItem.value2}
                     </span>
-                  ))}
+                  </div>
+                  {!!inputLabels.label3 && (
+                    <div>
+                      <h6>{inputLabels.label3}</h6>
+                      <span>{resourceItem.value3}</span>
+                    </div>
+                  )}
+                  <div>
+                    <h6>Endereço:</h6>
+                    <span>{resourceItem.formattedAddress}</span>
+                  </div>
+                  <div>
+                    <h6>Contato:</h6>
+                    <div className="contactAttributeContainer">
+                      {resourceItem.responsibles.map((responsible, index) => (
+                        <span key={`${responsible.personId}${index}`}>
+                          {responsible.name}, {responsible.phone}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Container>
-    </Modal>
+              );
+            })}
+          </div>
+        </Container>
+      </Modal>
+      <AddToGroupModal
+        show={showAddToGroupModal}
+        setShow={setShowAddToGroupModal}
+      />
+      <AddressModal
+        show={showAddAddressModal}
+        setShow={setShowAddAddressModal}
+        setExternalAddress={setCurrentAddedAddress}
+        selectAddress={() => setSelectedAddressIndex(-2)}
+      />
+    </>
   );
 };
 

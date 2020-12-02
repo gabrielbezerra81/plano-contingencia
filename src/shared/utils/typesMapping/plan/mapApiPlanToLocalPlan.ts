@@ -1,6 +1,6 @@
 import { Plano } from "types/ModelsAPI";
 import { PlanData } from "types/Plan";
-import mapLocalRiscoToRiskLocation from "../riskLocation/mapLocalRiscoToRiskLocation";
+import mapEnderecoToAddress from "../address/mapEnderecoToAddress";
 import mapMembroToLocalMember from "../member/mapMembroToLocalMember";
 
 export default function mapApiPlanToLocalPlan(apiPlan: Plano): PlanData {
@@ -19,8 +19,27 @@ export default function mapApiPlanToLocalPlan(apiPlan: Plano): PlanData {
   );
 
   plan.riskLocations = apiPlan.locaisDeRisco.map((apiLocation) =>
-    mapLocalRiscoToRiskLocation(apiLocation),
+    mapEnderecoToAddress(apiLocation),
   );
+
+  plan.resources = apiPlan.recursos.map((recurso) => ({
+    address: mapEnderecoToAddress(recurso.endereco),
+    value1: recurso.valor1,
+    value2: recurso.valor2,
+    value3: recurso.valor3,
+    id: recurso.id || "",
+    type: recurso.tipo as any,
+    responsibles: recurso.responsaveis.map((responsavel) => ({
+      name: responsavel.nome,
+      permission: responsavel.permissao as any,
+      personId: responsavel.pessoaId,
+      phone: responsavel.telefone,
+      role: responsavel.funcao_atribuicao,
+      status: responsavel.aceite ? 1 : 0,
+      group: !!responsavel.grupo,
+      id: responsavel.id || "",
+    })),
+  }));
 
   return plan;
 }
