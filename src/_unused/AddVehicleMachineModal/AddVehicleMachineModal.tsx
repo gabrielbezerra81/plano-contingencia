@@ -1,9 +1,9 @@
 import produce from "immer";
 import React, { useState, useCallback } from "react";
 import { Button } from "react-bootstrap";
-import AttributeListing from "../AttributeListing/AttributeListing";
-import Input from "../Input/Input";
-import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
+import AttributeListing from "../../shared/components/AttributeListing/AttributeListing";
+import Input from "../../shared/components/Input/Input";
+import ModalCloseButton from "../../shared/components/ModalCloseButton/ModalCloseButton";
 
 import { Modal, Container } from "./styles";
 
