@@ -59,7 +59,7 @@ const StepFour: React.FC = () => {
               <div key={index} className="itemListing">
                 <Form.Check custom type="checkbox" />
                 <h6>
-                  {locationItem.name},
+                  {locationItem.identification},
                   <br />
                   {locationItem.street}, {locationItem.neighbor}
                   <br />

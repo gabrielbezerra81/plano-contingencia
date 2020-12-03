@@ -1,17 +1,16 @@
-export interface UserAddress {
-  id: string;
+export interface Address {
+  id?: string;
   cep: string;
+  identification?: string;
+  street: string;
+  number?: string;
+  complement: string;
+  neighbor: string;
   city: string;
   state: string;
-  street: string;
-  neighbor: string;
-  number: string;
-  complement: string;
-
-  identification?: string;
-  latitude?: number;
-  longitude?: number;
-  priority?: number;
+  refPoint: string;
+  lat?: string;
+  long?: string;
 }
 
 // TODO: pendente de validação
@@ -37,7 +36,7 @@ export interface Person {
   emails: Array<string>;
   birthDate: string;
   gender: "female" | "male";
-  addresses: Array<UserAddress>;
+  addresses: Array<Address>;
   documents: Array<UserDocument>;
   status?: number;
 }
@@ -54,21 +53,6 @@ export interface GroupPerson {
 }
 
 export interface Member extends GroupPerson {}
-
-export interface Address {
-  id?: string;
-  cep: string;
-  name: string;
-  street: string;
-  number?: string;
-  complement: string;
-  neighbor: string;
-  city: string;
-  state: string;
-  refPoint: string;
-  lat: string;
-  long: string;
-}
 
 export interface RiskLocation extends Address {}
 

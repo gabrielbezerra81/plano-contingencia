@@ -1,5 +1,6 @@
+import numberFormatter from "shared/utils/numberFormatter";
 import { Pessoa } from "types/ModelsAPI";
-import { Person, Phone, UserAddress } from "types/Plan";
+import { Person, Phone, Address } from "types/Plan";
 
 export default function mapPessoaToLocalPerson(pessoa: Pessoa): Person {
   const phones: Phone[] = pessoa.telefones
@@ -11,20 +12,37 @@ export default function mapPessoaToLocalPerson(pessoa: Pessoa): Person {
       }))
     : [];
 
-  const addresses: UserAddress[] = pessoa.enderecos
-    ? pessoa.enderecos.map((endereco) => ({
-        cep: endereco.cep || "",
-        city: endereco.localidade || "",
-        complement: endereco.complemento || "",
-        id: endereco.id || "",
-        neighbor: endereco.bairro,
-        number: endereco.numero || "",
-        state: endereco.uf,
-        street: endereco.logradouro,
-        identification: endereco.identificacao,
-        latitude: endereco.latitude,
-        longitude: endereco.longitude,
-      }))
+  const addresses: Address[] = pessoa.enderecos
+    ? pessoa.enderecos.map((endereco) => {
+        const latitude = endereco.latitude
+          ? numberFormatter({
+              value: endereco.latitude,
+              precision: 7,
+            })
+          : "";
+
+        const longitude = endereco.longitude
+          ? numberFormatter({
+              value: endereco.longitude,
+              precision: 7,
+            })
+          : "";
+
+        return {
+          cep: endereco.cep || "",
+          city: endereco.localidade || "",
+          complement: endereco.complemento || "",
+          id: endereco.id || "",
+          neighbor: endereco.bairro,
+          number: endereco.numero || "",
+          state: endereco.uf,
+          street: endereco.logradouro,
+          identification: endereco.identificacao,
+          latitude,
+          longitude,
+          refPoint: endereco.referencia,
+        };
+      })
     : [];
 
   const person: Person = {

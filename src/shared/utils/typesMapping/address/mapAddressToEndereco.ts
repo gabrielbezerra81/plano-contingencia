@@ -1,15 +1,20 @@
+import numberFormatter from "shared/utils/numberFormatter";
 import { Endereco } from "types/ModelsAPI";
 import { Address } from "types/Plan";
 
 export default function mapAddressToEndereco(address: Address): Endereco {
-  const latitude = Number(address.lat.replace(",", "."));
-  const longitude = Number(address.long.replace(",", "."));
+  const latitude = address.lat
+    ? numberFormatter({ value: address.lat, stringToNumber: true })
+    : undefined;
+  const longitude = address.long
+    ? numberFormatter({ value: address.long, stringToNumber: true })
+    : undefined;
 
   return {
     bairro: address.neighbor,
     cep: address.cep,
     complemento: address.complement,
-    identificacao: address.name,
+    identificacao: address.identification,
     latitude,
     longitude,
     localidade: address.city,
@@ -17,5 +22,6 @@ export default function mapAddressToEndereco(address: Address): Endereco {
     uf: address.state,
     numero: address.number,
     id: address.id,
+    referencia: address.refPoint,
   };
 }

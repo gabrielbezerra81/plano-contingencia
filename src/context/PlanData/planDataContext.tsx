@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import getMainPhoneFromPerson from "shared/utils/getMainPhoneFromPerson";
+import mapPersonToPessoa from "shared/utils/typesMapping/person/mapPersonToPessoa";
 import mapPessoaToLocalPerson from "shared/utils/typesMapping/person/mapPessoaToLocalPerson";
 import mapApiPlanToLocalPlan from "shared/utils/typesMapping/plan/mapApiPlanToLocalPlan";
 import mapPlanToAPIPayload from "shared/utils/typesMapping/plan/mapPlanToAPIPayload";
@@ -47,62 +48,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
     },
     workGroup: [],
     riskLocations: [],
-    resources: [
-      {
-        id: "",
-        type: "pessoa",
-        address: {
-          cep: "64660-000",
-          city: "Pio IX",
-          complement: "",
-          lat: "0",
-          long: "0",
-          name: "Pio IX",
-          neighbor: "Centro",
-          refPoint: "",
-          state: "PI",
-          street: "Rua Major Vitalino Bezerra",
-          number: "370",
-        },
-        responsibles: [
-          {
-            name: "Gabriel",
-            permission: "editor",
-            personId: "",
-            phone: "(86) 99831-9883",
-            role: "Dev web",
-            status: 0,
-          },
-        ],
-      },
-      {
-        id: "",
-        type: "veiculo",
-        address: {
-          cep: "64660-000",
-          city: "Pio IX",
-          complement: "",
-          lat: "0",
-          long: "0",
-          name: "Pio IX",
-          neighbor: "Centro",
-          refPoint: "",
-          state: "PI",
-          street: "Rua Major Vitalino Bezerra",
-          number: "370",
-        },
-        responsibles: [
-          {
-            name: "Gabriel",
-            permission: "editor",
-            personId: "",
-            phone: "(86) 99831-9883",
-            role: "Dev web",
-            status: 0,
-          },
-        ],
-      },
-    ],
+    resources: [],
   });
 
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
@@ -194,32 +140,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
   const addNewUser = useCallback(
     async (person: Person) => {
       try {
-        console.log(person.birthDate);
-        const payload: Partial<Pessoa> = {
-          nome: person.name,
-          sobrenome: person.surname,
-          emails: person.emails,
-          nascimento: person.birthDate,
-          sexo: person.gender,
-          enderecos: person.addresses.map((address) => ({
-            localidade: address.city,
-            bairro: address.neighbor,
-            cep: address.cep,
-            logradouro: address.street,
-            numero: address.number,
-            complemento: address.complement,
-            uf: address.state,
-            latitude: address.latitude,
-            longitude: address.longitude,
-            identificacao: address.identification,
-          })),
-          telefones: person.phones.map((phone) => ({
-            ddd_numero: phone.phone,
-            observacao: phone.obs,
-            prioridade: phone.priority,
-            tipo: phone.type,
-          })),
-        };
+        const payload = mapPersonToPessoa(person);
 
         const response = await api.post("pessoas", payload);
 

@@ -32,7 +32,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 const emptyAddress: RiskLocation = {
   id: "",
   cep: "",
-  name: "",
+  identification: "",
   street: "",
   complement: "",
   neighbor: "",
@@ -60,7 +60,7 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
   const [address, setAddress] = useState<RiskLocation>({
     id: "",
     cep: "",
-    name: "",
+    identification: "",
     street: "",
     complement: "",
     neighbor: "",
@@ -78,21 +78,14 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
         setPosition(e.latlng);
         map.flyTo(e.latlng, 16);
 
-        const latitude = e.latlng.lat.toFixed(7);
-        const longitude = e.latlng.lng.toFixed(7);
-
         const latLong = {
           lat: numberFormatter({
-            value: latitude,
+            value: e.latlng.lat,
             precision: 7,
-            fromSeparator: ".",
-            toSeparator: ",",
           }),
           long: numberFormatter({
-            value: longitude,
+            value: e.latlng.lng,
             precision: 7,
-            fromSeparator: ".",
-            toSeparator: ",",
           }),
         };
 
@@ -101,21 +94,14 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
       map.addEventListener("click", (e: any) => {
         setPosition(e.latlng);
 
-        const latitude = e.latlng.lat.toFixed(7);
-        const longitude = e.latlng.lng.toFixed(7);
-
         const latLong = {
           lat: numberFormatter({
-            value: latitude,
+            value: e.latlng.lat,
             precision: 7,
-            fromSeparator: ".",
-            toSeparator: ",",
           }),
           long: numberFormatter({
-            value: longitude,
+            value: e.latlng.lng,
             precision: 7,
-            fromSeparator: ".",
-            toSeparator: ",",
           }),
         };
 
@@ -257,7 +243,7 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
                 ? `${addressItem.complement},`
                 : "";
 
-              return `${addressItem.name}, ${addressItem.street}, ${addressItem.neighbor}, ${complement} ${addressItem.city}, ${addressItem.state}`;
+              return `${addressItem.identification}, ${addressItem.street}, ${addressItem.neighbor}, ${complement} ${addressItem.city}, ${addressItem.state}`;
             }}
           />
         </MapAndAddressListContainer>
@@ -286,8 +272,8 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
             <Input
               labelOnInput="Nome/Identificação:"
               borderBottomOnly
-              name="name"
-              value={address.name}
+              name="identification"
+              value={address.identification}
               onChange={handleEditCurrentAddress}
             />
             <Input

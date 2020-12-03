@@ -5,20 +5,19 @@ export interface Telefone {
   tipo: string;
 }
 
-export interface EnderecoPessoa {
+export interface Endereco {
   id?: string;
   cep: string;
+  identificacao?: string;
+  logradouro: string;
+  numero?: string;
+  complemento: string;
+  bairro: string;
   localidade: string;
   uf: string;
-  logradouro: string;
-  bairro: string;
-  numero: string;
-  complemento: string;
-
-  identificacao?: string;
   latitude?: number;
   longitude?: number;
-  prioridade?: number;
+  referencia: string;
 }
 
 export interface Pessoa {
@@ -30,7 +29,7 @@ export interface Pessoa {
   emails: Array<string>;
   nascimento?: string;
   sexo: string;
-  enderecos: Array<EnderecoPessoa>;
+  enderecos: Array<Endereco>;
   atualizacao?: string;
   cadastro?: string;
 
@@ -54,20 +53,6 @@ export interface Membro {
   grupo?: boolean;
   pessoaId: string;
   telefone: string;
-}
-
-export interface Endereco {
-  id?: string;
-  cep: string;
-  identificacao: string;
-  logradouro: string;
-  numero?: string;
-  complemento: string;
-  bairro: string;
-  localidade: string;
-  uf: string;
-  latitude: number;
-  longitude: number;
 }
 
 export interface LocalRisco extends Omit<Endereco, "id"> {

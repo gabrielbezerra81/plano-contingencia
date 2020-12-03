@@ -5,7 +5,7 @@ import { Button, Form } from "react-bootstrap";
 
 import AttributeListing from "shared/components/AttributeListing/AttributeListing";
 import Input from "shared/components/Input/Input";
-import { Person, UserAddress, UserDocument } from "types/Plan";
+import { Person, Address, UserDocument } from "types/Plan";
 
 import { Modal, Container } from "./styles";
 
@@ -29,7 +29,7 @@ const emptyPerson: Person = {
   documents: [],
 };
 
-const emptyAddress: UserAddress = {
+const emptyAddress: Address = {
   id: "",
   cep: "",
   city: "",
@@ -38,6 +38,8 @@ const emptyAddress: UserAddress = {
   neighbor: "",
   number: "",
   complement: "",
+  refPoint: "",
+  identification: "",
 };
 
 const emptyDocument: UserDocument = {
@@ -76,7 +78,7 @@ const AddUserModal: React.FC<Props> = ({
     "editor" | "visualizar" | "nenhuma"
   >("editor");
 
-  const [currentAddress, setCurrentAddress] = useState<UserAddress>({
+  const [currentAddress, setCurrentAddress] = useState<Address>({
     id: "123",
     cep: "",
     city: "",
@@ -85,6 +87,7 @@ const AddUserModal: React.FC<Props> = ({
     neighbor: "",
     number: "",
     complement: "",
+    refPoint: "",
   });
   const [currentDocument, setCurrentDocument] = useState<UserDocument>({
     type: "",
@@ -517,7 +520,7 @@ const AddUserModal: React.FC<Props> = ({
               items={user.addresses}
               name="addresses"
               onRemove={handleRemoveItemOfList}
-              renderText={(addressItem: UserAddress) => {
+              renderText={(addressItem: Address) => {
                 return `${addressItem.street}, ${addressItem.number}, ${addressItem.city}, ${addressItem.state}.`;
               }}
               size="small"

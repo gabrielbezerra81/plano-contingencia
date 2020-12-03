@@ -14,7 +14,6 @@ import { Modal, Container, ResourceAccordionItem } from "./styles";
 import AddToGroupModal from "../AddToGroupModal/AddToGroupModal";
 import AddressModal from "../AddressModal/AddressModal";
 import formatResourceAddress from "shared/utils/formatResourceAddress";
-import numberFormatter from "shared/utils/numberFormatter";
 import formatResources from "shared/utils/formatResources";
 import NumberInput from "../NumberInput/NumberInput";
 
@@ -27,7 +26,7 @@ interface Props {
 const emptyAddress: Address = {
   id: "",
   cep: "",
-  name: "",
+  identification: "",
   street: "",
   complement: "",
   neighbor: "",
@@ -136,6 +135,8 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
     }
 
     addResource({ ...resource, address, type });
+
+    setActiveKey("0");
 
     clearInputs();
   }, [

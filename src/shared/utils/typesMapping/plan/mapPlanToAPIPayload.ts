@@ -1,3 +1,4 @@
+import numberFormatter from "shared/utils/numberFormatter";
 import { Plano } from "types/ModelsAPI";
 import { PlanData } from "types/Plan";
 import mapAddressToEndereco from "../address/mapAddressToEndereco";
@@ -21,22 +22,26 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
   }));
 
   payload.locaisDeRisco = planData.riskLocations.map((riskLocation) => {
-    const lat = Number(riskLocation.lat.split(".").join("").replace(",", "."));
-    const long = Number(
-      riskLocation.long.split(".").join("").replace(",", "."),
-    );
+    const latitude = riskLocation.lat
+      ? numberFormatter({ value: riskLocation.lat, stringToNumber: true })
+      : undefined;
+
+    const longitude = riskLocation.long
+      ? numberFormatter({ value: riskLocation.long, stringToNumber: true })
+      : undefined;
 
     return {
       bairro: riskLocation.neighbor,
       cep: riskLocation.cep,
       complemento: riskLocation.complement,
-      identificacao: riskLocation.name,
-      latitude: lat,
-      longitude: long,
+      identificacao: riskLocation.identification,
+      latitude,
+      longitude,
       localidade: riskLocation.city,
       logradouro: riskLocation.street,
       numero: riskLocation.number || "",
       uf: riskLocation.state,
+      referencia: riskLocation.refPoint,
     };
   });
 

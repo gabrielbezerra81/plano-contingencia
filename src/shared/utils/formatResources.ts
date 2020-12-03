@@ -1,6 +1,5 @@
 import { Resource } from "types/Plan";
 import formatResourceAddress from "./formatResourceAddress";
-import numberFormatter from "./numberFormatter";
 
 export default function formatResources(resources: Resource[]) {
   const formatted = resources.map((resourceItem) => {

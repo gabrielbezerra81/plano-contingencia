@@ -29,7 +29,7 @@ interface Props {
 const emptyAddress: Address = {
   id: "",
   cep: "",
-  name: "",
+  identification: "",
   street: "",
   complement: "",
   neighbor: "",
@@ -51,7 +51,7 @@ const AddressModal: React.FC<Props> = ({
   const [address, setAddress] = useState<Address>({
     id: "",
     cep: "",
-    name: "",
+    identification: "",
     street: "",
     complement: "",
     neighbor: "",
@@ -151,21 +151,14 @@ const AddressModal: React.FC<Props> = ({
         setPosition(e.latlng);
         map.flyTo(e.latlng, 16);
 
-        const latitude = e.latlng.lat.toFixed(7);
-        const longitude = e.latlng.lng.toFixed(7);
-
         const latLong = {
           lat: numberFormatter({
-            value: latitude,
+            value: e.latlng.lat,
             precision: 7,
-            fromSeparator: ".",
-            toSeparator: ",",
           }),
           long: numberFormatter({
-            value: longitude,
+            value: e.latlng.lng,
             precision: 7,
-            fromSeparator: ".",
-            toSeparator: ",",
           }),
         };
 
@@ -174,21 +167,14 @@ const AddressModal: React.FC<Props> = ({
       map.addEventListener("click", (e: any) => {
         setPosition(e.latlng);
 
-        const latitude = e.latlng.lat.toFixed(7);
-        const longitude = e.latlng.lng.toFixed(7);
-
         const latLong = {
           lat: numberFormatter({
-            value: latitude,
+            value: e.latlng.lat,
             precision: 7,
-            fromSeparator: ".",
-            toSeparator: ",",
           }),
           long: numberFormatter({
-            value: longitude,
+            value: e.latlng.lng,
             precision: 7,
-            fromSeparator: ".",
-            toSeparator: ",",
           }),
         };
 
@@ -271,8 +257,8 @@ const AddressModal: React.FC<Props> = ({
               <Input
                 labelOnInput="Nome/Identificação:"
                 borderBottomOnly
-                name="name"
-                value={address.name}
+                name="identification"
+                value={address.identification}
                 onChange={handleEditCurrentAddress}
               />
               <Input

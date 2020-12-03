@@ -119,6 +119,7 @@ const NumberInput: React.FC<Props> = ({
             precision: precision - 1,
             fromSeparator: ",",
             toSeparator: ",",
+            isInputValue: true,
           });
       }}
       onFocus={(event) => {
