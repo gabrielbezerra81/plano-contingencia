@@ -6,6 +6,7 @@ import { Button, Form } from "react-bootstrap";
 import AttributeListing from "shared/components/AttributeListing/AttributeListing";
 import Input from "shared/components/Input/Input";
 import { Person, Address, UserDocument } from "types/Plan";
+import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 
 import { Modal, Container } from "./styles";
 
@@ -249,6 +250,7 @@ const AddUserModal: React.FC<Props> = ({
       onHide={() => setShow(false)}
       onExit={handleCleanOnExit}
     >
+      <ModalCloseButton setShow={setShow} />
       <Container>
         <div className="borderedContainer userDataContainer">
           <label>Dados</label>

@@ -16,6 +16,7 @@ import AddressModal from "../AddressModal/AddressModal";
 import formatResourceAddress from "shared/utils/formatResourceAddress";
 import formatResources from "shared/utils/formatResources";
 import NumberInput from "../NumberInput/NumberInput";
+import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 
 interface Props {
   show: boolean;
@@ -322,6 +323,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
         styled={{ isBehindModal: showAddToGroupModal }}
         onExit={clearInputs}
       >
+        <ModalCloseButton setShow={setShow} />
         <Container>
           <div className="borderedContainer">
             <label>{titles.modalTitle}</label>

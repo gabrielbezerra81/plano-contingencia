@@ -50,7 +50,7 @@ export const Container = styled.div<ContainerProps>`
   ${({ borderBottomOnly }) =>
     borderBottomOnly &&
     css`
-      border-bottom: 1px solid #000;
+      border-bottom: 1px solid #929292;
       border-radius: 0;
     `}
 

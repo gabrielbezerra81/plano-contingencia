@@ -3,6 +3,7 @@ import React, { useState, useCallback } from "react";
 import { Button } from "react-bootstrap";
 import AttributeListing from "../AttributeListing/AttributeListing";
 import Input from "../Input/Input";
+import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 
 import { Modal, Container } from "./styles";
 
@@ -38,6 +39,7 @@ const AddVehicleMachineModal: React.FC<Props> = ({ show, setShow }) => {
       show={show}
       onHide={() => setShow(false)}
     >
+      <ModalCloseButton setShow={setShow} />
       <Container>
         <div className="borderedContainer">
           <h6>ADICIONAR VEICULO OU MAQUINÁRIO</h6>

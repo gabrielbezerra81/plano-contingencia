@@ -18,6 +18,7 @@ import {
 import NumberInput from "../NumberInput/NumberInput";
 import produce from "immer";
 import numberFormatter from "shared/utils/numberFormatter";
+import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 
 interface Props {
   show: boolean;
@@ -196,6 +197,7 @@ const AddressModal: React.FC<Props> = ({
       show={show}
       onHide={() => setShow(false)}
     >
+      <ModalCloseButton setShow={setShow} />
       <Container>
         <div className="borderedContainer">
           <label>Endereço do recurso</label>

@@ -71,7 +71,7 @@ export const AddLocationContainer = styled.div`
   padding-left: 8px;
 
   .inputContainer {
-    border-bottom-color: #a8a8a8;
+    border-bottom-color: #929292;
   }
 
   > main {

@@ -22,6 +22,7 @@ import { FaSortDown, FaSortUp, FaSort } from "react-icons/fa";
 import AddToGroupModal from "shared/components/AddToGroupModal/AddToGroupModal";
 import { Member, ResourceType } from "types/Plan";
 import CreateResourceModal from "../CreateResourceModal/CreateResourceModal";
+import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 
 type ReducedMember = Omit<Member, "group" | "permission" | "personId">;
 
@@ -140,6 +141,7 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
   return (
     <>
       <Modal centered show={show} onHide={() => setShow(false)}>
+        <ModalCloseButton setShow={setShow} />
         <Container>
           <header>
             <button onClick={handleOpenAddToGroupModal}>

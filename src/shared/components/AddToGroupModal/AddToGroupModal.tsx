@@ -12,6 +12,7 @@ import { Modal, Container } from "./styles";
 import AddUserModal from "../AddUserModal/AddUserModal";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { Person } from "types/Plan";
+import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 
 interface Props {
   show: boolean;
@@ -105,6 +106,7 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
         show={show}
         onHide={() => setShow(false)}
       >
+        <ModalCloseButton setShow={setShow} />
         <Container>
           <h6>ADICIONAR MEMBRO AO GRUPO DE TRABALHO</h6>
           <img src={addMemberImg} alt="Membros" />
