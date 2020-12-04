@@ -6,7 +6,13 @@ import Select from "react-select";
 
 import { Button, Accordion, Form } from "react-bootstrap";
 import { GrSearch } from "react-icons/gr";
-import { Address, Resource, ResourceType } from "types/Plan";
+import {
+  Address,
+  Member,
+  Resource,
+  ResourceType,
+  Responsible,
+} from "types/Plan";
 import AttributeListing from "../AttributeListing/AttributeListing";
 import Input from "../Input/Input";
 
@@ -17,6 +23,7 @@ import formatResourceAddress from "shared/utils/formatResourceAddress";
 import formatResources from "shared/utils/formatResources";
 import NumberInput from "../NumberInput/NumberInput";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
+import AddResponsibleModal from "../AddResponsibleModal/AddResponsibleModal";
 
 interface Props {
   show: boolean;
@@ -76,6 +83,12 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
 
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
+  const [showAddResponsibleModal, setShowAddResponsibleModal] = useState(false);
+
+  const [
+    selectedResponsibleToAdd,
+    setSelectedResponsibleToAdd,
+  ] = useState<Responsible | null>(null);
 
   const handleEditCurrentResource = useCallback(
     (e) => {
@@ -112,6 +125,12 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
 
   const openAddAddressModal = useCallback(() => {
     setShowAddAddressModal(true);
+  }, []);
+
+  const handleSelectResponsibleAndOpenModal = useCallback((member: Member) => {
+    setShowAddResponsibleModal(true);
+
+    setSelectedResponsibleToAdd({ ...member, role: "" });
   }, []);
 
   const clearInputs = useCallback(() => {
@@ -320,7 +339,9 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
         centered
         show={show}
         onHide={() => setShow(false)}
-        styled={{ isBehindModal: showAddToGroupModal }}
+        styled={{
+          isBehindModal: showAddToGroupModal || showAddResponsibleModal,
+        }}
         onExit={clearInputs}
       >
         <ModalCloseButton setShow={setShow} />
@@ -386,12 +407,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                         placeholder="Adicionar um responsavel"
                         options={contactSelectOptions}
                         onChange={({ value }: any) => {
-                          handleEditCurrentResource({
-                            target: {
-                              name: "responsibles",
-                              value,
-                            },
-                          });
+                          handleSelectResponsibleAndOpenModal(value);
                         }}
                       />
 
@@ -545,6 +561,16 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
           </div>
         </Container>
       </Modal>
+      {!!selectedResponsibleToAdd && (
+        <AddResponsibleModal
+          show={showAddResponsibleModal}
+          setShow={setShowAddResponsibleModal}
+          responsible={selectedResponsibleToAdd}
+          setResponsible={setSelectedResponsibleToAdd}
+          addResponsible={handleEditCurrentResource}
+        />
+      )}
+
       <AddToGroupModal
         show={showAddToGroupModal}
         setShow={setShowAddToGroupModal}
