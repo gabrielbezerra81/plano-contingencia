@@ -9,36 +9,48 @@ import vehiclesIcon from "assets/images/veiculos.png";
 import materialsIcon from "assets/images/materiais.png";
 import foodIcon from "assets/images/alimentacao.png";
 import homeIcon from "assets/images/abrigo.png";
+import selectedHomeIcon from "assets/images/abrigoSelecionado.png";
 
 import { Container } from "./styles";
 import Input from "shared/components/Input/Input";
 import { Button } from "react-bootstrap";
-
-type ItemKey = "pessoal" | "veiculos" | "materiais" | "alimentacao" | "abrigo";
+import { usePlanData } from "context/PlanData/planDataContext";
+import { ResourceType } from "types/Plan";
+import CreateResourceModal from "shared/components/CreateResourceModal/CreateResourceModal";
+import AddToGroupModal from "shared/components/AddToGroupModal/AddToGroupModal";
 
 const RightSideMenu: React.FC = () => {
+  const { planData } = usePlanData();
+
   const { isOpenRightSideMenu, changeRightSideMenuVisibility } = useSystem();
 
   const [filterText, setFilterText] = useState("");
 
-  const [activeItem, setActiveItem] = useState<ItemKey | null>(null);
+  const [activeItem, setActiveItem] = useState<ResourceType | null>(null);
+
+  const [showCreateResourceModal, setShowCreateResourceModal] = useState(false);
+  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+
+  const openAddToGroupModal = useCallback(() => {
+    setShowAddToGroupModal(true);
+  }, []);
 
   const handleItemClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       const { name } = e.currentTarget;
 
-      setActiveItem(name as ItemKey);
+      setActiveItem(name as ResourceType);
     },
     [],
   );
 
   const activeChild = useMemo(() => {
     switch (activeItem) {
-      case "pessoal":
+      case "pessoa":
         return 1;
-      case "veiculos":
+      case "veiculo":
         return 2;
-      case "materiais":
+      case "material":
         return 3;
       case "alimentacao":
         return 4;
@@ -49,71 +61,100 @@ const RightSideMenu: React.FC = () => {
     }
   }, [activeItem]);
 
-  const handleCreateResource = useCallback(() => {}, []);
+  const handleCreateResource = useCallback(() => {
+    setShowCreateResourceModal(true);
+  }, []);
 
   const handleListResource = useCallback(() => {}, []);
 
   return (
-    <Container activeItemNumber={activeChild} isOpen={isOpenRightSideMenu}>
-      <header>
-        <button onClick={changeRightSideMenuVisibility}>
-          <BsFillCaretRightFill size={18} color="#FFF" />
-          {isOpenRightSideMenu && <h6>RECURSOS</h6>}
-        </button>
-      </header>
-
-      <div className="main">
-        <aside>
-          <button name="pessoal" onClick={handleItemClick}>
-            <img src={peopleIcon} alt="PESSOAL" />
-            <span>PESSOAL</span>
+    <>
+      <Container activeItemNumber={activeChild} isOpen={isOpenRightSideMenu}>
+        <header>
+          <button onClick={changeRightSideMenuVisibility}>
+            <BsFillCaretRightFill size={18} color="#FFF" />
+            {isOpenRightSideMenu && <h6>RECURSOS</h6>}
           </button>
+        </header>
 
-          <button name="veiculos" onClick={handleItemClick}>
-            <img src={vehiclesIcon} alt="VEÍCULOS E MAQUINÁRIOS" />
-            <span>VEÍCULOS E MAQUINÁRIOS</span>
-          </button>
+        <div className="main">
+          <aside>
+            <button onClick={openAddToGroupModal}>
+              <img src={peopleIcon} alt="PESSOAL" />
+              <span>PESSOAL</span>
+            </button>
 
-          <button name="materiais" onClick={handleItemClick}>
-            <img src={materialsIcon} alt="MATERIAIS" />
-            <span>MATERIAIS</span>
-          </button>
+            <button name="veiculo" onClick={handleItemClick}>
+              <img src={vehiclesIcon} alt="VEÍCULOS E MAQUINÁRIOS" />
+              <span>VEÍCULOS E MAQUINÁRIOS</span>
+            </button>
 
-          <button name="alimentacao" onClick={handleItemClick}>
-            <img src={foodIcon} alt="ALIMENTAÇÃO" />
-            <span>ALIMENTAÇÃO</span>
-          </button>
+            <button name="material" onClick={handleItemClick}>
+              <img src={materialsIcon} alt="MATERIAIS" />
+              <span>MATERIAIS</span>
+            </button>
 
-          <button name="abrigo" onClick={handleItemClick}>
-            <img src={homeIcon} alt="ABRIGO" />
-            <span>ABRIGO</span>
-          </button>
-        </aside>
+            <button name="alimentacao" onClick={handleItemClick}>
+              <img src={foodIcon} alt="ALIMENTAÇÃO" />
+              <span>ALIMENTAÇÃO</span>
+            </button>
 
-        <div className="rightMenuContent">
-          <div className="resourceCrudButtonsRow">
-            <Button onClick={handleCreateResource}>Cadastrar</Button>
-            <Button onClick={handleListResource}>Listar</Button>
-          </div>
+            <button name="abrigo" onClick={handleItemClick}>
+              <img
+                src={activeItem === "abrigo" ? selectedHomeIcon : homeIcon}
+                alt="ABRIGO"
+              />
+              <span>ABRIGO</span>
+            </button>
+          </aside>
 
-          <Input
-            containerClass="filterInput"
-            placeholder="Filtro"
-            borderBottomOnly
-            value={filterText}
-            rightIcon={<GrSearch />}
-            onChange={(e) => {
-              setFilterText(e.target.value);
-            }}
-          />
+          <div className="rightMenuContent">
+            <div className="resourceCrudButtonsRow">
+              <Button onClick={handleCreateResource}>Cadastrar</Button>
+              <Button onClick={handleListResource}>Listar</Button>
+            </div>
 
-          <div className="resourceItemList">
-            <h6>Secretário do Meio Ambiente</h6>
-            <h6>Michael (62) 92000-3498</h6>
+            <Input
+              containerClass="filterInput"
+              placeholder="Filtro"
+              borderBottomOnly
+              value={filterText}
+              rightIcon={<GrSearch />}
+              onChange={(e) => {
+                setFilterText(e.target.value);
+              }}
+            />
+
+            {planData.resources.map((resource, index) => {
+              if (resource.type === activeItem) {
+                return (
+                  <div key={index} className="resourceItemList">
+                    <h6>{resource.value1}</h6>
+                    <h6>
+                      {resource.responsibles.length
+                        ? `${resource.responsibles[0].name} ${resource.responsibles[0].phone}`
+                        : ""}
+                    </h6>
+                  </div>
+                );
+              }
+              return null;
+            })}
           </div>
         </div>
-      </div>
-    </Container>
+      </Container>
+      {!!activeItem && (
+        <CreateResourceModal
+          show={showCreateResourceModal}
+          setShow={setShowCreateResourceModal}
+          type={activeItem}
+        />
+      )}
+      <AddToGroupModal
+        show={showAddToGroupModal}
+        setShow={setShowAddToGroupModal}
+      />
+    </>
   );
 };
 

@@ -140,7 +140,7 @@ export const Container = styled.div<ContainerProps>`
       }
 
       .filterInput {
-        border-bottom-color: #a8a8a8;
+        margin-top: 8px;
 
         span {
           color: #c6c6c6;
