@@ -69,8 +69,24 @@ const GlobalStyle = createGlobalStyle`
       z-index: 1055;
     }
 
+    .addResponsibleModalWrapper {
+      z-index: 1055;
+    }
+
     .addAddressModalWrapper {
       z-index: 1065;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    .form-control:disabled,
+    .form-control[readonly] {
+      background-color: transparent;
     }
   `}
 
