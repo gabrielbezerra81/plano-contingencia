@@ -13,24 +13,6 @@ import { Container } from "./styles";
 const StepFour: React.FC = () => {
   const { planData } = usePlanData();
 
-  const [threats, setThreats] = useState<string[]>([
-    "Geológico (Deslizamento de encosta)",
-  ]);
-
-  const [risks, setRisks] = useState<string[]>([
-    "As condições naturais favorecem ocorrências de deslizamentos,  podendo se agravar com excesso de chuvas.",
-  ]);
-
-  const [hypothesis, setHypothesis] = useState<string[]>([
-    "Deslizamento encosta nos bairros Alfa, Beta e Gama.",
-  ]);
-
-  const [measures, setMeasures] = useState<string[]>([
-    "Retirar as pessoas das residências",
-    "Levalas para um abrigo",
-    "Fornecer Alimentação",
-  ]);
-
   const [showResourceModal, setShowResourceModal] = useState(false);
 
   const handleClickResources = useCallback(() => {
@@ -86,9 +68,9 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {threats.map((threatItem, index) => (
+            {planData.scenarios.map((scenarioItem, index) => (
               <div key={index} className="itemListing">
-                <h6>{threatItem}</h6>
+                <h6>{scenarioItem.threat.cobrade}</h6>
               </div>
             ))}
           </main>
@@ -103,9 +85,9 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {risks.map((riskItem, index) => (
+            {planData.scenarios.map((scenarioItem, index) => (
               <div key={index} className="itemListing">
-                <h6>{riskItem}</h6>
+                <h6>{scenarioItem.risk}</h6>
               </div>
             ))}
           </main>
@@ -120,9 +102,9 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {hypothesis.map((hypotheseItem, index) => (
+            {planData.scenarios.map((scenarioItem, index) => (
               <div key={index} className="itemListing">
-                <h6>{hypotheseItem}</h6>
+                <h6>{scenarioItem.hypothese}</h6>
               </div>
             ))}
           </main>
@@ -141,9 +123,9 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {measures.map((measureItem, index) => (
+            {planData.scenarios.map((scenarioItem, index) => (
               <div key={index} className="itemListing">
-                <h6>{measureItem}</h6>
+                <h6>{scenarioItem.measure}</h6>
               </div>
             ))}
           </main>

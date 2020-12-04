@@ -62,5 +62,7 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
     tipo: resource.type,
   }));
 
+  payload.cenarios = [];
+
   return payload;
 }

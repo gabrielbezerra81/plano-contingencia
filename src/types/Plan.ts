@@ -76,6 +76,27 @@ export interface Resource {
   type: ResourceType;
 }
 
+interface Risk {
+  id: string;
+  description: string;
+}
+
+interface Threat {
+  cobrade: string;
+  description: string;
+}
+
+interface Scenario {
+  id: string;
+  addressId: string;
+  hypothese: string;
+  measure: string;
+  resourceId: string;
+  responsibles: Array<Responsible>;
+  risk: Risk;
+  threat: Threat;
+}
+
 export interface PlanData {
   generalDescription: {
     title: string;
@@ -84,4 +105,5 @@ export interface PlanData {
   workGroup: Array<Member>;
   riskLocations: Array<RiskLocation>;
   resources: Array<Resource>;
+  scenarios: Array<Scenario>;
 }

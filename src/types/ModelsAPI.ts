@@ -80,11 +80,32 @@ export interface Recurso {
   tipo: string;
 }
 
+interface Risco {
+  id: string;
+  descricao: string;
+}
+
+interface Ameaca {
+  cobrade: string;
+  descricao: string;
+}
+
+interface Cenario {
+  id: string;
+  enderecoId: string;
+  hipotese: string;
+  medida: string;
+  recursoId: string;
+  responsaveis: Array<Responsavel>;
+  risco: Risco;
+  ameaca: Ameaca;
+}
+
 export interface Plano {
   id: string;
   titulo: string;
   descricao: string;
-  cenarios: Array<any>;
+  cenarios: Array<Cenario>;
   locaisDeRisco: Array<LocalRisco>;
   membros: Array<Membro>;
   recursos: Array<Recurso>;

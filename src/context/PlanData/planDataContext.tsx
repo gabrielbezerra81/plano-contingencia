@@ -49,6 +49,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
     workGroup: [],
     riskLocations: [],
     resources: [],
+    scenarios: [],
   });
 
   const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
