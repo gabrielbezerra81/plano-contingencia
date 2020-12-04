@@ -117,6 +117,8 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       setIncludedPersons(updatedIncludedPersons);
 
+      // Para adicionar um membro com pessoa já existente é utilizado anotherRole
+      // Para adicionar um membro logo após adicionar uma pessoa, é utilizado Role
       const newMember: Member = {
         name: person.name,
         role: person.anotherRole || person.role,
