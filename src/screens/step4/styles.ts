@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 export const Container = styled.div`
   display: inline-flex;
@@ -99,14 +99,6 @@ export const Container = styled.div`
             }
           }
         }
-
-        > h6 {
-          color: #3d3d3d;
-          font-size: 12px;
-          line-height: 14px;
-          margin-top: 16px;
-          font-weight: 400;
-        }
       }
     }
   }
@@ -114,4 +106,23 @@ export const Container = styled.div`
   > .riskItem {
     min-width: 230px;
   }
+`;
+
+interface ItemListingTextProps {
+  included: boolean;
+}
+
+export const ItemListingText = styled.h6<ItemListingTextProps>`
+  color: #3d3d3d;
+  font-size: 12px;
+  line-height: 14px;
+  margin-top: 16px;
+  font-weight: 400;
+  transition: color 0.2s;
+
+  ${({ included }) =>
+    included &&
+    css`
+      color: #ff7802;
+    `}
 `;

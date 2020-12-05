@@ -87,7 +87,7 @@ interface Threat {
 }
 
 export interface Scenario {
-  id: string;
+  id?: string;
   addressId: string;
   hypothese: string;
   measure: string;

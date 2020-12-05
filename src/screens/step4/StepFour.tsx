@@ -1,5 +1,6 @@
 import api from "api/config";
 import { usePlanData } from "context/PlanData/planDataContext";
+import produce from "immer";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
 
@@ -9,8 +10,9 @@ import Input from "shared/components/Input/Input";
 import ResourcesModal from "shared/components/ResourcesModal/ResourcesModal";
 import formatResources from "shared/utils/formatResources";
 import { Scenario } from "types/Plan";
+import AddHypotheseModal from "./AddHypotheseModal/AddHypotheseModal";
 
-import { Container } from "./styles";
+import { Container, ItemListingText } from "./styles";
 
 interface SuggestionList {
   id: string;
@@ -34,19 +36,82 @@ const StepFour: React.FC = () => {
   const { planData } = usePlanData();
 
   const [showResourceModal, setShowResourceModal] = useState(false);
+  const [showHypotheseModal, setShowHypotheseModal] = useState(false);
 
   const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
 
   const [currentScenario, setCurrentScenario] = useState<Scenario>({
     addressId: "",
     hypothese: "",
-    id: "",
     measure: "",
     resourceId: "",
     responsibles: [],
     risk: { description: "", id: "" },
     threat: { cobrade: "", description: "" },
   });
+
+  const [includedValuesToHighlight, setIncludedValuesToHighlight] = useState<
+    string[]
+  >([]);
+
+  const [addedHypotheses, setAddedHypotheses] = useState<string[]>(() => {
+    const hypotheses = localStorage.getItem("addedHypotheses");
+
+    if (hypotheses) {
+      return JSON.parse(hypotheses);
+    }
+    return [];
+  });
+
+  const handleCheckItem = useCallback(
+    (attr: string, value: any) => {
+      let includedValueToHighlight = "";
+      let removeValue = "";
+
+      const updatedCurrentScenario = produce(currentScenario, (draft) => {
+        switch (attr) {
+          case "addressId":
+            if (draft.addressId === value) {
+              draft.addressId = "";
+              removeValue = value;
+            } else {
+              removeValue = draft.addressId;
+              draft.addressId = value;
+              includedValueToHighlight = value;
+            }
+            break;
+          case "hypothese":
+            if (draft.hypothese === value) {
+              draft.hypothese = "";
+              removeValue = value;
+            } //
+            else {
+              removeValue = draft.hypothese;
+              draft.hypothese = value;
+              includedValueToHighlight = value;
+            }
+            break;
+          default:
+            break;
+        }
+      });
+
+      if (includedValueToHighlight) {
+        setIncludedValuesToHighlight((oldValues) => [
+          ...oldValues,
+          includedValueToHighlight,
+        ]);
+      } //
+      if (removeValue) {
+        setIncludedValuesToHighlight((oldValues) =>
+          oldValues.filter((value) => value !== removeValue),
+        );
+      }
+
+      setCurrentScenario(updatedCurrentScenario);
+    },
+    [currentScenario],
+  );
 
   const handleClickResources = useCallback(() => {
     setShowResourceModal(true);
@@ -57,6 +122,7 @@ const StepFour: React.FC = () => {
     [planData],
   );
 
+  // Carregar Cobrade
   useEffect(() => {
     const numberCobrade = Number(currentScenario.threat.cobrade);
 
@@ -69,6 +135,11 @@ const StepFour: React.FC = () => {
       })
       .catch();
   }, [currentScenario.threat.cobrade]);
+
+  // Salvar hipoteses - armazenamento local
+  useEffect(() => {
+    localStorage.setItem("addedHypotheses", JSON.stringify(addedHypotheses));
+  }, [addedHypotheses]);
 
   return (
     <>
@@ -83,21 +154,34 @@ const StepFour: React.FC = () => {
           </button>
           <main>
             <Input borderBottomOnly rightIcon={<GrSearch />} />
-            {planData.riskLocations.map((locationItem, index) => (
-              <div key={index} className="itemListing">
-                <Form.Check custom type="checkbox" />
-                <h6>
-                  {locationItem.identification},
-                  <br />
-                  {locationItem.street}, {locationItem.neighbor}
-                  <br />
-                  {locationItem.complement
-                    ? `${locationItem.complement}, `
-                    : ""}
-                  {locationItem.city}, {locationItem.state}
-                </h6>
-              </div>
-            ))}
+            {planData.riskLocations.map((locationItem, index) => {
+              const checked = includedValuesToHighlight.includes(
+                "locationItem.id" + index,
+              );
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("addressId", "locationItem.id" + index)
+                    }
+                    checked={checked}
+                  />
+                  <ItemListingText included={checked}>
+                    {locationItem.identification},
+                    <br />
+                    {locationItem.street}, {locationItem.neighbor}
+                    <br />
+                    {locationItem.complement
+                      ? `${locationItem.complement}, `
+                      : ""}
+                    {locationItem.city}, {locationItem.state}
+                  </ItemListingText>
+                </div>
+              );
+            })}
           </main>
         </div>
 
@@ -114,16 +198,28 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {planData.scenarios.map((scenarioItem, index) => (
-              <div key={index} className="itemListing">
-                <h6>{scenarioItem.threat.cobrade}</h6>
-              </div>
-            ))}
+            {planData.scenarios.map((scenarioItem, index) => {
+              const checked = false;
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("", "" + index)}
+                    checked={checked}
+                  />
+                  <ItemListingText included={checked}>
+                    {scenarioItem.threat.cobrade}
+                  </ItemListingText>
+                </div>
+              );
+            })}
           </main>
         </div>
 
         <div className="scenarioItem">
-          <button>
+          <button onClick={() => setShowHypotheseModal(true)}>
             <header>
               <FiPlus />
 
@@ -135,11 +231,23 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {planData.scenarios.map((scenarioItem, index) => (
-              <div key={index} className="itemListing">
-                <h6>{scenarioItem.hypothese}</h6>
-              </div>
-            ))}
+            {addedHypotheses.map((hypothese, index) => {
+              const checked = includedValuesToHighlight.includes(hypothese);
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("hypothese", hypothese)}
+                    checked={checked}
+                  />
+                  <ItemListingText included={checked}>
+                    {hypothese}
+                  </ItemListingText>
+                </div>
+              );
+            })}
           </main>
         </div>
 
@@ -156,11 +264,23 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {planData.scenarios.map((scenarioItem, index) => (
-              <div key={index} className="itemListing">
-                <h6>{scenarioItem.risk}</h6>
-              </div>
-            ))}
+            {planData.scenarios.map((scenarioItem, index) => {
+              const checked = false;
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("", "" + index)}
+                    checked={checked}
+                  />
+                  <ItemListingText included={checked}>
+                    {scenarioItem.risk}
+                  </ItemListingText>
+                </div>
+              );
+            })}
           </main>
         </div>
 
@@ -177,11 +297,23 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {planData.scenarios.map((scenarioItem, index) => (
-              <div key={index} className="itemListing">
-                <h6>{scenarioItem.measure}</h6>
-              </div>
-            ))}
+            {planData.scenarios.map((scenarioItem, index) => {
+              const checked = false;
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("", "" + index)}
+                    checked={checked}
+                  />
+                  <ItemListingText included={checked}>
+                    {scenarioItem.measure}
+                  </ItemListingText>
+                </div>
+              );
+            })}
           </main>
         </div>
 
@@ -195,11 +327,23 @@ const StepFour: React.FC = () => {
           </button>
           <main>
             {planData.resources.map((resource) =>
-              resource.responsibles.map((responsible, index) => (
-                <div key={index} className="itemListing">
-                  <h6>{responsible.name}</h6>
-                </div>
-              )),
+              resource.responsibles.map((responsible, index) => {
+                const checked = false;
+
+                return (
+                  <div key={index} className="itemListing">
+                    <Form.Check
+                      custom
+                      type="checkbox"
+                      onChange={() => handleCheckItem("", "" + index)}
+                      checked={checked}
+                    />
+                    <ItemListingText included={checked}>
+                      {responsible.name}
+                    </ItemListingText>
+                  </div>
+                );
+              }),
             )}
           </main>
         </div>
@@ -213,15 +357,33 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {formattedResources.map((resourceItem, index) => (
-              <div key={index} className="itemListing">
-                <h6>{resourceItem.formattedValue2 || resourceItem.value1}</h6>
-              </div>
-            ))}
+            {formattedResources.map((resourceItem, index) => {
+              const checked = false;
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("", "" + index)}
+                    checked={checked}
+                  />
+                  <ItemListingText included={checked}>
+                    {resourceItem.formattedValue2 || resourceItem.value1}
+                  </ItemListingText>
+                </div>
+              );
+            })}
           </main>
         </div>
       </Container>
       <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
+      <AddHypotheseModal
+        show={showHypotheseModal}
+        setShow={setShowHypotheseModal}
+        setAddedHypotheses={setAddedHypotheses}
+        checkAddedItem={handleCheckItem}
+      />
     </>
   );
 };
