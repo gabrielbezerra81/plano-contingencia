@@ -86,7 +86,7 @@ interface Threat {
   description: string;
 }
 
-interface Scenario {
+export interface Scenario {
   id: string;
   addressId: string;
   hypothese: string;

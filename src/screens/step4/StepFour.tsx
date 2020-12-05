@@ -1,5 +1,6 @@
+import api from "api/config";
 import { usePlanData } from "context/PlanData/planDataContext";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
 
 import { FiPlus } from "react-icons/fi";
@@ -7,13 +8,45 @@ import { GrSearch } from "react-icons/gr";
 import Input from "shared/components/Input/Input";
 import ResourcesModal from "shared/components/ResourcesModal/ResourcesModal";
 import formatResources from "shared/utils/formatResources";
+import { Scenario } from "types/Plan";
 
 import { Container } from "./styles";
+
+interface SuggestionList {
+  id: string;
+  cobrade: string;
+  risco: string;
+  medida: string;
+}
+
+const emptyScenario: Scenario = {
+  addressId: "",
+  hypothese: "",
+  id: "",
+  measure: "",
+  resourceId: "",
+  responsibles: [],
+  risk: { description: "", id: "" },
+  threat: { cobrade: "", description: "" },
+};
 
 const StepFour: React.FC = () => {
   const { planData } = usePlanData();
 
   const [showResourceModal, setShowResourceModal] = useState(false);
+
+  const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
+
+  const [currentScenario, setCurrentScenario] = useState<Scenario>({
+    addressId: "",
+    hypothese: "",
+    id: "",
+    measure: "",
+    resourceId: "",
+    responsibles: [],
+    risk: { description: "", id: "" },
+    threat: { cobrade: "", description: "" },
+  });
 
   const handleClickResources = useCallback(() => {
     setShowResourceModal(true);
@@ -23,6 +56,19 @@ const StepFour: React.FC = () => {
     () => formatResources(planData.resources),
     [planData],
   );
+
+  useEffect(() => {
+    const numberCobrade = Number(currentScenario.threat.cobrade);
+
+    api
+      .post("medidas/cobrade", numberCobrade)
+      .then((response) => {
+        if (response.data && response.data.length) {
+          setSuggestionList(response.data);
+        }
+      })
+      .catch();
+  }, [currentScenario.threat.cobrade]);
 
   return (
     <>
@@ -81,13 +127,17 @@ const StepFour: React.FC = () => {
             <header>
               <FiPlus />
 
-              <h6>Riscos</h6>
+              <h6>
+                Situação
+                <br />
+                Hipotética
+              </h6>
             </header>
           </button>
           <main>
             {planData.scenarios.map((scenarioItem, index) => (
               <div key={index} className="itemListing">
-                <h6>{scenarioItem.risk}</h6>
+                <h6>{scenarioItem.hypothese}</h6>
               </div>
             ))}
           </main>
@@ -98,13 +148,17 @@ const StepFour: React.FC = () => {
             <header>
               <FiPlus />
 
-              <h6>Hipótese</h6>
+              <h6>
+                Riscos/
+                <br />
+                Vulnerabilidades
+              </h6>
             </header>
           </button>
           <main>
             {planData.scenarios.map((scenarioItem, index) => (
               <div key={index} className="itemListing">
-                <h6>{scenarioItem.hypothese}</h6>
+                <h6>{scenarioItem.risk}</h6>
               </div>
             ))}
           </main>
