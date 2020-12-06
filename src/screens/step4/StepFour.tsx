@@ -2,7 +2,7 @@ import api from "api/config";
 import { usePlanData } from "context/PlanData/planDataContext";
 import produce from "immer";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 
 import { FiPlus } from "react-icons/fi";
 import { GrSearch } from "react-icons/gr";
@@ -13,6 +13,7 @@ import { Scenario } from "types/Plan";
 import AddHypotheseModal from "./AddHypotheseModal/AddHypotheseModal";
 
 import { Container, ItemListingText } from "./styles";
+import ThreatModal from "./ThreatModal/ThreatModal";
 
 interface SuggestionList {
   id: string;
@@ -36,6 +37,7 @@ const StepFour: React.FC = () => {
   const { planData } = usePlanData();
 
   const [showResourceModal, setShowResourceModal] = useState(false);
+  const [showThreatModal, setShowThreatModal] = useState(false);
   const [showHypotheseModal, setShowHypotheseModal] = useState(false);
 
   const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
@@ -54,6 +56,14 @@ const StepFour: React.FC = () => {
     string[]
   >([]);
 
+  const [addedCobrades, setAddedCobrades] = useState<any[]>(() => {
+    const cobrades = localStorage.getItem("addedCobrades");
+
+    if (cobrades) {
+      return JSON.parse(cobrades);
+    }
+    return [];
+  });
   const [addedHypotheses, setAddedHypotheses] = useState<string[]>(() => {
     const hypotheses = localStorage.getItem("addedHypotheses");
 
@@ -89,6 +99,20 @@ const StepFour: React.FC = () => {
               removeValue = draft.hypothese;
               draft.hypothese = value;
               includedValueToHighlight = value;
+            }
+            break;
+          case "threat":
+            const { cobrade, description } = value;
+            if (draft.threat.cobrade === cobrade) {
+              draft.threat.cobrade = "";
+              draft.threat.description = "";
+              removeValue = cobrade;
+            } //
+            else {
+              removeValue = draft.threat.cobrade;
+              draft.threat.cobrade = cobrade;
+              draft.threat.description = description;
+              includedValueToHighlight = cobrade;
             }
             break;
           default:
@@ -141,6 +165,10 @@ const StepFour: React.FC = () => {
     localStorage.setItem("addedHypotheses", JSON.stringify(addedHypotheses));
   }, [addedHypotheses]);
 
+  useEffect(() => {
+    localStorage.setItem("addedCobrades", JSON.stringify(addedCobrades));
+  }, [addedCobrades]);
+
   return (
     <>
       <Container>
@@ -186,7 +214,7 @@ const StepFour: React.FC = () => {
         </div>
 
         <div className="scenarioItem">
-          <button>
+          <button onClick={() => setShowThreatModal(true)}>
             <header>
               <FiPlus />
 
@@ -198,19 +226,47 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {planData.scenarios.map((scenarioItem, index) => {
-              const checked = false;
+            {/* {!!currentScenario.threat.cobrade && (
+              <div className="itemListing">
+                <Form.Check
+                  custom
+                  type="checkbox"
+                  onChange={() =>
+                    handleCheckItem("threat", currentScenario.threat.cobrade)
+                  }
+                  checked={includedValuesToHighlight.includes(
+                    currentScenario.threat.cobrade,
+                  )}
+                />
+                <ItemListingText
+                  included={includedValuesToHighlight.includes(
+                    currentScenario.threat.cobrade,
+                  )}
+                >
+                  {currentScenario.threat.description}
+                </ItemListingText>
+              </div>
+            )} */}
+            {addedCobrades.map((cobradeItem, index) => {
+              const checked = includedValuesToHighlight.includes(
+                cobradeItem.cobrade,
+              );
 
               return (
                 <div key={index} className="itemListing">
                   <Form.Check
                     custom
                     type="checkbox"
-                    onChange={() => handleCheckItem("", "" + index)}
+                    onChange={() =>
+                      handleCheckItem("threat", {
+                        cobrade: cobradeItem.cobrade,
+                        description: cobradeItem.description,
+                      })
+                    }
                     checked={checked}
                   />
                   <ItemListingText included={checked}>
-                    {scenarioItem.threat.cobrade}
+                    {cobradeItem.description}
                   </ItemListingText>
                 </div>
               );
@@ -376,8 +432,23 @@ const StepFour: React.FC = () => {
             })}
           </main>
         </div>
+
+        <Button
+          className="darkBlueButton"
+          style={{ position: "absolute", bottom: 300 }}
+        >
+          Adicionar Cenário
+        </Button>
       </Container>
       <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
+
+      <ThreatModal
+        show={showThreatModal}
+        setShow={setShowThreatModal}
+        setAddedCobrades={setAddedCobrades}
+        checkAddedItem={handleCheckItem}
+      />
+
       <AddHypotheseModal
         show={showHypotheseModal}
         setShow={setShowHypotheseModal}
