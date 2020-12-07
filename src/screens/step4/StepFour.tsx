@@ -10,7 +10,7 @@ import Input from "shared/components/Input/Input";
 import ResourcesModal from "shared/components/ResourcesModal/ResourcesModal";
 import formatResources from "shared/utils/format/formatResources";
 import formatScenarioAddress from "shared/utils/format/formatScenarioAddress";
-import { Scenario, Risk, Measure } from "types/Plan";
+import { Scenario, Risk, Measure, Responsible } from "types/Plan";
 import HypotheseModal from "./HypotheseModal/HypotheseModal";
 import MeasureModal from "./MeasureModal/MeasureModal";
 import RiskModal from "./RiskModal/RiskModal";
@@ -46,45 +46,14 @@ const StepFour: React.FC = () => {
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [showMeasureModal, setShowMeasureModal] = useState(false);
 
-  const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([
-    {
-      id: "5fcac4052861356719996cfd",
-      cobrade: "2.4.2.0.0",
-      risco: "Inundação de Casas",
-      medida: "Abandono das casas em risco",
-    },
-    {
-      id: "5fcac4052861356719996cfe",
-      cobrade: "2.4.2.0.0",
-      risco: "Inundação de Casas",
-      medida: "Resgate de pessoas ilhadas",
-    },
-    {
-      id: "5fcac4052861356719996cff",
-      cobrade: "2.4.2.0.0",
-      risco: "Inundação de Casas",
-      medida: "Resgate de animais ilhados",
-    },
-    {
-      id: "5fcac4052861356719996ch4",
-      cobrade: "1.1.2.0.0",
-      risco: "Destruição de Casas",
-      medida: "Resgate de animais ilhados",
-    },
-    {
-      id: "5fcac4052861356719996cg4",
-      cobrade: "1.1.2.0.0",
-      risco: "Destruição de Casas",
-      medida: "Resgate de animais ilhados",
-    },
-  ]);
+  const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
 
   const [scenariosList, setScenariosList] = useState<Scenario[]>(() => {
     const scenarios = localStorage.getItem("scenariosList");
 
-    // if (scenarios) {
-    //   return JSON.parse(scenarios);
-    // }
+    if (scenarios) {
+      return JSON.parse(scenarios);
+    }
 
     return [];
   });
@@ -93,9 +62,9 @@ const StepFour: React.FC = () => {
   >(() => {
     const scenarios = localStorage.getItem("previousScenariosList");
 
-    // if (scenarios) {
-    //   return JSON.parse(scenarios);
-    // }
+    if (scenarios) {
+      return JSON.parse(scenarios);
+    }
 
     return [];
   });
@@ -135,22 +104,40 @@ const StepFour: React.FC = () => {
 
   const filterScenariosList = useCallback(
     ({ list, attr, value }: FilterScenarioList) => {
-      return list.filter((scenario: Scenario) => {
-        switch (attr) {
-          case "addressId":
-            return scenario.addressId !== value;
-          case "threat":
-            return scenario.threat.cobrade !== value;
-          case "hypothese":
-            return scenario.hypothese !== value;
-          case "risk":
-            return scenario.risk.description !== value;
-          case "measure":
-            return scenario.measure.description !== value;
-          default:
-            return true;
-        }
-      });
+      if (attr === "responsibles") {
+        list.forEach((scenario: Scenario) => {
+          scenario.responsibles.forEach((responsible, index) => {
+            if (
+              `${responsible.name} ${responsible.role} ${responsible.permission}` ===
+              value
+            ) {
+              scenario.responsibles.splice(index, 1);
+            }
+          });
+        });
+      } //
+      else {
+        const filtered = list.filter((scenario: Scenario) => {
+          switch (attr) {
+            case "addressId":
+              return scenario.addressId !== value;
+            case "threat":
+              return scenario.threat.cobrade !== value;
+            case "hypothese":
+              return scenario.hypothese !== value;
+            case "risk":
+              return scenario.risk.description !== value;
+            case "measure":
+              return scenario.measure.description !== value;
+            case "resourceId":
+              return scenario.resourceId !== value;
+            default:
+              return true;
+          }
+        });
+
+        return filtered;
+      }
     },
     [],
   );
@@ -158,7 +145,7 @@ const StepFour: React.FC = () => {
   const verifyIfPreviousScenariosHasValue = useCallback(
     (attr: keyof Scenario, value: any): boolean => {
       const valueExists = previousScenariosList.some((scenario) => {
-        if (["addressId", "hypothese"].includes(attr)) {
+        if (["addressId", "hypothese", "resourceId"].includes(attr)) {
           return scenario[attr] === value;
         }
 
@@ -166,12 +153,16 @@ const StepFour: React.FC = () => {
           return scenario.threat.cobrade === value;
         }
 
-        if (attr === "risk") {
-          return scenario.risk.description === value;
+        if (attr === "risk" || attr === "measure") {
+          return scenario[attr].description === value;
         }
 
-        if (attr === "measure") {
-          return scenario.measure.description === value;
+        if (attr === "responsibles") {
+          return scenario.responsibles.some(
+            (responsible) =>
+              `${responsible.name} ${responsible.role} ${responsible.permission}` ===
+              value,
+          );
         }
 
         return false;
@@ -191,6 +182,9 @@ const StepFour: React.FC = () => {
       } //
       else if (["risk", "measure"].includes(attr)) {
         compareValue = value.description;
+      } //
+      else if (attr === "responsibles") {
+        compareValue = `${value.name} ${value.role} ${value.permission}`;
       }
 
       const alreadyAdded = verifyIfPreviousScenariosHasValue(
@@ -199,67 +193,96 @@ const StepFour: React.FC = () => {
       );
 
       if (!alreadyAdded) {
-        previousScenariosList.forEach((prevScenario) => {
-          let shouldChangeAttrInLine: boolean = false;
-          let nestedFindValue = "";
+        // Cenario possui um array de responsaveis, então so precisa fazer o push
+        if (attr === "responsibles") {
+          draftScenariosList.forEach((scenario) => {
+            scenario.responsibles.push(value);
+          });
+          setPreviousScenariosList((previousScenarios) => {
+            const updatedPreviousScenarios = produce(
+              previousScenarios,
+              (previousDraft) => {
+                previousDraft.forEach((previousScenario) => {
+                  previousScenario.responsibles.push(value);
+                });
+              },
+            );
 
-          switch (attr) {
-            case "threat":
-              shouldChangeAttrInLine = !prevScenario.threat.cobrade;
-              nestedFindValue = "cobrade";
-              break;
-            case "hypothese":
-              shouldChangeAttrInLine =
-                !!prevScenario.threat.cobrade && !prevScenario.hypothese;
-              break;
-            case "risk":
-              shouldChangeAttrInLine =
-                !!prevScenario.hypothese && !prevScenario.risk.description;
-              nestedFindValue = "description";
-              break;
-            case "measure":
-              shouldChangeAttrInLine =
-                !!prevScenario.risk.description &&
-                !prevScenario.measure.description;
-              nestedFindValue = "description";
-              break;
-            default:
-              break;
-          }
+            return updatedPreviousScenarios;
+          });
+        } // Demais atributos que possuem que cada cenario possui apenas 1 irão ramificar
+        else {
+          previousScenariosList.forEach((prevScenario) => {
+            let shouldChangeAttrInLine: boolean = false;
+            let nestedFindValue = "";
 
-          if (shouldChangeAttrInLine) {
-            // Procurar cenário que está com o atributo atual vazio
-            const scenarioItem = draftScenariosList.find((scenario) => {
-              let findValue: any = scenario[attr];
-
-              if (nestedFindValue) {
-                findValue = findValue[nestedFindValue];
-              }
-
-              return !findValue;
-            });
-
-            if (scenarioItem) {
-              scenarioItem[attr] = value;
-            } //
-            else {
-              draftScenariosList.push({ ...prevScenario, [attr]: value });
+            switch (attr) {
+              case "threat":
+                shouldChangeAttrInLine = !prevScenario.threat.cobrade;
+                nestedFindValue = "cobrade";
+                break;
+              case "hypothese":
+                shouldChangeAttrInLine =
+                  !!prevScenario.threat.cobrade && !prevScenario.hypothese;
+                break;
+              case "risk":
+                shouldChangeAttrInLine =
+                  !!prevScenario.hypothese && !prevScenario.risk.description;
+                nestedFindValue = "description";
+                break;
+              case "measure":
+                shouldChangeAttrInLine =
+                  !!prevScenario.risk.description &&
+                  !prevScenario.measure.description;
+                nestedFindValue = "description";
+                break;
+              case "resourceId":
+                shouldChangeAttrInLine =
+                  !!prevScenario.measure.description &&
+                  !prevScenario.resourceId;
+                break;
+              default:
+                break;
             }
-            setPreviousScenariosList((oldValues) => [
-              ...oldValues,
-              { ...prevScenario, [attr]: value },
-            ]);
-          }
-        });
+
+            if (shouldChangeAttrInLine) {
+              // Procurar cenário que está com o atributo atual vazio
+              const scenarioItem = draftScenariosList.find((scenario) => {
+                let findValue: any = scenario[attr];
+
+                if (nestedFindValue) {
+                  findValue = findValue[nestedFindValue];
+                }
+
+                return !findValue;
+              });
+
+              // Se encontrar um com o atributo vazio, preenche o valor dessa linha
+              if (scenarioItem) {
+                scenarioItem[attr] = value;
+              } // Caso contrario, será criada uma nova linha com o nvo valor marcado
+              else {
+                draftScenariosList.push({ ...prevScenario, [attr]: value });
+              }
+              setPreviousScenariosList((oldValues) => [
+                ...oldValues,
+                { ...prevScenario, [attr]: value },
+              ]);
+            }
+          });
+        }
       } //
       else {
-        setPreviousScenariosList((oldList) =>
-          filterScenariosList({
-            list: oldList,
-            attr,
-            value: compareValue,
-          }),
-        );
+        setPreviousScenariosList((oldList) => {
+          const updatedOldList = produce(oldList, (oldListDraft) => {
+            return filterScenariosList({
+              list: oldListDraft,
+              attr,
+              value: compareValue,
+            });
+          });
+          return updatedOldList;
+        });
 
         return filterScenariosList({
           list: draftScenariosList,
@@ -276,7 +299,7 @@ const StepFour: React.FC = () => {
   );
 
   const handleCheckItem = useCallback(
-    (attr: any, value: any) => {
+    (attr: keyof Scenario, value: any) => {
       const updatedScenarios = produce(scenariosList, (draft) => {
         if (attr === "addressId") {
           const alreadyAdded = verifyIfPreviousScenariosHasValue(attr, value);
@@ -289,13 +312,17 @@ const StepFour: React.FC = () => {
             ]);
           } //
           else {
-            setPreviousScenariosList((oldValues) =>
-              filterScenariosList({
-                list: oldValues,
-                attr: "addressId",
-                value,
-              }),
-            );
+            setPreviousScenariosList((oldValues) => {
+              const updatedOldValues = produce(oldValues, (oldValuesDraft) => {
+                return filterScenariosList({
+                  list: oldValuesDraft,
+                  attr: "addressId",
+                  value,
+                });
+              });
+
+              return updatedOldValues;
+            });
             return filterScenariosList({
               list: draft,
               attr: "addressId",
@@ -304,6 +331,7 @@ const StepFour: React.FC = () => {
           }
         } //
         else {
+          // Para demais atributos
           return duplicateScenariosLines({
             attr,
             value,
@@ -313,8 +341,7 @@ const StepFour: React.FC = () => {
       });
 
       setScenariosList(updatedScenarios);
-      localStorage.setItem("scenariosList", JSON.stringify(updatedScenarios));
-      localStorage.setItem("previousScenariosList", JSON.stringify([]));
+      // localStorage.setItem("scenariosList", JSON.stringify(updatedScenarios));
     },
     [
       scenariosList,
@@ -333,29 +360,50 @@ const StepFour: React.FC = () => {
     [planData],
   );
 
+  const filteredResponsibles = useMemo(() => {
+    const responsibles: Responsible[] = [];
+
+    planData.resources.forEach((resource) => {
+      resource.responsibles.forEach((responsible) => {
+        const alreadyIncluded = responsibles.some(
+          (includedItem) =>
+            `${includedItem.name} ${includedItem.role} ${includedItem.permission}` ===
+            `${responsible.name} ${responsible.role} ${responsible.permission}`,
+        );
+
+        if (!alreadyIncluded) {
+          responsibles.push(responsible);
+        }
+      });
+    });
+
+    return responsibles;
+  }, [planData]);
+
   // Carregar Cobrade
-  // useEffect(() => {
-  //   async function loadSuggestions() {
-  //     try {
-  //       const suggestions = [];
+  useEffect(() => {
+    async function loadSuggestions() {
+      try {
+        const suggestions = [];
 
-  //       for await (const scenario of scenariosList) {
-  //         if (scenario.threat.cobrade) {
-  //           const response = await api.post("medidas/cobrade", "2.4.2.0.0", {
-  //             headers: {
-  //               "Content-Type": "text/plain",
-  //             },
-  //           });
-  //           suggestions.push(...response.data);
-  //         }
-  //       }
+        for await (const scenario of scenariosList) {
+          if (scenario.threat.cobrade) {
+            const response = await api.post("medidas/cobrade", "2.4.2.0.0", {
+              headers: {
+                "Content-Type": "text/plain",
+              },
+            });
 
-  //       setSuggestionList(suggestions);
-  //     } catch (error) {}
-  //   }
+            suggestions.push(...response.data);
+          }
+        }
 
-  //   loadSuggestions();
-  // }, [scenariosList]);
+        setSuggestionList(suggestions);
+      } catch (error) {}
+    }
+
+    loadSuggestions();
+  }, [scenariosList]);
 
   // Salvar hipoteses - armazenamento local
   useEffect(() => {
@@ -377,6 +425,14 @@ const StepFour: React.FC = () => {
     localStorage.setItem("addedMeasures", JSON.stringify(addedMeasures));
   }, [addedMeasures]);
 
+  // Salvar estados intermediários da lista de cenários
+  // useEffect(() => {
+  //   localStorage.setItem(
+  //     "previousScenariosList",
+  //     JSON.stringify(previousScenariosList),
+  //   );
+  // }, [previousScenariosList]);
+
   const disabledColumnsCheckbox = useMemo(() => {
     const isAnyThreatChecked = scenariosList.some(
       (scenario) => !!scenario.threat.cobrade,
@@ -394,13 +450,21 @@ const StepFour: React.FC = () => {
       (scenario) => !!scenario.measure.description,
     );
 
+    const isAnyResponsibleChecked = scenariosList.some(
+      (scenario) => !!scenario.responsibles.length,
+    );
+
+    const isAnyResourceChecked = scenariosList.some(
+      (scenario) => !!scenario.resourceId,
+    );
+
     const disabledColumns = {
       address: isAnyThreatChecked,
       threat: isAnyHypotheseChecked,
       hypothese: isAnyRiskChecked,
       risk: isAnyMeasureChecked,
-      measure: false,
-      responsible: false,
+      measure: isAnyResponsibleChecked,
+      responsible: isAnyResourceChecked,
     };
 
     return disabledColumns;
@@ -606,26 +670,29 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {planData.resources.map((resource) =>
-              resource.responsibles.map((responsible, index) => {
-                const checked = false;
+            {filteredResponsibles.map((responsible, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "responsibles",
+                `${responsible.name} ${responsible.role} ${responsible.permission}`,
+              );
 
-                return (
-                  <div key={index} className="itemListing">
-                    <Form.Check
-                      custom
-                      type="checkbox"
-                      onChange={() => handleCheckItem("", "" + index)}
-                      checked={checked}
-                      disabled={disabledColumnsCheckbox.responsible}
-                    />
-                    <ItemListingText included={checked}>
-                      {responsible.name}
-                    </ItemListingText>
-                  </div>
-                );
-              }),
-            )}
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("responsibles", responsible)
+                    }
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.responsible}
+                  />
+                  <ItemListingText included={checked}>
+                    {responsible.name} - {responsible.role}
+                  </ItemListingText>
+                </div>
+              );
+            })}
           </main>
         </div>
 
@@ -639,14 +706,19 @@ const StepFour: React.FC = () => {
           </button>
           <main>
             {formattedResources.map((resourceItem, index) => {
-              const checked = false;
+              const checked = verifyIfPreviousScenariosHasValue(
+                "resourceId",
+                "resource.id" + index,
+              );
 
               return (
                 <div key={index} className="itemListing">
                   <Form.Check
                     custom
                     type="checkbox"
-                    onChange={() => handleCheckItem("", "" + index)}
+                    onChange={() =>
+                      handleCheckItem("resourceId", "resource.id" + index)
+                    }
                     checked={checked}
                   />
                   <ItemListingText included={checked}>
