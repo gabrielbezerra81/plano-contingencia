@@ -1,4 +1,4 @@
-import numberFormatter from "shared/utils/numberFormatter";
+import numberFormatter from "shared/utils/format/numberFormatter";
 import { Plano } from "types/ModelsAPI";
 import { PlanData } from "types/Plan";
 import mapAddressToEndereco from "../address/mapAddressToEndereco";

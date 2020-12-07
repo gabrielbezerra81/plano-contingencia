@@ -76,7 +76,7 @@ export interface Resource {
   type: ResourceType;
 }
 
-interface Risk {
+export interface Risk {
   id: string;
   description: string;
 }
@@ -86,11 +86,16 @@ interface Threat {
   description: string;
 }
 
+export interface Measure {
+  id: string;
+  description: string;
+}
+
 export interface Scenario {
   id?: string;
   addressId: string;
   hypothese: string;
-  measure: string;
+  measure: Measure;
   resourceId: string;
   responsibles: Array<Responsible>;
   risk: Risk;

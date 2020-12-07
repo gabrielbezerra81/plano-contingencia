@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from "react";
 import NumberFormat from "react-number-format";
-import numberFormatter from "shared/utils/numberFormatter";
+import numberFormatter from "shared/utils/format/numberFormatter";
 import usePrevious from "shared/utils/usePrevious";
 
 interface Props {

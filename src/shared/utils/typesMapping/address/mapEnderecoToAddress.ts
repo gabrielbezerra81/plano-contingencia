@@ -1,4 +1,4 @@
-import numberFormatter from "shared/utils/numberFormatter";
+import numberFormatter from "shared/utils/format/numberFormatter";
 import { LocalRisco } from "types/ModelsAPI";
 import { RiskLocation } from "types/Plan";
 

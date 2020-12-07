@@ -90,11 +90,16 @@ interface Ameaca {
   descricao: string;
 }
 
+interface Medida {
+  id: string;
+  descricao: string;
+}
+
 interface Cenario {
   id: string;
   enderecoId: string;
   hipotese: string;
-  medida: string;
+  medida: Medida;
   recursoId: string;
   responsaveis: Array<Responsavel>;
   risco: Risco;

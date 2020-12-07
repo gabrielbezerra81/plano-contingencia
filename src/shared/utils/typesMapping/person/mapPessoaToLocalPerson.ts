@@ -1,4 +1,4 @@
-import numberFormatter from "shared/utils/numberFormatter";
+import numberFormatter from "shared/utils/format/numberFormatter";
 import { Pessoa } from "types/ModelsAPI";
 import { Person, Phone, Address } from "types/Plan";
 

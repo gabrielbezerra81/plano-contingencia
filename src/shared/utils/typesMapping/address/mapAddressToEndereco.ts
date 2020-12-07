@@ -1,4 +1,4 @@
-import numberFormatter from "shared/utils/numberFormatter";
+import numberFormatter from "shared/utils/format/numberFormatter";
 import { Endereco } from "types/ModelsAPI";
 import { Address } from "types/Plan";
 

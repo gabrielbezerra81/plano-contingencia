@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
 
 import cobradesImg from "assets/images/cobrades3.png";
 
-import { Modal, Container } from "./style";
+import { Modal, Container } from "./styles";
 import Input from "shared/components/Input/Input";
 import api from "api/config";
 import produce from "immer";
@@ -12,7 +12,6 @@ import produce from "immer";
 interface Props {
   show: boolean;
   setShow: (...data: any) => void;
-  checkAddedItem: (attr: string, value: any) => void;
   setAddedCobrades: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
@@ -28,12 +27,7 @@ interface Cobrade {
   cor: string;
 }
 
-const ThreatModal: React.FC<Props> = ({
-  show,
-  setShow,
-  checkAddedItem,
-  setAddedCobrades,
-}) => {
+const ThreatModal: React.FC<Props> = ({ show, setShow, setAddedCobrades }) => {
   const [cobrades, setCobrades] = useState<Cobrade[]>([]);
 
   const [selectedCobradeNumber, setSelectedCobradeNumber] = useState("");
@@ -71,15 +65,8 @@ const ThreatModal: React.FC<Props> = ({
       return updatedAddedCobrades;
     });
 
-    checkAddedItem("threat", { cobrade: selectedCobradeNumber, description });
     setShow(false);
-  }, [
-    checkAddedItem,
-    selectedCobradeNumber,
-    description,
-    setShow,
-    setAddedCobrades,
-  ]);
+  }, [selectedCobradeNumber, description, setShow, setAddedCobrades]);
 
   useEffect(() => {
     api
@@ -130,7 +117,7 @@ const ThreatModal: React.FC<Props> = ({
         </div>
 
         <Button onClick={handleAddThreat} className="darkBlueButton">
-          Adicionar{" "}
+          Adicionar
         </Button>
 
         <img src={cobradesImg} alt="" />

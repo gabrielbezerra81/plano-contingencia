@@ -17,7 +17,7 @@ import {
 } from "./styles";
 import NumberInput from "../NumberInput/NumberInput";
 import produce from "immer";
-import numberFormatter from "shared/utils/numberFormatter";
+import numberFormatter from "shared/utils/format/numberFormatter";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 
 interface Props {

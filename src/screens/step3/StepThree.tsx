@@ -17,7 +17,7 @@ import { Button } from "react-bootstrap";
 import produce from "immer";
 import axios from "axios";
 import NumberInput from "shared/components/NumberInput/NumberInput";
-import numberFormatter from "shared/utils/numberFormatter";
+import numberFormatter from "shared/utils/format/numberFormatter";
 import AttributeListing from "shared/components/AttributeListing/AttributeListing";
 import { RiskLocation } from "types/Plan";
 import { usePlanData } from "context/PlanData/planDataContext";

@@ -2,31 +2,35 @@ import api from "api/config";
 import { usePlanData } from "context/PlanData/planDataContext";
 import produce from "immer";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 
 import { FiPlus } from "react-icons/fi";
 import { GrSearch } from "react-icons/gr";
 import Input from "shared/components/Input/Input";
 import ResourcesModal from "shared/components/ResourcesModal/ResourcesModal";
-import formatResources from "shared/utils/formatResources";
-import { Scenario } from "types/Plan";
-import AddHypotheseModal from "./AddHypotheseModal/AddHypotheseModal";
+import formatResources from "shared/utils/format/formatResources";
+import formatScenarioAddress from "shared/utils/format/formatScenarioAddress";
+import { Scenario, Risk, Measure } from "types/Plan";
+import HypotheseModal from "./HypotheseModal/HypotheseModal";
+import MeasureModal from "./MeasureModal/MeasureModal";
+import RiskModal from "./RiskModal/RiskModal";
 
 import { Container, ItemListingText } from "./styles";
 import ThreatModal from "./ThreatModal/ThreatModal";
-
-interface SuggestionList {
-  id: string;
-  cobrade: string;
-  risco: string;
-  medida: string;
-}
+import {
+  SuggestionList,
+  DuplicateScenariosLines,
+  FilterScenarioList,
+} from "./types";
 
 const emptyScenario: Scenario = {
   addressId: "",
   hypothese: "",
   id: "",
-  measure: "",
+  measure: {
+    description: "",
+    id: "",
+  },
   resourceId: "",
   responsibles: [],
   risk: { description: "", id: "" },
@@ -39,22 +43,62 @@ const StepFour: React.FC = () => {
   const [showResourceModal, setShowResourceModal] = useState(false);
   const [showThreatModal, setShowThreatModal] = useState(false);
   const [showHypotheseModal, setShowHypotheseModal] = useState(false);
+  const [showRiskModal, setShowRiskModal] = useState(false);
+  const [showMeasureModal, setShowMeasureModal] = useState(false);
 
-  const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
+  const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([
+    {
+      id: "5fcac4052861356719996cfd",
+      cobrade: "2.4.2.0.0",
+      risco: "Inundação de Casas",
+      medida: "Abandono das casas em risco",
+    },
+    {
+      id: "5fcac4052861356719996cfe",
+      cobrade: "2.4.2.0.0",
+      risco: "Inundação de Casas",
+      medida: "Resgate de pessoas ilhadas",
+    },
+    {
+      id: "5fcac4052861356719996cff",
+      cobrade: "2.4.2.0.0",
+      risco: "Inundação de Casas",
+      medida: "Resgate de animais ilhados",
+    },
+    {
+      id: "5fcac4052861356719996ch4",
+      cobrade: "1.1.2.0.0",
+      risco: "Destruição de Casas",
+      medida: "Resgate de animais ilhados",
+    },
+    {
+      id: "5fcac4052861356719996cg4",
+      cobrade: "1.1.2.0.0",
+      risco: "Destruição de Casas",
+      medida: "Resgate de animais ilhados",
+    },
+  ]);
 
-  const [currentScenario, setCurrentScenario] = useState<Scenario>({
-    addressId: "",
-    hypothese: "",
-    measure: "",
-    resourceId: "",
-    responsibles: [],
-    risk: { description: "", id: "" },
-    threat: { cobrade: "", description: "" },
+  const [scenariosList, setScenariosList] = useState<Scenario[]>(() => {
+    const scenarios = localStorage.getItem("scenariosList");
+
+    // if (scenarios) {
+    //   return JSON.parse(scenarios);
+    // }
+
+    return [];
   });
+  const [previousScenariosList, setPreviousScenariosList] = useState<
+    Scenario[]
+  >(() => {
+    const scenarios = localStorage.getItem("previousScenariosList");
 
-  const [includedValuesToHighlight, setIncludedValuesToHighlight] = useState<
-    string[]
-  >([]);
+    // if (scenarios) {
+    //   return JSON.parse(scenarios);
+    // }
+
+    return [];
+  });
 
   const [addedCobrades, setAddedCobrades] = useState<any[]>(() => {
     const cobrades = localStorage.getItem("addedCobrades");
@@ -72,69 +116,212 @@ const StepFour: React.FC = () => {
     }
     return [];
   });
+  const [addedRisks, setAddedRisks] = useState<Risk[]>(() => {
+    const risks = localStorage.getItem("addedRisks");
 
-  const handleCheckItem = useCallback(
-    (attr: string, value: any) => {
-      let includedValueToHighlight = "";
-      let removeValue = "";
+    if (risks) {
+      return JSON.parse(risks);
+    }
+    return [];
+  });
+  const [addedMeasures, setAddedMeasures] = useState<Measure[]>(() => {
+    const risks = localStorage.getItem("addedMeasures");
 
-      const updatedCurrentScenario = produce(currentScenario, (draft) => {
+    if (risks) {
+      return JSON.parse(risks);
+    }
+    return [];
+  });
+
+  const filterScenariosList = useCallback(
+    ({ list, attr, value }: FilterScenarioList) => {
+      return list.filter((scenario: Scenario) => {
         switch (attr) {
           case "addressId":
-            if (draft.addressId === value) {
-              draft.addressId = "";
-              removeValue = value;
-            } else {
-              removeValue = draft.addressId;
-              draft.addressId = value;
-              includedValueToHighlight = value;
-            }
-            break;
-          case "hypothese":
-            if (draft.hypothese === value) {
-              draft.hypothese = "";
-              removeValue = value;
-            } //
-            else {
-              removeValue = draft.hypothese;
-              draft.hypothese = value;
-              includedValueToHighlight = value;
-            }
-            break;
+            return scenario.addressId !== value;
           case "threat":
-            const { cobrade, description } = value;
-            if (draft.threat.cobrade === cobrade) {
-              draft.threat.cobrade = "";
-              draft.threat.description = "";
-              removeValue = cobrade;
+            return scenario.threat.cobrade !== value;
+          case "hypothese":
+            return scenario.hypothese !== value;
+          case "risk":
+            return scenario.risk.description !== value;
+          case "measure":
+            return scenario.measure.description !== value;
+          default:
+            return true;
+        }
+      });
+    },
+    [],
+  );
+
+  const verifyIfPreviousScenariosHasValue = useCallback(
+    (attr: keyof Scenario, value: any): boolean => {
+      const valueExists = previousScenariosList.some((scenario) => {
+        if (["addressId", "hypothese"].includes(attr)) {
+          return scenario[attr] === value;
+        }
+
+        if (attr === "threat") {
+          return scenario.threat.cobrade === value;
+        }
+
+        if (attr === "risk") {
+          return scenario.risk.description === value;
+        }
+
+        if (attr === "measure") {
+          return scenario.measure.description === value;
+        }
+
+        return false;
+      });
+
+      return valueExists;
+    },
+    [previousScenariosList],
+  );
+
+  const duplicateScenariosLines = useCallback(
+    ({ attr, value, draftScenariosList }: DuplicateScenariosLines) => {
+      let compareValue = value;
+
+      if (attr === "threat") {
+        compareValue = value.cobrade;
+      } //
+      else if (["risk", "measure"].includes(attr)) {
+        compareValue = value.description;
+      }
+
+      const alreadyAdded = verifyIfPreviousScenariosHasValue(
+        attr,
+        compareValue,
+      );
+
+      if (!alreadyAdded) {
+        previousScenariosList.forEach((prevScenario) => {
+          let shouldChangeAttrInLine: boolean = false;
+          let nestedFindValue = "";
+
+          switch (attr) {
+            case "threat":
+              shouldChangeAttrInLine = !prevScenario.threat.cobrade;
+              nestedFindValue = "cobrade";
+              break;
+            case "hypothese":
+              shouldChangeAttrInLine =
+                !!prevScenario.threat.cobrade && !prevScenario.hypothese;
+              break;
+            case "risk":
+              shouldChangeAttrInLine =
+                !!prevScenario.hypothese && !prevScenario.risk.description;
+              nestedFindValue = "description";
+              break;
+            case "measure":
+              shouldChangeAttrInLine =
+                !!prevScenario.risk.description &&
+                !prevScenario.measure.description;
+              nestedFindValue = "description";
+              break;
+            default:
+              break;
+          }
+
+          if (shouldChangeAttrInLine) {
+            // Procurar cenário que está com o atributo atual vazio
+            const scenarioItem = draftScenariosList.find((scenario) => {
+              let findValue: any = scenario[attr];
+
+              if (nestedFindValue) {
+                findValue = findValue[nestedFindValue];
+              }
+
+              return !findValue;
+            });
+
+            if (scenarioItem) {
+              scenarioItem[attr] = value;
             } //
             else {
-              removeValue = draft.threat.cobrade;
-              draft.threat.cobrade = cobrade;
-              draft.threat.description = description;
-              includedValueToHighlight = cobrade;
+              draftScenariosList.push({ ...prevScenario, [attr]: value });
             }
-            break;
-          default:
-            break;
+            setPreviousScenariosList((oldValues) => [
+              ...oldValues,
+              { ...prevScenario, [attr]: value },
+            ]);
+          }
+        });
+      } //
+      else {
+        setPreviousScenariosList((oldList) =>
+          filterScenariosList({
+            list: oldList,
+            attr,
+            value: compareValue,
+          }),
+        );
+
+        return filterScenariosList({
+          list: draftScenariosList,
+          attr,
+          value: compareValue,
+        });
+      }
+    },
+    [
+      verifyIfPreviousScenariosHasValue,
+      filterScenariosList,
+      previousScenariosList,
+    ],
+  );
+
+  const handleCheckItem = useCallback(
+    (attr: any, value: any) => {
+      const updatedScenarios = produce(scenariosList, (draft) => {
+        if (attr === "addressId") {
+          const alreadyAdded = verifyIfPreviousScenariosHasValue(attr, value);
+
+          if (!alreadyAdded) {
+            draft.push({ ...emptyScenario, addressId: value });
+            setPreviousScenariosList((oldValues) => [
+              ...oldValues,
+              { ...emptyScenario, addressId: value },
+            ]);
+          } //
+          else {
+            setPreviousScenariosList((oldValues) =>
+              filterScenariosList({
+                list: oldValues,
+                attr: "addressId",
+                value,
+              }),
+            );
+            return filterScenariosList({
+              list: draft,
+              attr: "addressId",
+              value,
+            });
+          }
+        } //
+        else {
+          return duplicateScenariosLines({
+            attr,
+            value,
+            draftScenariosList: draft,
+          });
         }
       });
 
-      if (includedValueToHighlight) {
-        setIncludedValuesToHighlight((oldValues) => [
-          ...oldValues,
-          includedValueToHighlight,
-        ]);
-      } //
-      if (removeValue) {
-        setIncludedValuesToHighlight((oldValues) =>
-          oldValues.filter((value) => value !== removeValue),
-        );
-      }
-
-      setCurrentScenario(updatedCurrentScenario);
+      setScenariosList(updatedScenarios);
+      localStorage.setItem("scenariosList", JSON.stringify(updatedScenarios));
+      localStorage.setItem("previousScenariosList", JSON.stringify([]));
     },
-    [currentScenario],
+    [
+      scenariosList,
+      verifyIfPreviousScenariosHasValue,
+      filterScenariosList,
+      duplicateScenariosLines,
+    ],
   );
 
   const handleClickResources = useCallback(() => {
@@ -147,27 +334,77 @@ const StepFour: React.FC = () => {
   );
 
   // Carregar Cobrade
-  useEffect(() => {
-    const numberCobrade = Number(currentScenario.threat.cobrade);
+  // useEffect(() => {
+  //   async function loadSuggestions() {
+  //     try {
+  //       const suggestions = [];
 
-    api
-      .post("medidas/cobrade", numberCobrade)
-      .then((response) => {
-        if (response.data && response.data.length) {
-          setSuggestionList(response.data);
-        }
-      })
-      .catch();
-  }, [currentScenario.threat.cobrade]);
+  //       for await (const scenario of scenariosList) {
+  //         if (scenario.threat.cobrade) {
+  //           const response = await api.post("medidas/cobrade", "2.4.2.0.0", {
+  //             headers: {
+  //               "Content-Type": "text/plain",
+  //             },
+  //           });
+  //           suggestions.push(...response.data);
+  //         }
+  //       }
+
+  //       setSuggestionList(suggestions);
+  //     } catch (error) {}
+  //   }
+
+  //   loadSuggestions();
+  // }, [scenariosList]);
 
   // Salvar hipoteses - armazenamento local
   useEffect(() => {
     localStorage.setItem("addedHypotheses", JSON.stringify(addedHypotheses));
   }, [addedHypotheses]);
 
+  // Salvar cobrades - A.L.
   useEffect(() => {
     localStorage.setItem("addedCobrades", JSON.stringify(addedCobrades));
   }, [addedCobrades]);
+
+  // Salvar hipoteses - A.L.
+  useEffect(() => {
+    localStorage.setItem("addedRisks", JSON.stringify(addedRisks));
+  }, [addedRisks]);
+
+  // Salvar medidas - A.L.
+  useEffect(() => {
+    localStorage.setItem("addedMeasures", JSON.stringify(addedMeasures));
+  }, [addedMeasures]);
+
+  const disabledColumnsCheckbox = useMemo(() => {
+    const isAnyThreatChecked = scenariosList.some(
+      (scenario) => !!scenario.threat.cobrade,
+    );
+
+    const isAnyHypotheseChecked = scenariosList.some(
+      (scenario) => !!scenario.hypothese,
+    );
+
+    const isAnyRiskChecked = scenariosList.some(
+      (scenario) => !!scenario.risk.description,
+    );
+
+    const isAnyMeasureChecked = scenariosList.some(
+      (scenario) => !!scenario.measure.description,
+    );
+
+    const disabledColumns = {
+      address: isAnyThreatChecked,
+      threat: isAnyHypotheseChecked,
+      hypothese: isAnyRiskChecked,
+      risk: isAnyMeasureChecked,
+      measure: false,
+      responsible: false,
+    };
+
+    return disabledColumns;
+  }, [scenariosList]);
 
   return (
     <>
@@ -183,7 +420,8 @@ const StepFour: React.FC = () => {
           <main>
             <Input borderBottomOnly rightIcon={<GrSearch />} />
             {planData.riskLocations.map((locationItem, index) => {
-              const checked = includedValuesToHighlight.includes(
+              const checked = verifyIfPreviousScenariosHasValue(
+                "addressId",
                 "locationItem.id" + index,
               );
 
@@ -196,16 +434,10 @@ const StepFour: React.FC = () => {
                       handleCheckItem("addressId", "locationItem.id" + index)
                     }
                     checked={checked}
+                    disabled={disabledColumnsCheckbox.address}
                   />
                   <ItemListingText included={checked}>
-                    {locationItem.identification},
-                    <br />
-                    {locationItem.street}, {locationItem.neighbor}
-                    <br />
-                    {locationItem.complement
-                      ? `${locationItem.complement}, `
-                      : ""}
-                    {locationItem.city}, {locationItem.state}
+                    {formatScenarioAddress(locationItem)}
                   </ItemListingText>
                 </div>
               );
@@ -226,29 +458,9 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {/* {!!currentScenario.threat.cobrade && (
-              <div className="itemListing">
-                <Form.Check
-                  custom
-                  type="checkbox"
-                  onChange={() =>
-                    handleCheckItem("threat", currentScenario.threat.cobrade)
-                  }
-                  checked={includedValuesToHighlight.includes(
-                    currentScenario.threat.cobrade,
-                  )}
-                />
-                <ItemListingText
-                  included={includedValuesToHighlight.includes(
-                    currentScenario.threat.cobrade,
-                  )}
-                >
-                  {currentScenario.threat.description}
-                </ItemListingText>
-              </div>
-            )} */}
             {addedCobrades.map((cobradeItem, index) => {
-              const checked = includedValuesToHighlight.includes(
+              const checked = verifyIfPreviousScenariosHasValue(
+                "threat",
                 cobradeItem.cobrade,
               );
 
@@ -264,6 +476,7 @@ const StepFour: React.FC = () => {
                       })
                     }
                     checked={checked}
+                    disabled={disabledColumnsCheckbox.threat}
                   />
                   <ItemListingText included={checked}>
                     {cobradeItem.description}
@@ -288,7 +501,10 @@ const StepFour: React.FC = () => {
           </button>
           <main>
             {addedHypotheses.map((hypothese, index) => {
-              const checked = includedValuesToHighlight.includes(hypothese);
+              const checked = verifyIfPreviousScenariosHasValue(
+                "hypothese",
+                hypothese,
+              );
 
               return (
                 <div key={index} className="itemListing">
@@ -297,6 +513,7 @@ const StepFour: React.FC = () => {
                     type="checkbox"
                     onChange={() => handleCheckItem("hypothese", hypothese)}
                     checked={checked}
+                    disabled={disabledColumnsCheckbox.hypothese}
                   />
                   <ItemListingText included={checked}>
                     {hypothese}
@@ -308,10 +525,9 @@ const StepFour: React.FC = () => {
         </div>
 
         <div className="scenarioItem">
-          <button>
+          <button onClick={() => setShowRiskModal(true)}>
             <header>
               <FiPlus />
-
               <h6>
                 Riscos/
                 <br />
@@ -320,19 +536,23 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {planData.scenarios.map((scenarioItem, index) => {
-              const checked = false;
+            {addedRisks.map((riskItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "risk",
+                riskItem.description,
+              );
 
               return (
                 <div key={index} className="itemListing">
                   <Form.Check
                     custom
                     type="checkbox"
-                    onChange={() => handleCheckItem("", "" + index)}
+                    onChange={() => handleCheckItem("risk", riskItem)}
                     checked={checked}
+                    disabled={disabledColumnsCheckbox.risk}
                   />
                   <ItemListingText included={checked}>
-                    {scenarioItem.risk}
+                    {riskItem.description}
                   </ItemListingText>
                 </div>
               );
@@ -341,7 +561,7 @@ const StepFour: React.FC = () => {
         </div>
 
         <div className="scenarioItem">
-          <button>
+          <button onClick={() => setShowMeasureModal(true)}>
             <header>
               <FiPlus />
 
@@ -353,19 +573,23 @@ const StepFour: React.FC = () => {
             </header>
           </button>
           <main>
-            {planData.scenarios.map((scenarioItem, index) => {
-              const checked = false;
+            {addedMeasures.map((measureItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "measure",
+                measureItem.description,
+              );
 
               return (
                 <div key={index} className="itemListing">
                   <Form.Check
                     custom
                     type="checkbox"
-                    onChange={() => handleCheckItem("", "" + index)}
+                    onChange={() => handleCheckItem("measure", measureItem)}
                     checked={checked}
+                    disabled={disabledColumnsCheckbox.measure}
                   />
                   <ItemListingText included={checked}>
-                    {scenarioItem.measure}
+                    {measureItem.description}
                   </ItemListingText>
                 </div>
               );
@@ -393,6 +617,7 @@ const StepFour: React.FC = () => {
                       type="checkbox"
                       onChange={() => handleCheckItem("", "" + index)}
                       checked={checked}
+                      disabled={disabledColumnsCheckbox.responsible}
                     />
                     <ItemListingText included={checked}>
                       {responsible.name}
@@ -432,28 +657,50 @@ const StepFour: React.FC = () => {
             })}
           </main>
         </div>
-
-        <Button
-          className="darkBlueButton"
-          style={{ position: "absolute", bottom: 300 }}
-        >
-          Adicionar Cenário
-        </Button>
       </Container>
+
+      <div style={{ marginTop: 100 }}>
+        <code>
+          Linhas add: {scenariosList.length}
+          <br />
+          <br />
+          {JSON.stringify(scenariosList)}
+          <br />
+          <br />
+        </code>
+        <code>
+          Linhas prev: {previousScenariosList.length}
+          <br />
+          <br />
+          {JSON.stringify(previousScenariosList)}
+        </code>
+      </div>
       <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
 
       <ThreatModal
         show={showThreatModal}
         setShow={setShowThreatModal}
         setAddedCobrades={setAddedCobrades}
-        checkAddedItem={handleCheckItem}
       />
 
-      <AddHypotheseModal
+      <HypotheseModal
         show={showHypotheseModal}
         setShow={setShowHypotheseModal}
         setAddedHypotheses={setAddedHypotheses}
-        checkAddedItem={handleCheckItem}
+      />
+
+      <RiskModal
+        show={showRiskModal}
+        setShow={setShowRiskModal}
+        suggestionList={suggestionList}
+        setAddedRisks={setAddedRisks}
+      />
+
+      <MeasureModal
+        show={showMeasureModal}
+        setShow={setShowMeasureModal}
+        suggestionList={suggestionList}
+        setAddedMeasures={setAddedMeasures}
       />
     </>
   );

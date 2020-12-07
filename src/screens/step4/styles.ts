@@ -33,9 +33,9 @@ export const Container = styled.div`
           background-color: #ff7802;
           stroke: #fff;
           border-radius: 10px;
-          width: 20px;
-          height: 20px;
-          margin-right: 12px;
+          min-width: 20px;
+          min-height: 20px;
+          margin-right: 10px;
         }
 
         h6 {

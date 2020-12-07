@@ -3,29 +3,26 @@ import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
 import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
 
-import { Container } from "./style";
+import { Container } from "./styles";
 
 interface Props {
   show: boolean;
   setShow: (...data: any) => void;
   setAddedHypotheses: React.Dispatch<React.SetStateAction<string[]>>;
-  checkAddedItem: (attr: string, value: any) => void;
 }
 
-const AddHypotheseModal: React.FC<Props> = ({
+const HypotheseModal: React.FC<Props> = ({
   show,
   setShow,
   setAddedHypotheses,
-  checkAddedItem,
 }) => {
   const [hypothese, setHypothese] = useState("");
 
   const handleAddHypothese = useCallback(() => {
-    checkAddedItem("hypothese", hypothese);
     setAddedHypotheses((oldValues) => [...oldValues, hypothese]);
 
     setShow(false);
-  }, [setShow, setAddedHypotheses, hypothese, checkAddedItem]);
+  }, [setShow, setAddedHypotheses, hypothese]);
 
   return (
     <Modal show={show} centered onHide={() => setShow(false)}>
@@ -48,4 +45,4 @@ const AddHypotheseModal: React.FC<Props> = ({
   );
 };
 
-export default AddHypotheseModal;
+export default HypotheseModal;
