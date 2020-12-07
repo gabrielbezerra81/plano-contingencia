@@ -29,10 +29,6 @@ const MeasureModal: React.FC<Props> = ({
     [],
   );
 
-  const handleSelectSuggestion = useCallback((e) => {
-    setMeasure((oldValue) => ({ ...oldValue, description: e.target.value }));
-  }, []);
-
   const handleAddMeasure = useCallback(() => {
     setAddedMeasures((oldValues) => {
       const updatedAddedMeasures = produce(oldValues, (draft) => {
@@ -60,6 +56,13 @@ const MeasureModal: React.FC<Props> = ({
     }));
   }, [suggestionList]);
 
+  const handleSelectSuggestion = useCallback(
+    (e) => {
+      setMeasure(filteredSuggestionList[Number(e.target.value)]);
+    },
+    [filteredSuggestionList],
+  );
+
   return (
     <Modal show={show} centered onHide={() => setShow(false)}>
       <ModalCloseButton setShow={setShow} />
@@ -70,8 +73,8 @@ const MeasureModal: React.FC<Props> = ({
           <h6>Sugestões de medidas</h6>
           <Input as="select" bordered onChange={handleSelectSuggestion}>
             <option />
-            {filteredSuggestionList.map((suggestion) => (
-              <option key={suggestion.id} value={suggestion.description}>
+            {filteredSuggestionList.map((suggestion, index) => (
+              <option key={suggestion.id} value={index}>
                 {suggestion.description}
               </option>
             ))}
