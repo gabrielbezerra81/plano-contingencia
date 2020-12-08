@@ -77,7 +77,7 @@ const AddUserModal: React.FC<Props> = ({
 
   const [permission, setPermission] = useState<
     "editor" | "visualizar" | "nenhuma"
-  >("editor");
+  >("nenhuma");
 
   const [currentAddress, setCurrentAddress] = useState<Address>({
     id: "123",
@@ -212,7 +212,7 @@ const AddUserModal: React.FC<Props> = ({
     const person = await addNewUser(user);
 
     if (person) {
-      addUserToWorkGroup({ ...person, permission });
+      await addUserToWorkGroup({ ...person, permission });
       setShow(false);
       if (setShowAddToGroupModal) {
         setShowAddToGroupModal(false);

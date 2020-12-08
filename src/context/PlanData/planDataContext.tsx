@@ -26,14 +26,13 @@ interface PlanDataContextData {
   updateLocalPlanData: (data: Partial<PlanData>) => void;
   updateAPIPlanData: () => Promise<void>;
   updateLocalPlanFromAPI: () => Promise<void>;
-  addUserToWorkGroup: (
-    person: Person & { permission: any; anotherRole?: string },
-  ) => void;
+  addUserToWorkGroup: (data: AddToWorkGroupProps) => Promise<void>;
   addNewUser: (person: Person) => Promise<Person | null>;
-  addRiskLocation: (riskLocation: RiskLocation) => void;
+  addRiskLocation: (riskLocation: RiskLocation) => Promise<void>;
   removeRiskLocation: (index: number) => void;
   notIncludedPersons: Array<Person>;
-  addResource: (resource: Resource) => void;
+  addResource: (resource: Resource) => Promise<void>;
+  getSequenceId: (seqType: SequenceType) => Promise<string>;
 }
 
 const PlanDataContext = React.createContext<PlanDataContextData>(
@@ -57,6 +56,19 @@ const PlanDataProvider: React.FC = ({ children }) => {
   const [includedPersons, setIncludedPersons] = useState<Person[]>([]);
 
   const [persons, setPersons] = useState<Person[]>([]);
+
+  const getSequenceId = useCallback(async (seqType: SequenceType) => {
+    try {
+      const response = await api.get(`sequences/${seqType}`);
+
+      console.log(`sequence ${seqType}`, response.data);
+
+      return `${response.data}`;
+    } catch (error) {
+      console.log(error.response);
+      return "";
+    }
+  }, []);
 
   const updateLocalPlanData = useCallback(
     (planData: Partial<PlanData>) => {
@@ -110,22 +122,25 @@ const PlanDataProvider: React.FC = ({ children }) => {
   }, [currentPlanId]);
 
   const addUserToWorkGroup = useCallback(
-    (person: Person & { permission: any; anotherRole?: string }) => {
+    async ({ anotherRole, permission, ...person }: AddToWorkGroupProps) => {
       const updatedIncludedPersons = produce(includedPersons, (draft) => {
         draft.push(person);
       });
 
       setIncludedPersons(updatedIncludedPersons);
 
+      const id = await getSequenceId("membros");
+
       // Para adicionar um membro com pessoa já existente é utilizado anotherRole
       // Para adicionar um membro logo após adicionar uma pessoa, é utilizado Role
       const newMember: Member = {
         name: person.name,
-        role: person.anotherRole || person.role,
+        role: anotherRole || person.role,
         personId: person.id,
         status: 0,
-        permission: person.permission,
+        permission: permission,
         phone: "",
+        id,
       };
 
       newMember.phone = getMainPhoneFromPerson(person);
@@ -166,7 +181,9 @@ const PlanDataProvider: React.FC = ({ children }) => {
   );
 
   const addRiskLocation = useCallback(
-    (riskLocation: RiskLocation) => {
+    async (riskLocation: RiskLocation) => {
+      const id = await getSequenceId("enderecos");
+
       const updatedPlanData = produce(data, (draft) => {
         const [street, number] = riskLocation.street.split(",");
 
@@ -174,12 +191,13 @@ const PlanDataProvider: React.FC = ({ children }) => {
           ...riskLocation,
           street,
           number: number ? number.trimStart() : "",
+          id,
         });
       });
 
       updateLocalPlanData(updatedPlanData);
     },
-    [data, updateLocalPlanData],
+    [data, updateLocalPlanData, getSequenceId],
   );
 
   const removeRiskLocation = useCallback(
@@ -194,14 +212,16 @@ const PlanDataProvider: React.FC = ({ children }) => {
   );
 
   const addResource = useCallback(
-    (resource: Resource) => {
+    async (resource: Resource) => {
+      const id = await getSequenceId("recursos");
+
       const updatedPlanData = produce(data, (draft) => {
-        draft.resources.push(resource);
+        draft.resources.push({ ...resource, id });
       });
 
       updateLocalPlanData(updatedPlanData);
     },
-    [data, updateLocalPlanData],
+    [data, updateLocalPlanData, getSequenceId],
   );
 
   // carregar dados do armazenamento local
@@ -267,6 +287,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
         notIncludedPersons,
         updateLocalPlanFromAPI,
         addResource,
+        getSequenceId,
       }}
     >
       {children}
@@ -281,3 +302,10 @@ export const usePlanData = () => {
 
   return context;
 };
+
+type SequenceType = "cenarios" | "enderecos" | "membros" | "recursos";
+
+interface AddToWorkGroupProps extends Person {
+  permission: any;
+  anotherRole?: string;
+}

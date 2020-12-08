@@ -19,6 +19,7 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
     telefone: member.phone,
     permissao: member.permission,
     pessoaId: member.personId,
+    id: member.id,
   }));
 
   payload.locaisDeRisco = planData.riskLocations.map((riskLocation) => {
@@ -42,6 +43,7 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
       numero: riskLocation.number || "",
       uf: riskLocation.state,
       referencia: riskLocation.refPoint,
+      id: riskLocation.id,
     };
   });
 

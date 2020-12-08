@@ -34,7 +34,7 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
   const [foundPerson, setFoundPerson] = useState<Person | undefined>(undefined);
 
   const [role, setRole] = useState("");
-  const [permission, setPermission] = useState("editor");
+  const [permission, setPermission] = useState("nenhuma");
 
   const handleOpenAddUserModal = useCallback(() => {
     setShowAddUserModal(true);
@@ -42,11 +42,15 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
 
   const handleSearch = useCallback(() => {}, []);
 
-  const handleAddToGroup = useCallback(() => {
+  const handleAddToGroup = useCallback(async () => {
     if (foundPerson) {
-      addUserToWorkGroup({ ...foundPerson, permission, anotherRole: role });
+      await addUserToWorkGroup({
+        ...foundPerson,
+        permission,
+        anotherRole: role,
+      });
       setRole("");
-      setPermission("editor");
+      setPermission("nenhuma");
       setShow(false);
     }
   }, [setShow, foundPerson, addUserToWorkGroup, permission, role]);
@@ -183,6 +187,7 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
                   borderBottomOnly
                   as="select"
                   onChange={(e) => setPermission(e.target.value)}
+                  value={permission}
                 >
                   <option value="editor">Editor</option>
                   <option value="visualizar">Visualizar</option>

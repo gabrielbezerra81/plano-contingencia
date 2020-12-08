@@ -74,7 +74,7 @@ const MeasureModal: React.FC<Props> = ({
           <Input as="select" bordered onChange={handleSelectSuggestion}>
             <option />
             {filteredSuggestionList.map((suggestion, index) => (
-              <option key={suggestion.id} value={index}>
+              <option key={index} value={index}>
                 {suggestion.description}
               </option>
             ))}

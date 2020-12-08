@@ -52,7 +52,7 @@ const Input: React.FC<InputProps> = ({
       ) : masked ? (
         <InputMask className={inputClass} mask="" {...rest} {...maskProps} />
       ) : (
-        <FormControl className={inputClass} {...rest} />
+        <FormControl rows={2} className={inputClass} {...rest} />
       )}
 
       {!!RightIcon && <button onClick={onRightIconClick}>{RightIcon}</button>}

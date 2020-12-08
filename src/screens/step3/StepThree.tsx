@@ -152,8 +152,8 @@ const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
     [],
   );
 
-  const handleAddAddress = useCallback(() => {
-    addRiskLocation(address);
+  const handleAddAddress = useCallback(async () => {
+    await addRiskLocation(address);
 
     setAddress(() => {
       const clearedAddress = produce(address, (draft) => {

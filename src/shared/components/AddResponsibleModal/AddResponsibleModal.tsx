@@ -26,7 +26,7 @@ const AddResponsibleModal: React.FC<Props> = ({
   addResponsible,
 }) => {
   const [role, setRole] = useState("");
-  const [permission, setPermission] = useState("editor");
+  const [permission, setPermission] = useState("nenhuma");
 
   const handleAddResponsible = useCallback(() => {
     addResponsible({
@@ -36,7 +36,7 @@ const AddResponsibleModal: React.FC<Props> = ({
       },
     });
     setRole("");
-    setPermission("editor");
+    setPermission("nenhuma");
     setShow(false);
     setResponsible(null);
   }, [setShow, permission, role, setResponsible, addResponsible, responsible]);
@@ -76,6 +76,7 @@ const AddResponsibleModal: React.FC<Props> = ({
               as="select"
               onChange={(e) => setPermission(e.target.value)}
               size="small"
+              value={permission}
             >
               <option value="editor">Editor</option>
               <option value="visualizar">Visualizar</option>

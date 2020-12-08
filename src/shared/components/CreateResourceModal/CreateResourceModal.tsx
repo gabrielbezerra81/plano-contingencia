@@ -141,7 +141,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
     setResource(clearedResource);
   }, [resource]);
 
-  const handleIncludeResourceInPlan = useCallback(() => {
+  const handleIncludeResourceInPlan = useCallback(async () => {
     let address = resource.address;
 
     if (!!currentAddedAddress && selectedAddressIndex === -2) {
@@ -154,7 +154,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
       address = planData.resources[selectedAddressIndex].address;
     }
 
-    addResource({ ...resource, address, type });
+    await addResource({ ...resource, address, type });
 
     setActiveKey("0");
 

@@ -382,14 +382,14 @@ const StepFour: React.FC = () => {
     return responsibles;
   }, [planData]);
 
-  const filteredRiskLocations = useMemo(() => { 
+  const filteredRiskLocations = useMemo(() => {
     return planData.riskLocations
       .map((locationItem, index) => ({
         ...locationItem,
         formattedAddress: formatScenarioAddress(locationItem),
         checked: verifyIfPreviousScenariosHasValue(
           "addressId",
-          "locationItem.id" + index,
+          locationItem.id,
         ),
       }))
       .filter((locationItem) => {
@@ -518,9 +518,7 @@ const StepFour: React.FC = () => {
                 <Form.Check
                   custom
                   type="checkbox"
-                  onChange={() =>
-                    handleCheckItem("addressId", "locationItem.id" + index)
-                  }
+                  onChange={() => handleCheckItem("addressId", locationItem.id)}
                   checked={locationItem.checked}
                   disabled={disabledColumnsCheckbox.address}
                 />
@@ -676,7 +674,7 @@ const StepFour: React.FC = () => {
           {formattedResources.map((resourceItem, index) => {
             const checked = verifyIfPreviousScenariosHasValue(
               "resourceId",
-              "resource.id" + index,
+              resourceItem.id,
             );
 
             return (
@@ -685,7 +683,7 @@ const StepFour: React.FC = () => {
                   custom
                   type="checkbox"
                   onChange={() =>
-                    handleCheckItem("resourceId", "resource.id" + index)
+                    handleCheckItem("resourceId", resourceItem.id)
                   }
                   checked={checked}
                 />

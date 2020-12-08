@@ -19,6 +19,7 @@ import NumberInput from "../NumberInput/NumberInput";
 import produce from "immer";
 import numberFormatter from "shared/utils/format/numberFormatter";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
+import { usePlanData } from "context/PlanData/planDataContext";
 
 interface Props {
   show: boolean;
@@ -47,6 +48,8 @@ const AddressModal: React.FC<Props> = ({
   setExternalAddress,
   selectAddress,
 }) => {
+  const { getSequenceId } = usePlanData();
+
   const [map, setMap] = useState<L.Map | null>(null);
 
   const [address, setAddress] = useState<Address>({
@@ -102,8 +105,10 @@ const AddressModal: React.FC<Props> = ({
     [],
   );
 
-  const handleAddAddress = useCallback(() => {
-    setExternalAddress({ ...address });
+  const handleAddAddress = useCallback(async () => {
+    const id = await getSequenceId("enderecos");
+
+    setExternalAddress({ ...address, id });
 
     if (selectAddress) {
       selectAddress();
@@ -118,7 +123,7 @@ const AddressModal: React.FC<Props> = ({
     });
 
     setShow(false);
-  }, [address, setExternalAddress, setShow, selectAddress]);
+  }, [address, setExternalAddress, setShow, selectAddress, getSequenceId]);
 
   const handleChangeLat = useCallback(
     (value: any) => {
