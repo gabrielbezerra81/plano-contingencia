@@ -11,6 +11,7 @@ import formatResources from "shared/utils/format/formatResources";
 import formatScenarioAddress from "shared/utils/format/formatScenarioAddress";
 import { Scenario, Risk, Measure, Responsible } from "types/Plan";
 import HypotheseModal from "./HypotheseModal/HypotheseModal";
+import LocationModal from "./LocationModal/LocationModal";
 import MeasureModal from "./MeasureModal/MeasureModal";
 import RiskModal from "./RiskModal/RiskModal";
 import ScenarioColumn from "./ScenarioColumn/ScenarioColumn";
@@ -35,18 +36,21 @@ const emptyScenario: Scenario = {
   responsibles: [],
   risk: { description: "", id: "" },
   threat: { cobrade: "", description: "" },
+  title: "",
 };
 
 const StepFour: React.FC = () => {
   const { planData } = usePlanData();
 
   const [locationFilterText, setLocationFilterText] = useState("");
+  const [scenarioTitle, setScenarioTitle] = useState("");
 
-  const [showResourceModal, setShowResourceModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [showThreatModal, setShowThreatModal] = useState(false);
   const [showHypotheseModal, setShowHypotheseModal] = useState(false);
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [showMeasureModal, setShowMeasureModal] = useState(false);
+  const [showResourceModal, setShowResourceModal] = useState(false);
 
   const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
 
@@ -264,7 +268,11 @@ const StepFour: React.FC = () => {
                 scenarioItem[attr] = value;
               } // Caso contrario, será criada uma nova linha com o nvo valor marcado
               else {
-                draftScenariosList.push({ ...prevScenario, [attr]: value });
+                draftScenariosList.push({
+                  ...prevScenario,
+                  [attr]: value,
+                  title: scenarioTitle,
+                });
               }
               setPreviousScenariosList((oldValues) => [
                 ...oldValues,
@@ -297,6 +305,7 @@ const StepFour: React.FC = () => {
       verifyIfPreviousScenariosHasValue,
       filterScenariosList,
       previousScenariosList,
+      scenarioTitle,
     ],
   );
 
@@ -307,7 +316,11 @@ const StepFour: React.FC = () => {
           const alreadyAdded = verifyIfPreviousScenariosHasValue(attr, value);
 
           if (!alreadyAdded) {
-            draft.push({ ...emptyScenario, addressId: value });
+            draft.push({
+              ...emptyScenario,
+              addressId: value,
+              title: scenarioTitle,
+            });
             setPreviousScenariosList((oldValues) => [
               ...oldValues,
               { ...emptyScenario, addressId: value },
@@ -350,6 +363,7 @@ const StepFour: React.FC = () => {
       verifyIfPreviousScenariosHasValue,
       filterScenariosList,
       duplicateScenariosLines,
+      scenarioTitle,
     ],
   );
 
@@ -500,200 +514,213 @@ const StepFour: React.FC = () => {
   return (
     <>
       <Container>
-        <ScenarioColumn
-          containerClassName="locationRiskColumn"
-          headerTitle="Escolha o local de risco:"
-        >
-          <Input
-            borderBottomOnly
-            rightIcon={<GrSearch />}
-            value={locationFilterText}
-            onChange={(e) =>
-              setLocationFilterText(e.target.value.toLocaleLowerCase())
-            }
-          />
-          {filteredRiskLocations.map((locationItem, index) => {
-            return (
-              <div key={index} className="itemListing">
-                <Form.Check
-                  custom
-                  type="checkbox"
-                  onChange={() => handleCheckItem("addressId", locationItem.id)}
-                  checked={locationItem.checked}
-                  disabled={disabledColumnsCheckbox.address}
-                />
-                <ItemListingText included={locationItem.checked}>
-                  {locationItem.formattedAddress.jsxElement}
-                </ItemListingText>
-              </div>
-            );
-          })}
-        </ScenarioColumn>
+        <Input
+          value={scenarioTitle}
+          onChange={(e) => setScenarioTitle(e.target.value)}
+          borderBottomOnly
+          labelOnInput="Título: "
+        />
+        <div className="columnsContainer">
+          <ScenarioColumn
+            containerClassName="locationRiskColumn"
+            headerTitle="Escolha o local de risco:"
+            onClickHeader={() => setShowLocationModal(true)}
+          >
+            <Input
+              borderBottomOnly
+              rightIcon={<GrSearch />}
+              value={locationFilterText}
+              onChange={(e) =>
+                setLocationFilterText(e.target.value.toLocaleLowerCase())
+              }
+            />
+            {filteredRiskLocations.map((locationItem, index) => {
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("addressId", locationItem.id)
+                    }
+                    checked={locationItem.checked}
+                    disabled={disabledColumnsCheckbox.address}
+                  />
+                  <ItemListingText included={locationItem.checked}>
+                    {locationItem.formattedAddress.jsxElement}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
 
-        <ScenarioColumn
-          headerTitle={`Ameaças:\n(Cobrade)`}
-          onClickHeader={() => setShowThreatModal(true)}
-        >
-          {addedCobrades.map((cobradeItem, index) => {
-            const checked = verifyIfPreviousScenariosHasValue(
-              "threat",
-              cobradeItem.cobrade,
-            );
+          <ScenarioColumn
+            headerTitle={`Ameaças:\n(Cobrade)`}
+            onClickHeader={() => setShowThreatModal(true)}
+          >
+            {addedCobrades.map((cobradeItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "threat",
+                cobradeItem.cobrade,
+              );
 
-            return (
-              <div key={index} className="itemListing">
-                <Form.Check
-                  custom
-                  type="checkbox"
-                  onChange={() =>
-                    handleCheckItem("threat", {
-                      cobrade: cobradeItem.cobrade,
-                      description: cobradeItem.description,
-                    })
-                  }
-                  checked={checked}
-                  disabled={disabledColumnsCheckbox.threat}
-                />
-                <ItemListingText included={checked}>
-                  {cobradeItem.description}
-                </ItemListingText>
-              </div>
-            );
-          })}
-        </ScenarioColumn>
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("threat", {
+                        cobrade: cobradeItem.cobrade,
+                        description: cobradeItem.description,
+                      })
+                    }
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.threat}
+                  />
+                  <ItemListingText included={checked}>
+                    {cobradeItem.description}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
 
-        <ScenarioColumn
-          headerTitle={`Situação\nHipotética`}
-          onClickHeader={() => setShowHypotheseModal(true)}
-        >
-          {addedHypotheses.map((hypothese, index) => {
-            const checked = verifyIfPreviousScenariosHasValue(
-              "hypothese",
-              hypothese,
-            );
+          <ScenarioColumn
+            headerTitle={`Situação\nHipotética`}
+            onClickHeader={() => setShowHypotheseModal(true)}
+          >
+            {addedHypotheses.map((hypothese, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "hypothese",
+                hypothese,
+              );
 
-            return (
-              <div key={index} className="itemListing">
-                <Form.Check
-                  custom
-                  type="checkbox"
-                  onChange={() => handleCheckItem("hypothese", hypothese)}
-                  checked={checked}
-                  disabled={disabledColumnsCheckbox.hypothese}
-                />
-                <ItemListingText included={checked}>
-                  {hypothese}
-                </ItemListingText>
-              </div>
-            );
-          })}
-        </ScenarioColumn>
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("hypothese", hypothese)}
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.hypothese}
+                  />
+                  <ItemListingText included={checked}>
+                    {hypothese}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
 
-        <ScenarioColumn
-          headerTitle={`Riscos/\nVulnerabilidades`}
-          onClickHeader={() => setShowRiskModal(true)}
-        >
-          {addedRisks.map((riskItem, index) => {
-            const checked = verifyIfPreviousScenariosHasValue(
-              "risk",
-              riskItem.description,
-            );
+          <ScenarioColumn
+            headerTitle={`Riscos/\nVulnerabilidades`}
+            onClickHeader={() => setShowRiskModal(true)}
+          >
+            {addedRisks.map((riskItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "risk",
+                riskItem.description,
+              );
 
-            return (
-              <div key={index} className="itemListing">
-                <Form.Check
-                  custom
-                  type="checkbox"
-                  onChange={() => handleCheckItem("risk", riskItem)}
-                  checked={checked}
-                  disabled={disabledColumnsCheckbox.risk}
-                />
-                <ItemListingText included={checked}>
-                  {riskItem.description}
-                </ItemListingText>
-              </div>
-            );
-          })}
-        </ScenarioColumn>
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("risk", riskItem)}
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.risk}
+                  />
+                  <ItemListingText included={checked}>
+                    {riskItem.description}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
 
-        <ScenarioColumn
-          headerTitle={`Medidas de\nenfrentamento`}
-          onClickHeader={() => setShowMeasureModal(true)}
-        >
-          {addedMeasures.map((measureItem, index) => {
-            const checked = verifyIfPreviousScenariosHasValue(
-              "measure",
-              measureItem.description,
-            );
+          <ScenarioColumn
+            headerTitle={`Medidas de\nenfrentamento`}
+            onClickHeader={() => setShowMeasureModal(true)}
+          >
+            {addedMeasures.map((measureItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "measure",
+                measureItem.description,
+              );
 
-            return (
-              <div key={index} className="itemListing">
-                <Form.Check
-                  custom
-                  type="checkbox"
-                  onChange={() => handleCheckItem("measure", measureItem)}
-                  checked={checked}
-                  disabled={disabledColumnsCheckbox.measure}
-                />
-                <ItemListingText included={checked}>
-                  {measureItem.description}
-                </ItemListingText>
-              </div>
-            );
-          })}
-        </ScenarioColumn>
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("measure", measureItem)}
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.measure}
+                  />
+                  <ItemListingText included={checked}>
+                    {measureItem.description}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
 
-        <ScenarioColumn headerTitle="Responsável" onClickHeader={() => {}}>
-          {filteredResponsibles.map((responsible, index) => {
-            const checked = verifyIfPreviousScenariosHasValue(
-              "responsibles",
-              `${responsible.name} ${responsible.role} ${responsible.permission}`,
-            );
+          <ScenarioColumn headerTitle="Responsável" onClickHeader={() => {}}>
+            {filteredResponsibles.map((responsible, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "responsibles",
+                `${responsible.name} ${responsible.role} ${responsible.permission}`,
+              );
 
-            return (
-              <div key={index} className="itemListing">
-                <Form.Check
-                  custom
-                  type="checkbox"
-                  onChange={() => handleCheckItem("responsibles", responsible)}
-                  checked={checked}
-                  disabled={disabledColumnsCheckbox.responsible}
-                />
-                <ItemListingText included={checked}>
-                  {responsible.name} - {responsible.role}
-                </ItemListingText>
-              </div>
-            );
-          })}
-        </ScenarioColumn>
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("responsibles", responsible)
+                    }
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.responsible}
+                  />
+                  <ItemListingText included={checked}>
+                    {responsible.name} - {responsible.role}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
 
-        <ScenarioColumn
-          headerTitle="Recursos"
-          onClickHeader={handleClickResources}
-        >
-          {formattedResources.map((resourceItem, index) => {
-            const checked = verifyIfPreviousScenariosHasValue(
-              "resourceId",
-              resourceItem.id,
-            );
+          <ScenarioColumn
+            headerTitle="Recursos"
+            onClickHeader={handleClickResources}
+          >
+            {formattedResources.map((resourceItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "resourceId",
+                resourceItem.id,
+              );
 
-            return (
-              <div key={index} className="itemListing">
-                <Form.Check
-                  custom
-                  type="checkbox"
-                  onChange={() =>
-                    handleCheckItem("resourceId", resourceItem.id)
-                  }
-                  checked={checked}
-                />
-                <ItemListingText included={checked}>
-                  {resourceItem.formattedValue2 || resourceItem.value1}
-                </ItemListingText>
-              </div>
-            );
-          })}
-        </ScenarioColumn>
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("resourceId", resourceItem.id)
+                    }
+                    checked={checked}
+                  />
+                  <ItemListingText included={checked}>
+                    {resourceItem.formattedValue2 || resourceItem.value1}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
+        </div>
       </Container>
 
       <div style={{ marginTop: 100 }}>
@@ -712,7 +739,8 @@ const StepFour: React.FC = () => {
           {JSON.stringify(previousScenariosList)}
         </code>
       </div>
-      <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
+
+      <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
 
       <ThreatModal
         show={showThreatModal}
@@ -739,6 +767,8 @@ const StepFour: React.FC = () => {
         suggestionList={suggestionList}
         setAddedMeasures={setAddedMeasures}
       />
+
+      <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
     </>
   );
 };

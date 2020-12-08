@@ -1,11 +1,18 @@
 import styled, { css } from "styled-components";
 
 export const Container = styled.div`
-  display: inline-flex;
-  padding: 56px 24px 0 0;
+  > .inputContainer {
+    width: 350px;
+    margin: 40px auto 24px;
+  }
 
-  > .locationRiskColumn {
-    min-width: 230px;
+  .columnsContainer {
+    display: inline-flex;
+    padding: 0px 24px 0 0;
+
+    > .locationRiskColumn {
+      min-width: 230px;
+    }
   }
 `;
 

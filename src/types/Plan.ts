@@ -93,6 +93,7 @@ export interface Measure {
 
 export interface Scenario {
   id?: string;
+  title: string;
   addressId: string;
   hypothese: string;
   measure: Measure;
