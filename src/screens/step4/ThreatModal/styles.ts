@@ -3,23 +3,7 @@ import { Modal as BSModal } from "react-bootstrap";
 
 export const Modal = styled(BSModal)`
   .modal-dialog {
-    max-width: 1200px;
-
-    @media (min-width: 1440px) {
-      max-width: 1320px;
-    }
-
-    @media (min-width: 1600px) {
-      max-width: 1400px;
-    }
-
-    @media (min-width: 1900px) {
-      max-width: 1700px;
-    }
-
-    @media (min-width: 2100px) {
-      max-width: 1900px;
-    }
+    max-width: 91%;
   }
 `;
 
