@@ -35,13 +35,19 @@ const RightSideMenu: React.FC = () => {
     setShowAddToGroupModal(true);
   }, []);
 
+  const handleClickPeople = useCallback(() => {
+    setActiveItem("pessoa");
+    changeRightSideMenuVisibility(true);
+  }, [changeRightSideMenuVisibility]);
+
   const handleItemClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       const { name } = e.currentTarget;
 
+      changeRightSideMenuVisibility(true);
       setActiveItem(name as ResourceType);
     },
-    [],
+    [changeRightSideMenuVisibility],
   );
 
   const activeChild = useMemo(() => {
@@ -71,7 +77,7 @@ const RightSideMenu: React.FC = () => {
     <>
       <Container activeItemNumber={activeChild} isOpen={isOpenRightSideMenu}>
         <header>
-          <button onClick={changeRightSideMenuVisibility}>
+          <button onClick={() => changeRightSideMenuVisibility()}>
             <BsFillCaretRightFill size={18} color="#FFF" />
             {isOpenRightSideMenu && <h6>RECURSOS</h6>}
           </button>
@@ -79,7 +85,7 @@ const RightSideMenu: React.FC = () => {
 
         <div className="main">
           <aside>
-            <button onClick={openAddToGroupModal}>
+            <button onClick={handleClickPeople}>
               <img src={peopleIcon} alt="PESSOAL" />
               <span>PESSOAL</span>
             </button>

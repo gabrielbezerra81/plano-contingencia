@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useState } from "react";
 
 interface SystemContextData {
   isOpenRightSideMenu: boolean;
-  changeRightSideMenuVisibility: () => void;
+  changeRightSideMenuVisibility: (visibility?: boolean) => void;
   activeAppTab: ActiveAppTab;
   setActiveAppTab: React.Dispatch<React.SetStateAction<ActiveAppTab>>;
 }
@@ -17,8 +17,13 @@ const SystemProvider: React.FC = ({ children }) => {
   const [isOpenRightSideMenu, setIsOpenRightSideMenu] = useState(false);
   const [activeAppTab, setActiveAppTab] = useState<ActiveAppTab>("plans");
 
-  const changeRightSideMenuVisibility = useCallback(() => {
-    setIsOpenRightSideMenu((oldValue) => !oldValue);
+  const changeRightSideMenuVisibility = useCallback((visibility?: boolean) => {
+    if (visibility === true || visibility === false) {
+      setIsOpenRightSideMenu(visibility);
+    } //
+    else {
+      setIsOpenRightSideMenu((oldValue) => !oldValue);
+    }
   }, []);
 
   return (
