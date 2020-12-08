@@ -63,6 +63,9 @@ export const Container = styled.div`
 
       .itemListing {
         display: inline-flex;
+        padding: 0 8px 6px;
+        margin: 0 -8px;
+        border-bottom: 2px solid #fff;
 
         > .custom-checkbox {
           margin-top: 14px;
