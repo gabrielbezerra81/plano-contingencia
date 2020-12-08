@@ -12,7 +12,7 @@ export const Modal = styled(BSModal)`
 
 export const Container = styled.div`
   padding: 16px 16px 16px;
-  height: 640px;
+  min-height: 640px;
 
   > h6:first-child {
     color: #3d3d3d;

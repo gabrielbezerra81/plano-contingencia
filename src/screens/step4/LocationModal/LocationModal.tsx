@@ -195,8 +195,8 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
   return (
     <Modal show={show} centered onHide={() => setShow(false)}>
       <Container>
-        <ModalCloseButton setShow={setShow} />
         <h6>Adicione locais de risco</h6>
+        <ModalCloseButton setShow={setShow} />
 
         <main>
           <MapAndAddressListContainer>
