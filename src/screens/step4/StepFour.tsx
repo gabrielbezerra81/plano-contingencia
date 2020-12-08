@@ -43,7 +43,11 @@ const StepFour: React.FC = () => {
   const { planData } = usePlanData();
 
   const [locationFilterText, setLocationFilterText] = useState("");
-  const [scenarioTitle, setScenarioTitle] = useState("");
+  const [scenarioTitle, setScenarioTitle] = useState(() => {
+    const title = localStorage.getItem("scenarioTitle");
+
+    return title || "";
+  });
 
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showThreatModal, setShowThreatModal] = useState(false);
@@ -356,7 +360,6 @@ const StepFour: React.FC = () => {
       });
 
       setScenariosList(updatedScenarios);
-      // localStorage.setItem("scenariosList", JSON.stringify(updatedScenarios));
     },
     [
       scenariosList,
@@ -370,6 +373,23 @@ const StepFour: React.FC = () => {
   const handleClickResources = useCallback(() => {
     setShowResourceModal(true);
   }, []);
+
+  const handleChangeScenarioTitle = useCallback(
+    (e) => {
+      const title = e.target.value;
+      setScenarioTitle(title);
+
+      localStorage.setItem("scenarioTitle", title);
+
+      const updatedScenariosList = produce(scenariosList, (draft) => {
+        draft.forEach((scenario) => {
+          scenario.title = title;
+        });
+      });
+      setScenariosList(updatedScenariosList);
+    },
+    [scenariosList],
+  );
 
   const formattedResources = useMemo(
     () => formatResources(planData.resources),
@@ -465,12 +485,17 @@ const StepFour: React.FC = () => {
   }, [addedMeasures]);
 
   // Salvar estados intermediários da lista de cenários
-  // useEffect(() => {
-  //   localStorage.setItem(
-  //     "previousScenariosList",
-  //     JSON.stringify(previousScenariosList),
-  //   );
-  // }, [previousScenariosList]);
+  useEffect(() => {
+    localStorage.setItem(
+      "previousScenariosList",
+      JSON.stringify(previousScenariosList),
+    );
+  }, [previousScenariosList]);
+
+  // Salvar lista de cenarios
+  useEffect(() => {
+    localStorage.setItem("scenariosList", JSON.stringify(scenariosList));
+  }, [scenariosList]);
 
   const disabledColumnsCheckbox = useMemo(() => {
     const disabledColumns = {
@@ -516,7 +541,7 @@ const StepFour: React.FC = () => {
       <Container>
         <Input
           value={scenarioTitle}
-          onChange={(e) => setScenarioTitle(e.target.value)}
+          onChange={handleChangeScenarioTitle}
           borderBottomOnly
           labelOnInput="Título: "
         />
