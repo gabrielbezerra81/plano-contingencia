@@ -1,50 +1,33 @@
 import api from "api/config";
-import { usePlanData } from "context/PlanData/planDataContext";
 import produce from "immer";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Form } from "react-bootstrap";
 
-import { GrSearch } from "react-icons/gr";
 import Input from "shared/components/Input/Input";
 import ResourcesModal from "shared/components/ResourcesModal/ResourcesModal";
-import formatResources from "shared/utils/format/formatResources";
-import formatScenarioAddress from "shared/utils/format/formatScenarioAddress";
-import { Responsible } from "types/Plan";
+
 import HypotheseModal from "./HypotheseModal/HypotheseModal";
 import LocationModal from "./LocationModal/LocationModal";
 import MeasureModal from "./MeasureModal/MeasureModal";
 import RiskModal from "./RiskModal/RiskModal";
-import ScenarioColumn from "./ScenarioColumn/ScenarioColumn";
 
-import { Container, ItemListingText } from "./styles";
+import { Container } from "./styles";
 import ThreatModal from "./ThreatModal/ThreatModal";
 import { SuggestionList } from "./types";
 
 import { useTable } from "react-table";
 
 import _ from "lodash";
-import ScenarioTable from "./ScenarioTable/ScenarioTable";
+import ScenarioTable, { TableHead } from "./ScenarioTable/ScenarioTable";
 import { useScenario } from "context/PlanData/scenarioContext";
 
 const StepFour: React.FC = () => {
-  const { planData } = usePlanData();
-
   const {
-    addedCobrades,
-    addedHypotheses,
-    addedRisks,
-    addedMeasures,
     previousScenariosList,
     scenariosList,
     setScenariosList,
-    verifyIfPreviousScenariosHasValue,
-    handleCheckItem,
     scenarioTitle,
     setScenarioTitle,
-    disabledColumnsCheckbox,
   } = useScenario();
-
-  const [locationFilterText, setLocationFilterText] = useState("");
 
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showThreatModal, setShowThreatModal] = useState(false);
@@ -54,10 +37,6 @@ const StepFour: React.FC = () => {
   const [showResourceModal, setShowResourceModal] = useState(false);
 
   const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
-
-  const handleClickResources = useCallback(() => {
-    setShowResourceModal(true);
-  }, []);
 
   const handleChangeScenarioTitle = useCallback(
     (e) => {
@@ -75,54 +54,6 @@ const StepFour: React.FC = () => {
     },
     [scenariosList],
   );
-
-  const formattedResources = useMemo(
-    () => formatResources(planData.resources),
-    [planData],
-  );
-
-  const filteredResponsibles = useMemo(() => {
-    const responsibles: Responsible[] = [];
-
-    planData.resources.forEach((resource) => {
-      resource.responsibles.forEach((responsible) => {
-        const alreadyIncluded = responsibles.some(
-          (includedItem) =>
-            `${includedItem.name} ${includedItem.role} ${includedItem.permission}` ===
-            `${responsible.name} ${responsible.role} ${responsible.permission}`,
-        );
-
-        if (!alreadyIncluded) {
-          responsibles.push(responsible);
-        }
-      });
-    });
-
-    return responsibles;
-  }, [planData]);
-
-  const filteredRiskLocations = useMemo(() => {
-    return planData.riskLocations
-      .map((locationItem, index) => ({
-        ...locationItem,
-        formattedAddress: formatScenarioAddress(locationItem),
-        checked: verifyIfPreviousScenariosHasValue(
-          "addressId",
-          locationItem.id,
-        ),
-      }))
-      .filter((locationItem) => {
-        if (!locationFilterText) return true;
-
-        return locationItem.formattedAddress.fullAddress
-          .toLocaleLowerCase()
-          .includes(locationFilterText);
-      });
-  }, [
-    planData.riskLocations,
-    verifyIfPreviousScenariosHasValue,
-    locationFilterText,
-  ]);
 
   // Carregar Cobrade
   useEffect(() => {
@@ -162,39 +93,72 @@ const StepFour: React.FC = () => {
   const columns: any[] = useMemo(() => {
     return [
       {
-        Header: "Escolha o local de risco:",
+        Header: (
+          <TableHead
+            style={{ width: 220 }}
+            title="Escolha o local de risco:"
+            onClick={() => setShowLocationModal(true)}
+          />
+        ),
         accessor: "addressId",
         enableRowSpan: true,
+        width: 230,
+        minWidth: 230,
       },
       {
-        Header: "Ameaças: (COBRADE)",
+        Header: (
+          <TableHead
+            title={"Ameaças:\n(COBRADE)"}
+            onClick={() => setShowThreatModal(true)}
+          />
+        ),
         accessor: "threat.description",
         enableRowSpan: true,
       },
       {
-        Header: "Situação hipotética",
+        Header: (
+          <TableHead
+            title={"Situação\nhipotética"}
+            onClick={() => setShowHypotheseModal(true)}
+          />
+        ),
         accessor: "hypothese",
         enableRowSpan: true,
       },
       {
-        Header: "Riscos/Vulnerabilidades",
+        Header: (
+          <TableHead
+            title={"Riscos/\nVulnerabilidades"}
+            onClick={() => setShowRiskModal(true)}
+          />
+        ),
         accessor: "risk.description",
         enableRowSpan: true,
       },
       {
-        Header: "Medidas de enfretamento",
+        Header: (
+          <TableHead
+            title={"Medidas de\nenfretamento"}
+            onClick={() => setShowMeasureModal(true)}
+          />
+        ),
         accessor: "measure.description",
         enableRowSpan: true,
       },
       {
-        Header: "Responsáveis",
+        Header: <TableHead title={"Responsáveis"} onClick={() => {}} />,
         accessor: (row: any) =>
           row.responsibles.map((responsible: any) => responsible.id).join(" "),
         enableRowSpan: true,
         id: "responsibles",
       },
       {
-        Header: "Recursos",
+        Header: (
+          <TableHead
+            title={"Recursos"}
+            onClick={() => setShowResourceModal(true)}
+          />
+        ),
         accessor: "resourceId",
         enableRowSpan: true,
       },
@@ -220,9 +184,97 @@ const StepFour: React.FC = () => {
           borderBottomOnly
           labelOnInput="Título: "
         />
+
         <ScenarioTable tableInstance={tableInstance} />
+      </Container>
+
+      <div style={{ marginTop: 100 }}>
+        <code>
+          Linhas add: {scenariosList.length}
+          <br />
+          <br />
+          {JSON.stringify(scenariosList)}
+          <br />
+          <br />
+        </code>
+        <code>
+          Linhas prev: {previousScenariosList.length}
+          <br />
+          <br />
+          {JSON.stringify(previousScenariosList)}
+        </code>
+      </div>
+
+      <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
+
+      <ThreatModal show={showThreatModal} setShow={setShowThreatModal} />
+
+      <HypotheseModal
+        show={showHypotheseModal}
+        setShow={setShowHypotheseModal}
+      />
+
+      <RiskModal
+        show={showRiskModal}
+        setShow={setShowRiskModal}
+        suggestionList={suggestionList}
+      />
+
+      <MeasureModal
+        show={showMeasureModal}
+        setShow={setShowMeasureModal}
+        suggestionList={suggestionList}
+      />
+
+      <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
+    </>
+  );
+};
+
+export default StepFour;
+
+function useRowSpan(instance: any) {
+  const { allColumns } = instance;
+
+  allColumns.forEach((column: any) => {
+    if (column.enableRowSpan) {
+      column.topCellValue = null;
+      column.topCellIndex = 0;
+    }
+  });
+}
+
+/*
+
+function useInstance(instance: any) {
+  const { allColumns } = instance;
+
+  let rowSpanHeaders: any[] = [];
+
+  allColumns.forEach((column: any, i: any) => {
+    const { id, enableRowSpan } = column;
+
+    if (enableRowSpan !== undefined) {
+      rowSpanHeaders = [
+        ...rowSpanHeaders,
+        { id, topCellValue: null, topCellIndex: 0 },
+      ];
+    }
+  });
+
+  Object.assign(instance, { rowSpanHeaders });
+}
+
+<>
+      <Container>
+        <Input
+          value={scenarioTitle}
+          onChange={handleChangeScenarioTitle}
+          borderBottomOnly
+          labelOnInput="Título: "
+        />
         <div className="columnsContainer">
-          <ScenarioColumn
+                    <ScenarioColumn
             containerClassName="locationRiskColumn"
             headerTitle="Escolha o local de risco:"
             onClickHeader={() => setShowLocationModal(true)}
@@ -413,294 +465,7 @@ const StepFour: React.FC = () => {
               );
             })}
           </ScenarioColumn>
-        </div>
-      </Container>
-
-      <div style={{ marginTop: 100 }}>
-        <code>
-          Linhas add: {scenariosList.length}
-          <br />
-          <br />
-          {JSON.stringify(scenariosList)}
-          <br />
-          <br />
-        </code>
-        <code>
-          Linhas prev: {previousScenariosList.length}
-          <br />
-          <br />
-          {JSON.stringify(previousScenariosList)}
-        </code>
-      </div>
-
-      <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
-
-      <ThreatModal show={showThreatModal} setShow={setShowThreatModal} />
-
-      <HypotheseModal
-        show={showHypotheseModal}
-        setShow={setShowHypotheseModal}
-      />
-
-      <RiskModal
-        show={showRiskModal}
-        setShow={setShowRiskModal}
-        suggestionList={suggestionList}
-      />
-
-      <MeasureModal
-        show={showMeasureModal}
-        setShow={setShowMeasureModal}
-        suggestionList={suggestionList}
-      />
-
-      <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
-    </>
-  );
-};
-
-export default StepFour;
-
-function useInstance(instance: any) {
-  const { allColumns } = instance;
-
-  let rowSpanHeaders: any[] = [];
-
-  allColumns.forEach((column: any, i: any) => {
-    const { id, enableRowSpan } = column;
-
-    if (enableRowSpan !== undefined) {
-      rowSpanHeaders = [
-        ...rowSpanHeaders,
-        { id, topCellValue: null, topCellIndex: 0 },
-      ];
-    }
-  });
-
-  Object.assign(instance, { rowSpanHeaders });
-}
-
-function useRowSpan(instance: any) {
-  const { allColumns } = instance;
-
-  allColumns.forEach((column: any) => {
-    if (column.enableRowSpan) {
-      column.topCellValue = null;
-      column.topCellIndex = 0;
-    }
-  });
-}
-
-/*
-
-<>
-      <Container>
-        <Input
-          value={scenarioTitle}
-          onChange={handleChangeScenarioTitle}
-          borderBottomOnly
-          labelOnInput="Título: "
-        />
-        <div className="columnsContainer">
-          <ScenarioColumn
-            containerClassName="locationRiskColumn"
-            headerTitle="Escolha o local de risco:"
-            onClickHeader={() => setShowLocationModal(true)}
-          >
-            <Input
-              borderBottomOnly
-              rightIcon={<GrSearch />}
-              value={locationFilterText}
-              onChange={(e) =>
-                setLocationFilterText(e.target.value.toLocaleLowerCase())
-              }
-            />
-            {filteredRiskLocations.map((locationItem, index) => {
-              return (
-                <div key={index} className="itemListing">
-                  <Form.Check
-                    custom
-                    type="checkbox"
-                    onChange={() =>
-                      handleCheckItem("addressId", locationItem.id)
-                    }
-                    checked={locationItem.checked}
-                    disabled={disabledColumnsCheckbox.address}
-                  />
-                  <ItemListingText included={locationItem.checked}>
-                    {locationItem.formattedAddress.jsxElement}
-                  </ItemListingText>
-                </div>
-              );
-            })}
-          </ScenarioColumn>
-
-          <ScenarioColumn
-            headerTitle={`Ameaças:\n(Cobrade)`}
-            onClickHeader={() => setShowThreatModal(true)}
-          >
-            {addedCobrades.map((cobradeItem, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "threat",
-                cobradeItem.cobrade,
-              );
-
-              return (
-                <div key={index} className="itemListing">
-                  <Form.Check
-                    custom
-                    type="checkbox"
-                    onChange={() =>
-                      handleCheckItem("threat", {
-                        cobrade: cobradeItem.cobrade,
-                        description: cobradeItem.description,
-                      })
-                    }
-                    checked={checked}
-                    disabled={disabledColumnsCheckbox.threat}
-                  />
-                  <ItemListingText included={checked}>
-                    {cobradeItem.description}
-                  </ItemListingText>
-                </div>
-              );
-            })}
-          </ScenarioColumn>
-
-          <ScenarioColumn
-            headerTitle={`Situação\nHipotética`}
-            onClickHeader={() => setShowHypotheseModal(true)}
-          >
-            {addedHypotheses.map((hypothese, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "hypothese",
-                hypothese,
-              );
-
-              return (
-                <div key={index} className="itemListing">
-                  <Form.Check
-                    custom
-                    type="checkbox"
-                    onChange={() => handleCheckItem("hypothese", hypothese)}
-                    checked={checked}
-                    disabled={disabledColumnsCheckbox.hypothese}
-                  />
-                  <ItemListingText included={checked}>
-                    {hypothese}
-                  </ItemListingText>
-                </div>
-              );
-            })}
-          </ScenarioColumn>
-
-          <ScenarioColumn
-            headerTitle={`Riscos/\nVulnerabilidades`}
-            onClickHeader={() => setShowRiskModal(true)}
-          >
-            {addedRisks.map((riskItem, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "risk",
-                riskItem.description,
-              );
-
-              return (
-                <div key={index} className="itemListing">
-                  <Form.Check
-                    custom
-                    type="checkbox"
-                    onChange={() => handleCheckItem("risk", riskItem)}
-                    checked={checked}
-                    disabled={disabledColumnsCheckbox.risk}
-                  />
-                  <ItemListingText included={checked}>
-                    {riskItem.description}
-                  </ItemListingText>
-                </div>
-              );
-            })}
-          </ScenarioColumn>
-
-          <ScenarioColumn
-            headerTitle={`Medidas de\nenfrentamento`}
-            onClickHeader={() => setShowMeasureModal(true)}
-          >
-            {addedMeasures.map((measureItem, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "measure",
-                measureItem.description,
-              );
-
-              return (
-                <div key={index} className="itemListing">
-                  <Form.Check
-                    custom
-                    type="checkbox"
-                    onChange={() => handleCheckItem("measure", measureItem)}
-                    checked={checked}
-                    disabled={disabledColumnsCheckbox.measure}
-                  />
-                  <ItemListingText included={checked}>
-                    {measureItem.description}
-                  </ItemListingText>
-                </div>
-              );
-            })}
-          </ScenarioColumn>
-
-          <ScenarioColumn headerTitle="Responsável" onClickHeader={() => {}}>
-            {filteredResponsibles.map((responsible, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "responsibles",
-                `${responsible.name} ${responsible.role} ${responsible.permission}`,
-              );
-
-              return (
-                <div key={index} className="itemListing">
-                  <Form.Check
-                    custom
-                    type="checkbox"
-                    onChange={() =>
-                      handleCheckItem("responsibles", responsible)
-                    }
-                    checked={checked}
-                    disabled={disabledColumnsCheckbox.responsible}
-                  />
-                  <ItemListingText included={checked}>
-                    {responsible.name} - {responsible.role}
-                  </ItemListingText>
-                </div>
-              );
-            })}
-          </ScenarioColumn>
-
-          <ScenarioColumn
-            headerTitle="Recursos"
-            onClickHeader={handleClickResources}
-          >
-            {formattedResources.map((resourceItem, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "resourceId",
-                resourceItem.id,
-              );
-
-              return (
-                <div key={index} className="itemListing">
-                  <Form.Check
-                    custom
-                    type="checkbox"
-                    onChange={() =>
-                      handleCheckItem("resourceId", resourceItem.id)
-                    }
-                    checked={checked}
-                  />
-                  <ItemListingText included={checked}>
-                    {resourceItem.formattedValue2 || resourceItem.value1}
-                  </ItemListingText>
-                </div>
-              );
-            })}
-          </ScenarioColumn>
+      
         </div>
       </Container>
 

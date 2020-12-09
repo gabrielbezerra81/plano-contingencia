@@ -93,16 +93,6 @@ export const Container = styled.div`
     width: 350px;
     margin: 40px auto 24px;
   }
-
-  .columnsContainer {
-    display: inline-flex;
-    padding: 0px 24px 0 0;
-    margin-top: 16px;
-
-    > .locationRiskColumn {
-      min-width: 230px;
-    }
-  }
 `;
 
 interface ItemListingTextProps {
