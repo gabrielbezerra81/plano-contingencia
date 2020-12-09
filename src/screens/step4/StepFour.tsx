@@ -24,6 +24,11 @@ import {
   FilterScenarioList,
 } from "./types";
 
+import { useTable } from "react-table";
+
+import _ from "lodash";
+import ScenarioTable from "./ScenarioTable/ScenarioTable";
+
 const emptyScenario: Scenario = {
   addressId: "",
   hypothese: "",
@@ -484,18 +489,16 @@ const StepFour: React.FC = () => {
     localStorage.setItem("addedMeasures", JSON.stringify(addedMeasures));
   }, [addedMeasures]);
 
-  // Salvar estados intermediários da lista de cenários
-  useEffect(() => {
-    localStorage.setItem(
-      "previousScenariosList",
-      JSON.stringify(previousScenariosList),
-    );
-  }, [previousScenariosList]);
+  // useEffect(() => {
+  //   localStorage.setItem(
+  //     "previousScenariosList",
+  //     JSON.stringify(previousScenariosList),
+  //   );
+  // }, [previousScenariosList]);
 
-  // Salvar lista de cenarios
-  useEffect(() => {
-    localStorage.setItem("scenariosList", JSON.stringify(scenariosList));
-  }, [scenariosList]);
+  // useEffect(() => {
+  //   localStorage.setItem("scenariosList", JSON.stringify(scenariosList));
+  // }, [scenariosList]);
 
   const disabledColumnsCheckbox = useMemo(() => {
     const disabledColumns = {
@@ -536,8 +539,82 @@ const StepFour: React.FC = () => {
     return disabledColumns;
   }, [scenariosList]);
 
+  const sortedScenarioList = useMemo(() => {
+    return _.orderBy(scenariosList, [
+      "addressId",
+      "threat.cobrade",
+      "hypothese",
+      "risk.description",
+      "measure.description",
+    ]);
+  }, [scenariosList]);
+
+  const columns: any[] = useMemo(() => {
+    return [
+      {
+        Header: "Escolha o local de risco:",
+        accessor: "addressId",
+        enableRowSpan: true,
+      },
+      {
+        Header: "Ameaças: (COBRADE)",
+        accessor: "threat.description",
+        enableRowSpan: true,
+      },
+      {
+        Header: "Situação hipotética",
+        accessor: "hypothese",
+        enableRowSpan: true,
+      },
+      {
+        Header: "Riscos/Vulnerabilidades",
+        accessor: "risk.description",
+        enableRowSpan: true,
+      },
+      {
+        Header: "Medidas de enfretamento",
+        accessor: "measure.description",
+        enableRowSpan: true,
+      },
+      {
+        Header: "Responsáveis",
+        accessor: "responsibles[0].name",
+        enableRowSpan: true,
+      },
+      {
+        Header: "Recursos",
+        accessor: "resourceId",
+        enableRowSpan: true,
+      },
+    ];
+  }, []);
+
+  const tableInstance = useTable(
+    {
+      columns,
+      data: sortedScenarioList,
+    },
+    (hooks) => {
+      hooks.useInstance.push(useRowSpan);
+    },
+  );
+
+  const scenarioDTO = useMemo(
+    () => ({
+      disabledColumnsCheckbox,
+      handleCheckItem,
+      verifyIfPreviousScenariosHasValue,
+    }),
+    [
+      disabledColumnsCheckbox,
+      handleCheckItem,
+      verifyIfPreviousScenariosHasValue,
+    ],
+  );
+
   return (
     <>
+      <ScenarioTable tableInstance={tableInstance} scenarioDTO={scenarioDTO} />
       <Container>
         <Input
           value={scenarioTitle}
@@ -799,3 +876,268 @@ const StepFour: React.FC = () => {
 };
 
 export default StepFour;
+
+function useInstance(instance: any) {
+  const { allColumns } = instance;
+
+  let rowSpanHeaders: any[] = [];
+
+  allColumns.forEach((column: any, i: any) => {
+    const { id, enableRowSpan } = column;
+
+    if (enableRowSpan !== undefined) {
+      rowSpanHeaders = [
+        ...rowSpanHeaders,
+        { id, topCellValue: null, topCellIndex: 0 },
+      ];
+    }
+  });
+
+  Object.assign(instance, { rowSpanHeaders });
+}
+
+function useRowSpan(instance: any) {
+  const { allColumns } = instance;
+
+  allColumns.forEach((column: any) => {
+    if (column.enableRowSpan) {
+      column.topCellValue = null;
+      column.topCellIndex = 0;
+    }
+  });
+}
+
+/*
+
+<>
+      <Container>
+        <Input
+          value={scenarioTitle}
+          onChange={handleChangeScenarioTitle}
+          borderBottomOnly
+          labelOnInput="Título: "
+        />
+        <div className="columnsContainer">
+          <ScenarioColumn
+            containerClassName="locationRiskColumn"
+            headerTitle="Escolha o local de risco:"
+            onClickHeader={() => setShowLocationModal(true)}
+          >
+            <Input
+              borderBottomOnly
+              rightIcon={<GrSearch />}
+              value={locationFilterText}
+              onChange={(e) =>
+                setLocationFilterText(e.target.value.toLocaleLowerCase())
+              }
+            />
+            {filteredRiskLocations.map((locationItem, index) => {
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("addressId", locationItem.id)
+                    }
+                    checked={locationItem.checked}
+                    disabled={disabledColumnsCheckbox.address}
+                  />
+                  <ItemListingText included={locationItem.checked}>
+                    {locationItem.formattedAddress.jsxElement}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
+
+          <ScenarioColumn
+            headerTitle={`Ameaças:\n(Cobrade)`}
+            onClickHeader={() => setShowThreatModal(true)}
+          >
+            {addedCobrades.map((cobradeItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "threat",
+                cobradeItem.cobrade,
+              );
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("threat", {
+                        cobrade: cobradeItem.cobrade,
+                        description: cobradeItem.description,
+                      })
+                    }
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.threat}
+                  />
+                  <ItemListingText included={checked}>
+                    {cobradeItem.description}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
+
+          <ScenarioColumn
+            headerTitle={`Situação\nHipotética`}
+            onClickHeader={() => setShowHypotheseModal(true)}
+          >
+            {addedHypotheses.map((hypothese, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "hypothese",
+                hypothese,
+              );
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("hypothese", hypothese)}
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.hypothese}
+                  />
+                  <ItemListingText included={checked}>
+                    {hypothese}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
+
+          <ScenarioColumn
+            headerTitle={`Riscos/\nVulnerabilidades`}
+            onClickHeader={() => setShowRiskModal(true)}
+          >
+            {addedRisks.map((riskItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "risk",
+                riskItem.description,
+              );
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("risk", riskItem)}
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.risk}
+                  />
+                  <ItemListingText included={checked}>
+                    {riskItem.description}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
+
+          <ScenarioColumn
+            headerTitle={`Medidas de\nenfrentamento`}
+            onClickHeader={() => setShowMeasureModal(true)}
+          >
+            {addedMeasures.map((measureItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "measure",
+                measureItem.description,
+              );
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() => handleCheckItem("measure", measureItem)}
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.measure}
+                  />
+                  <ItemListingText included={checked}>
+                    {measureItem.description}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
+
+          <ScenarioColumn headerTitle="Responsável" onClickHeader={() => {}}>
+            {filteredResponsibles.map((responsible, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "responsibles",
+                `${responsible.name} ${responsible.role} ${responsible.permission}`,
+              );
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("responsibles", responsible)
+                    }
+                    checked={checked}
+                    disabled={disabledColumnsCheckbox.responsible}
+                  />
+                  <ItemListingText included={checked}>
+                    {responsible.name} - {responsible.role}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
+
+          <ScenarioColumn
+            headerTitle="Recursos"
+            onClickHeader={handleClickResources}
+          >
+            {formattedResources.map((resourceItem, index) => {
+              const checked = verifyIfPreviousScenariosHasValue(
+                "resourceId",
+                resourceItem.id,
+              );
+
+              return (
+                <div key={index} className="itemListing">
+                  <Form.Check
+                    custom
+                    type="checkbox"
+                    onChange={() =>
+                      handleCheckItem("resourceId", resourceItem.id)
+                    }
+                    checked={checked}
+                  />
+                  <ItemListingText included={checked}>
+                    {resourceItem.formattedValue2 || resourceItem.value1}
+                  </ItemListingText>
+                </div>
+              );
+            })}
+          </ScenarioColumn>
+        </div>
+      </Container>
+
+      <div style={{ marginTop: 100 }}>
+        <code>
+          Linhas add: {scenariosList.length}
+          <br />
+          <br />
+          {JSON.stringify(scenariosList)}
+          <br />
+          <br />
+        </code>
+        <code>
+          Linhas prev: {previousScenariosList.length}
+          <br />
+          <br />
+          {JSON.stringify(previousScenariosList)}
+        </code>
+      </div>
+
+
+    </>
+
+*/

@@ -20,11 +20,11 @@ const ScenarioColumn: React.FC<Props> = ({
       const lines = headerTitle.split("\n");
       return (
         <h6>
-          {lines.map((line) => (
-            <>
+          {lines.map((line, index) => (
+            <React.Fragment key={index}>
               {line}
               <br />
-            </>
+            </React.Fragment>
           ))}
         </h6>
       );

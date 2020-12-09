@@ -5,6 +5,12 @@ export const Container = styled.div`
     max-width: 200px;
     min-width: 160px;
 
+    &:nth-child(n + 2) {
+      main {
+        padding-top: 38px;
+      }
+    }
+
     & + .scenarioColumn {
       margin-left: 24px;
     }

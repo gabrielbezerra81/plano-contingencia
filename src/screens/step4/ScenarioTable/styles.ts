@@ -11,13 +11,11 @@ export const Table = styled.table`
     height: 64px;
     clip-path: polygon(0% 0%, 95% 0%, 100% 50%, 95% 100%, 0% 100%);
     padding: 0 16px 0 8px;
-    color: #fff;
-    min-width: 150px;
+    width: 190px;
 
     color: #fff;
     font-size: 14px;
     text-align: center;
-    white-space: normal;
     font-weight: 500;
 
     cursor: pointer;
@@ -41,10 +39,25 @@ export const Table = styled.table`
     > div {
       height: 100%;
       background: #e8e6e6;
-      max-width: 95.5%;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       padding: 8px;
+      max-width: 180px;
+      justify-content: center;
+
+      > .inputContainer {
+        border-bottom-color: #b7b6b6;
+
+        button {
+          right: 0;
+        }
+
+        svg {
+          path {
+            stroke: #b7b6b6;
+          }
+        }
+      }
     }
   }
 
@@ -52,7 +65,7 @@ export const Table = styled.table`
     display: inline-flex;
 
     > .custom-checkbox {
-      margin-top: 8px;
+      margin-top: 0px;
       margin-right: -4px;
 
       input {
@@ -88,22 +101,6 @@ export const Table = styled.table`
   }
 `;
 
-export const Container = styled.div`
-  > .inputContainer {
-    width: 350px;
-    margin: 40px auto 24px;
-  }
-
-  .columnsContainer {
-    display: inline-flex;
-    padding: 0px 24px 0 0;
-
-    > .locationRiskColumn {
-      min-width: 230px;
-    }
-  }
-`;
-
 interface ItemListingTextProps {
   included: boolean;
 }
@@ -112,7 +109,7 @@ export const ItemListingText = styled.h6<ItemListingTextProps>`
   color: #3d3d3d;
   font-size: 12px;
   line-height: 14px;
-  margin-top: 10px;
+  margin-top: 2px;
   font-weight: 400;
   transition: color 0.2s;
 
