@@ -97,6 +97,7 @@ export const Container = styled.div`
   .columnsContainer {
     display: inline-flex;
     padding: 0px 24px 0 0;
+    margin-top: 16px;
 
     > .locationRiskColumn {
       min-width: 230px;

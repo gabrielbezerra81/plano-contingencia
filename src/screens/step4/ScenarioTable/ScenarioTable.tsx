@@ -1,5 +1,6 @@
 import { usePlanData } from "context/PlanData/planDataContext";
-import React, { useCallback, useMemo, useState } from "react";
+import { useScenario } from "context/PlanData/scenarioContext";
+import React, { useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
 import { FiPlus } from "react-icons/fi";
 import { GrSearch } from "react-icons/gr";
@@ -7,16 +8,14 @@ import { TableInstance } from "react-table";
 import Input from "shared/components/Input/Input";
 import formatScenarioAddress from "shared/utils/format/formatScenarioAddress";
 import { Scenario } from "types/Plan";
-import { ScenarioDTO } from "../types";
 
 import { Table, ItemListingText } from "./styles";
 
 interface Props {
   tableInstance: TableInstance<Scenario>;
-  scenarioDTO: ScenarioDTO;
 }
 
-const ScenarioTable: React.FC<Props> = ({ tableInstance, scenarioDTO }) => {
+const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
   const {
     getTableProps,
     getTableBodyProps,
@@ -30,8 +29,7 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance, scenarioDTO }) => {
   const {
     verifyIfPreviousScenariosHasValue,
     disabledColumnsCheckbox,
-    handleCheckItem,
-  } = scenarioDTO;
+  } = useScenario();
 
   const formattedRiskLocations = useMemo(() => {
     return planData.riskLocations.map((locationItem) => ({
@@ -102,7 +100,6 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance, scenarioDTO }) => {
             <TableRow
               key={row.index}
               row={row}
-              scenarioDTO={scenarioDTO}
               formattedRiskLocations={formattedRiskLocations}
             />
           );
@@ -118,7 +115,6 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance, scenarioDTO }) => {
                     .map((location, index) => (
                       <CellCheckableItem
                         key={index}
-                        scenarioDTO={scenarioDTO}
                         checked={location.checked}
                         disabled={disabledColumnsCheckbox.address}
                         text={location.formattedAddress.jsxElement}
@@ -158,15 +154,10 @@ export default ScenarioTable;
 
 interface TableRowProps {
   row: any;
-  scenarioDTO: ScenarioDTO;
   formattedRiskLocations: any;
 }
 
-const TableRow: React.FC<TableRowProps> = ({
-  row,
-  scenarioDTO,
-  formattedRiskLocations,
-}) => {
+const TableRow: React.FC<TableRowProps> = ({ row, formattedRiskLocations }) => {
   let cells: any = [];
   let len = row.cells.length;
   for (let i = 0; i < len; i++) {
@@ -179,7 +170,6 @@ const TableRow: React.FC<TableRowProps> = ({
             <TableCell
               rowIndex={row.index}
               cell={cell}
-              scenarioDTO={scenarioDTO}
               formattedRiskLocations={formattedRiskLocations}
             />
           </div>
@@ -197,18 +187,16 @@ const TableRow: React.FC<TableRowProps> = ({
 
 interface TableCellProps {
   rowIndex: number;
-  scenarioDTO: ScenarioDTO;
   cell: any;
   formattedRiskLocations: any;
 }
 
 const TableCell: React.FC<TableCellProps> = ({
   rowIndex,
-  scenarioDTO,
   cell,
   formattedRiskLocations,
 }) => {
-  const { disabledColumnsCheckbox, handleCheckItem } = scenarioDTO;
+  const { disabledColumnsCheckbox } = useScenario();
 
   const [locationFilterText, setLocationFilterText] = useState("");
 
@@ -251,7 +239,6 @@ const TableCell: React.FC<TableCellProps> = ({
 
       return (
         <CellCheckableItem
-          scenarioDTO={scenarioDTO}
           checked={address.checked}
           disabled={disabledColumnsCheckbox.address}
           text={address.formattedAddress.jsxElement}
@@ -267,10 +254,9 @@ const TableCell: React.FC<TableCellProps> = ({
     formattedRiskLocations,
     locationFilterText,
     disabledColumnsCheckbox.address,
-    scenarioDTO,
   ]);
 
-  const resourcesCellContent = useMemo(() => {}, []);
+  //   const resourcesCellContent = useMemo(() => {}, []);
 
   return (
     <>
@@ -283,7 +269,6 @@ const TableCell: React.FC<TableCellProps> = ({
 };
 
 interface CellCheckableItemProps {
-  scenarioDTO: ScenarioDTO;
   attr: any;
   value: any;
   checked: boolean;
@@ -292,14 +277,13 @@ interface CellCheckableItemProps {
 }
 
 const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
-  scenarioDTO,
   attr,
   value,
   checked,
   text,
   disabled,
 }) => {
-  const { handleCheckItem } = scenarioDTO;
+  const { handleCheckItem } = useScenario();
 
   return (
     <div className="itemListing">

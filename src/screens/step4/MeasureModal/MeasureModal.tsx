@@ -1,3 +1,4 @@
+import { useScenario } from "context/PlanData/scenarioContext";
 import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
@@ -12,15 +13,11 @@ interface Props {
   show: boolean;
   setShow: (...data: any) => void;
   suggestionList: SuggestionList[];
-  setAddedMeasures: React.Dispatch<React.SetStateAction<Measure[]>>;
 }
 
-const MeasureModal: React.FC<Props> = ({
-  show,
-  setShow,
-  suggestionList,
-  setAddedMeasures,
-}) => {
+const MeasureModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
+  const { setAddedMeasures } = useScenario();
+
   const [measure, setMeasure] = useState<Measure>({ id: "", description: "" });
 
   const handleChangeDescription = useCallback(
