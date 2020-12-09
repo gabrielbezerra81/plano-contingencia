@@ -188,8 +188,10 @@ const StepFour: React.FC = () => {
       },
       {
         Header: "Responsáveis",
-        accessor: "responsibles[0].name",
+        accessor: (row: any) =>
+          row.responsibles.map((responsible: any) => responsible.id).join(" "),
         enableRowSpan: true,
+        id: "responsibles",
       },
       {
         Header: "Recursos",
@@ -258,11 +260,6 @@ const StepFour: React.FC = () => {
             onClickHeader={() => setShowThreatModal(true)}
           >
             {addedCobrades.map((cobradeItem, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "threat",
-                cobradeItem.cobrade,
-              );
-
               return (
                 <div key={index} className="itemListing">
                   <Form.Check
@@ -274,10 +271,10 @@ const StepFour: React.FC = () => {
                         description: cobradeItem.description,
                       })
                     }
-                    checked={checked}
+                    checked={cobradeItem.checked}
                     disabled={disabledColumnsCheckbox.threat}
                   />
-                  <ItemListingText included={checked}>
+                  <ItemListingText included={cobradeItem.checked}>
                     {cobradeItem.description}
                   </ItemListingText>
                 </div>
@@ -290,22 +287,19 @@ const StepFour: React.FC = () => {
             onClickHeader={() => setShowHypotheseModal(true)}
           >
             {addedHypotheses.map((hypothese, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "hypothese",
-                hypothese,
-              );
-
               return (
                 <div key={index} className="itemListing">
                   <Form.Check
                     custom
                     type="checkbox"
-                    onChange={() => handleCheckItem("hypothese", hypothese)}
-                    checked={checked}
+                    onChange={() =>
+                      handleCheckItem("hypothese", hypothese.hypothese)
+                    }
+                    checked={hypothese.checked}
                     disabled={disabledColumnsCheckbox.hypothese}
                   />
-                  <ItemListingText included={checked}>
-                    {hypothese}
+                  <ItemListingText included={hypothese.checked}>
+                    {hypothese.hypothese}
                   </ItemListingText>
                 </div>
               );
@@ -317,21 +311,21 @@ const StepFour: React.FC = () => {
             onClickHeader={() => setShowRiskModal(true)}
           >
             {addedRisks.map((riskItem, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "risk",
-                riskItem.description,
-              );
-
               return (
                 <div key={index} className="itemListing">
                   <Form.Check
                     custom
                     type="checkbox"
-                    onChange={() => handleCheckItem("risk", riskItem)}
-                    checked={checked}
+                    onChange={() =>
+                      handleCheckItem("risk", {
+                        ...riskItem,
+                        checked: undefined,
+                      })
+                    }
+                    checked={riskItem.checked}
                     disabled={disabledColumnsCheckbox.risk}
                   />
-                  <ItemListingText included={checked}>
+                  <ItemListingText included={riskItem.checked}>
                     {riskItem.description}
                   </ItemListingText>
                 </div>
@@ -344,21 +338,21 @@ const StepFour: React.FC = () => {
             onClickHeader={() => setShowMeasureModal(true)}
           >
             {addedMeasures.map((measureItem, index) => {
-              const checked = verifyIfPreviousScenariosHasValue(
-                "measure",
-                measureItem.description,
-              );
-
               return (
                 <div key={index} className="itemListing">
                   <Form.Check
                     custom
                     type="checkbox"
-                    onChange={() => handleCheckItem("measure", measureItem)}
-                    checked={checked}
+                    onChange={() =>
+                      handleCheckItem("measure", {
+                        ...measureItem,
+                        checked: undefined,
+                      })
+                    }
+                    checked={measureItem.checked}
                     disabled={disabledColumnsCheckbox.measure}
                   />
-                  <ItemListingText included={checked}>
+                  <ItemListingText included={measureItem.checked}>
                     {measureItem.description}
                   </ItemListingText>
                 </div>

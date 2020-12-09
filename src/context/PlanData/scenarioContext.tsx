@@ -10,13 +10,13 @@ import React, {
 import { Measure, Risk, Scenario, Threat } from "types/Plan";
 
 interface ScenarioContextData {
-  addedCobrades: Threat[];
+  addedCobrades: Array<Threat & { checked: boolean }>;
   setAddedCobrades: React.Dispatch<React.SetStateAction<Threat[]>>;
-  addedHypotheses: string[];
+  addedHypotheses: Array<{ hypothese: string; checked: boolean }>;
   setAddedHypotheses: React.Dispatch<React.SetStateAction<string[]>>;
-  addedRisks: Risk[];
+  addedRisks: Array<Risk & { checked: boolean }>;
   setAddedRisks: React.Dispatch<React.SetStateAction<Risk[]>>;
-  addedMeasures: Measure[];
+  addedMeasures: Array<Measure & { checked: boolean }>;
   setAddedMeasures: React.Dispatch<React.SetStateAction<Measure[]>>;
   scenariosList: Scenario[];
   setScenariosList: React.Dispatch<React.SetStateAction<Scenario[]>>;
@@ -447,15 +447,55 @@ const ScenarioProvider: React.FC = ({ children }) => {
     return disabledColumns;
   }, [scenariosList]);
 
+  const formattedAddedCobrades = useMemo(() => {
+    return addedCobrades.map((cobradeItem) => {
+      const checked = verifyIfPreviousScenariosHasValue(
+        "threat",
+        cobradeItem.cobrade,
+      );
+      return { ...cobradeItem, checked };
+    });
+  }, [addedCobrades, verifyIfPreviousScenariosHasValue]);
+
+  const formattedHypotheses = useMemo(() => {
+    return addedHypotheses.map((hypothese) => {
+      const checked = verifyIfPreviousScenariosHasValue("hypothese", hypothese);
+
+      return { hypothese, checked };
+    });
+  }, [addedHypotheses, verifyIfPreviousScenariosHasValue]);
+
+  const formattedRisks = useMemo(() => {
+    return addedRisks.map((riskItem) => {
+      const checked = verifyIfPreviousScenariosHasValue(
+        "risk",
+        riskItem.description,
+      );
+
+      return { ...riskItem, checked };
+    });
+  }, [addedRisks, verifyIfPreviousScenariosHasValue]);
+
+  const formattedMeasures = useMemo(() => {
+    return addedMeasures.map((measureItem) => {
+      const checked = verifyIfPreviousScenariosHasValue(
+        "measure",
+        measureItem.description,
+      );
+
+      return { ...measureItem, checked };
+    });
+  }, [addedMeasures, verifyIfPreviousScenariosHasValue]);
+
   const value = useMemo(
     () => ({
-      addedCobrades,
+      addedCobrades: formattedAddedCobrades,
       setAddedCobrades,
-      addedHypotheses,
+      addedHypotheses: formattedHypotheses,
       setAddedHypotheses,
-      addedRisks,
+      addedRisks: formattedRisks,
       setAddedRisks,
-      addedMeasures,
+      addedMeasures: formattedMeasures,
       setAddedMeasures,
       scenariosList,
       setScenariosList,
@@ -468,9 +508,9 @@ const ScenarioProvider: React.FC = ({ children }) => {
       disabledColumnsCheckbox,
     }),
     [
-      addedCobrades,
-      addedHypotheses,
-      addedRisks,
+      formattedAddedCobrades,
+      formattedHypotheses,
+      formattedRisks,
       addedMeasures,
       scenariosList,
       previousScenariosList,
