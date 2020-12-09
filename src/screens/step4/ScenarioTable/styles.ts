@@ -7,32 +7,9 @@ export const Table = styled.table`
   margin-left: -16px;
 
   th {
-    background: #3d3d3d;
     height: 64px;
-    clip-path: polygon(0% 0%, 95% 0%, 100% 50%, 95% 100%, 0% 100%);
-    padding: 0 16px 0 8px;
     width: 190px;
-
-    color: #fff;
-    font-size: 14px;
-    text-align: center;
-    font-weight: 500;
-
-    cursor: pointer;
-    transition: opacity 0.2s;
-
-    &:hover {
-      opacity: 0.9;
-    }
-
-    svg {
-      background-color: #ff7802;
-      stroke: #fff;
-      border-radius: 10px;
-      min-width: 20px;
-      min-height: 20px;
-      margin-right: 10px;
-    }
+    min-width: 190px;
   }
 
   td {
@@ -42,7 +19,7 @@ export const Table = styled.table`
       display: flex;
       flex-direction: column;
       padding: 8px;
-      max-width: 180px;
+      max-width: 95.5%;
       justify-content: center;
 
       > .inputContainer {
@@ -118,4 +95,37 @@ export const ItemListingText = styled.h6<ItemListingTextProps>`
     css`
       color: #ff7802;
     `}
+`;
+
+export const THContainer = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  padding-right: 5%;
+  background: #3d3d3d;
+  clip-path: polygon(0% 0%, 95% 0%, 100% 50%, 95% 100%, 0% 100%);
+
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  > svg {
+    background-color: #ff7802;
+    stroke: #fff;
+    border-radius: 10px;
+    min-width: 20px;
+    min-height: 20px;
+    margin-right: 10px;
+  }
+
+  > h6 {
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+  }
 `;
