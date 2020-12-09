@@ -161,8 +161,15 @@ const StepFour: React.FC = () => {
       },
       {
         Header: <TableHead title={"Responsáveis"} onClick={() => {}} />,
-        accessor: (row: any) =>
-          row.responsibles.map((responsible: any) => responsible.id).join(" "),
+        accessor: (row: any) => {
+          if (!row.responsibles.length) {
+            return "none";
+          }
+
+          return row.responsibles
+            .map((responsible: any) => responsible.id)
+            .join(" ");
+        },
         enableRowSpan: true,
         id: "responsibles",
       },

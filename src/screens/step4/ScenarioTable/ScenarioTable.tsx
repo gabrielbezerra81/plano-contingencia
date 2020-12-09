@@ -504,7 +504,7 @@ const TableCell: React.FC<TableCellProps> = ({
     if (cell.column.id === "responsibles") {
       const ids = cell.value.split(" ");
 
-      if (!ids) {
+      if (!ids || !Array.isArray(ids)) {
         return null;
       }
 
@@ -513,7 +513,15 @@ const TableCell: React.FC<TableCellProps> = ({
           (responsible) => responsible.id === responsibleId,
         );
 
+        // if (!responsibleId) {
+        //   return "null id";
+        // }
+
         if (!responsible) {
+          return null;
+        }
+
+        if (!responsible.checked) {
           return null;
         }
 
