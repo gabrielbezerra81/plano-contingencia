@@ -93,6 +93,10 @@ export const Container = styled.div`
     width: 350px;
     margin: 40px auto 24px;
   }
+
+  > .darkBlueButton {
+    margin-top: 24px;
+  }
 `;
 
 interface ItemListingTextProps {
