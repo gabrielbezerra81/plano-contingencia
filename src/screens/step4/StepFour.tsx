@@ -21,9 +21,12 @@ import ScenarioTable, { TableHead } from "./ScenarioTable/ScenarioTable";
 import { useScenario } from "context/PlanData/scenarioContext";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { Button } from "react-bootstrap";
+import { useSystem } from "context/System/systemContext";
 
 const StepFour: React.FC = () => {
-  const { planData } = usePlanData();
+  const { selectedTab } = useSystem();
+
+  const { planData, getSequenceId } = usePlanData();
 
   const {
     previousScenariosList,
@@ -198,6 +201,32 @@ const StepFour: React.FC = () => {
 
     return hasCompletedScenarios;
   }, [verifyIfPreviousScenariosHasValue, planData.resources]);
+
+  useEffect(() => {
+    async function submitScenariosChange() {
+      if (shouldUpdatePlanData && selectedTab !== "tab4") {
+        try {
+          const scenariosWithIds = await produce(
+            scenariosList,
+            async (draft) => {
+              for await (const scenario of draft) {
+                if (!scenario.id) {
+                  const id = await getSequenceId("cenarios");
+                  scenario.id = id;
+                }
+              }
+            },
+          );
+
+          // setScenariosList(scenariosWithIds);
+          console.log(scenariosWithIds);
+        } catch (error) {}
+      }
+    }
+
+    submitScenariosChange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldUpdatePlanData, selectedTab]);
 
   return (
     <>
