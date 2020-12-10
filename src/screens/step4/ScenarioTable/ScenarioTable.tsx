@@ -174,8 +174,8 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
             if (column.enableRowSpan) {
               if (
                 column.topCellValue !== cell.value ||
-                cell.value === "" ||
                 column.topCellValue === null
+                //  cell.value === "" ||
               ) {
                 column.topCellValue = cell.value;
                 column.topCellIndex = i;
