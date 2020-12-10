@@ -134,6 +134,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
         });
       } //
       else {
+        // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
         const filtered = list.filter((scenario: Scenario) => {
           switch (attr) {
             case "addressId":
@@ -153,7 +154,45 @@ const ScenarioProvider: React.FC = ({ children }) => {
           }
         });
 
-        return filtered;
+        // Se a coluna tiver so 1 item selecionado, a lista não será filtrada para não  zerar a quantidade de linhas
+        // e sim o campo vai ser atribuido a "". Isto não vale para o campo de endereço que é a primeira coluna.
+        if (filtered.length === 0 && attr !== "addressId") {
+          list.forEach((scenario: Scenario) => {
+            switch (attr) {
+              case "threat":
+                if (scenario.threat.cobrade === value) {
+                  scenario.threat.cobrade = "";
+                  scenario.threat.description = "";
+                }
+                break;
+              case "hypothese":
+                if (scenario.hypothese === value) {
+                  scenario.hypothese = "";
+                }
+                break;
+              case "risk":
+                if (scenario.risk.description === value) {
+                  scenario.risk.description = "";
+                }
+                break;
+              case "measure":
+                if (scenario.measure.description === value) {
+                  scenario.measure.description = "";
+                }
+                break;
+              case "resourceId":
+                if (scenario.resourceId === value) {
+                  scenario.resourceId = "";
+                }
+                break;
+              default:
+                break;
+            }
+          });
+        } //
+        else {
+          return filtered;
+        }
       }
     },
     [],
@@ -256,6 +295,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
               case "resourceId":
                 shouldChangeAttrInLine =
                   !!prevScenario.measure.description &&
+                  !!prevScenario.responsibles.length &&
                   !prevScenario.resourceId;
                 break;
               default:
