@@ -26,7 +26,12 @@ import { useSystem } from "context/System/systemContext";
 const StepFour: React.FC = () => {
   const { selectedTab } = useSystem();
 
-  const { planData, getSequenceId } = usePlanData();
+  const {
+    planData,
+    getSequenceId,
+    updateLocalPlanData,
+    updateAPIPlanData,
+  } = usePlanData();
 
   const {
     previousScenariosList,
@@ -225,8 +230,8 @@ const StepFour: React.FC = () => {
             },
           );
 
-          // setScenariosList(scenariosWithIds);
-          console.log(scenariosWithIds);
+          setScenariosList(scenariosWithIds);
+          updateLocalPlanData({ scenarios: scenariosWithIds });
         } catch (error) {}
       }
     }
@@ -260,12 +265,12 @@ const StepFour: React.FC = () => {
           <br />
           <br />
         </code>
-        <code>
+        {/* <code>
           Linhas prev: {previousScenariosList.length}
           <br />
           <br />
           {JSON.stringify(previousScenariosList)}
-        </code>
+        </code> */}
       </div>
 
       <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
