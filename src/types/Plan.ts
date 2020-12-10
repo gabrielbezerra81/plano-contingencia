@@ -81,7 +81,7 @@ export interface Risk {
   description: string;
 }
 
-interface Threat {
+export interface Threat {
   cobrade: string;
   description: string;
 }

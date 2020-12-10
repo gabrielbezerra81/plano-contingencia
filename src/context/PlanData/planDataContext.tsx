@@ -152,7 +152,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       updateLocalPlanData({ workGroup: [...data.workGroup, newMember] });
     },
-    [includedPersons, updateLocalPlanData, data],
+    [includedPersons, updateLocalPlanData, data, getSequenceId],
   );
 
   const addNewUser = useCallback(

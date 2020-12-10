@@ -9,6 +9,7 @@ import { Responsible } from "types/Plan";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 
 import { Modal, Container } from "./styles";
+import { usePlanData } from "context/PlanData/planDataContext";
 
 interface Props {
   show: boolean;
@@ -28,18 +29,30 @@ const AddResponsibleModal: React.FC<Props> = ({
   const [role, setRole] = useState("");
   const [permission, setPermission] = useState("nenhuma");
 
-  const handleAddResponsible = useCallback(() => {
+  const { getSequenceId } = usePlanData();
+
+  const handleAddResponsible = useCallback(async () => {
+    const id = await getSequenceId("membros");
+
     addResponsible({
       target: {
         name: "responsibles",
-        value: { ...responsible, role, permission },
+        value: { ...responsible, role, permission, id },
       },
     });
     setRole("");
     setPermission("nenhuma");
     setShow(false);
     setResponsible(null);
-  }, [setShow, permission, role, setResponsible, addResponsible, responsible]);
+  }, [
+    setShow,
+    permission,
+    role,
+    setResponsible,
+    addResponsible,
+    responsible,
+    getSequenceId,
+  ]);
 
   return (
     <Modal

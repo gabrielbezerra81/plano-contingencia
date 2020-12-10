@@ -1,5 +1,6 @@
 import { usePlanData } from "context/PlanData/planDataContext";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSystem } from "context/System/systemContext";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { Tab, Nav, Button } from "react-bootstrap";
 import StepOne from "screens/step1/StepOne";
@@ -11,36 +12,22 @@ import usePrevious from "shared/utils/usePrevious";
 import { TabHeader, TabItem, Content } from "./styles";
 
 const MainTabs = () => {
+  const {
+    handleTabChange,
+    selectedTab,
+    selectedTabIndex,
+    setSelectedTab,
+  } = useSystem();
+
   const { updateAPIPlanData, planData, updateLocalPlanFromAPI } = usePlanData();
 
   const previousData = usePrevious(planData);
 
   const [allowAPIUpdate, setAllowAPIUpdate] = useState(false);
 
-  const [selectedTab, setSelectedTab] = useState<string>(() => {
-    const tabKey = localStorage.getItem("@plan:selectedTab");
-
-    if (tabKey) {
-      return tabKey;
-    }
-
-    return "tab1";
-  });
-
-  const handleTabChange = useCallback((key: string | null) => {
-    if (key) {
-      localStorage.setItem("@plan:selectedTab", key);
-      setSelectedTab(key);
-    }
-  }, []);
-
-  const selectedTabIndex = useMemo(() => {
-    return Number(selectedTab.replace("tab", ""));
-  }, [selectedTab]);
-
   const handleClickNext = useCallback(() => {
     setSelectedTab(`tab${selectedTabIndex + 1}`);
-  }, [selectedTabIndex]);
+  }, [selectedTabIndex, setSelectedTab]);
 
   useEffect(() => {
     if (previousData !== planData) {
@@ -119,7 +106,7 @@ const MainTabs = () => {
 
         <Tab.Pane eventKey="tab3">
           <h3>3: ESPECIFIQUE O ENDEREÇO DOS LOCAIS DE RISCO</h3>
-          <StepThree selectedTabIndex={selectedTabIndex} />
+          <StepThree />
           <Button
             onClick={handleClickNext}
             className="darkBlueButton nextButton"

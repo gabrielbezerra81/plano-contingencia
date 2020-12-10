@@ -1,3 +1,4 @@
+import { useScenario } from "context/PlanData/scenarioContext";
 import React, { useCallback, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
@@ -8,14 +9,11 @@ import { Container } from "./styles";
 interface Props {
   show: boolean;
   setShow: (...data: any) => void;
-  setAddedHypotheses: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const HypotheseModal: React.FC<Props> = ({
-  show,
-  setShow,
-  setAddedHypotheses,
-}) => {
+const HypotheseModal: React.FC<Props> = ({ show, setShow }) => {
+  const { setAddedHypotheses } = useScenario();
+
   const [hypothese, setHypothese] = useState("");
 
   const handleAddHypothese = useCallback(() => {

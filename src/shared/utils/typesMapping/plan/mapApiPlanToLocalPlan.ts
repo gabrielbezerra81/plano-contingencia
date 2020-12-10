@@ -42,5 +42,28 @@ export default function mapApiPlanToLocalPlan(apiPlan: Plano): PlanData {
     })),
   }));
 
+  plan.scenarios = apiPlan.cenarios.map((cenario) => ({
+    id: cenario.id,
+    title: cenario.titulo,
+    addressId: cenario.enderecoId,
+    threat: {
+      cobrade: cenario.ameaca.cobrade,
+      description: cenario.ameaca.descricao,
+    },
+    hypothese: cenario.hipotese,
+    risk: {
+      id: cenario.risco.id,
+      description: cenario.risco.descricao,
+    },
+    measure: {
+      id: cenario.medida.id,
+      description: cenario.medida.descricao,
+    },
+    responsibles: cenario.responsaveis.map((responsavel) =>
+      mapMembroToLocalMember(responsavel),
+    ),
+    resourceId: cenario.recursoId,
+  }));
+
   return plan;
 }

@@ -62,7 +62,7 @@ export interface LocalRisco extends Omit<Endereco, "id"> {
 interface Responsavel {
   aceite?: string;
   funcao_atribuicao: string;
-  grupo: boolean;
+  grupo?: boolean;
   id?: string;
   nome: string;
   permissao: string;
@@ -96,7 +96,8 @@ interface Medida {
 }
 
 interface Cenario {
-  id: string;
+  id?: string;
+  titulo: string;
   enderecoId: string;
   hipotese: string;
   medida: Medida;

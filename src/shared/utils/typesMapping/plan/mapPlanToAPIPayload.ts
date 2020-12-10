@@ -60,11 +60,35 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
       permissao: responsible.permission,
       pessoaId: responsible.personId,
       telefone: responsible.phone,
+      id: responsible.id,
     })),
     tipo: resource.type,
   }));
 
-  payload.cenarios = [];
+  payload.cenarios = planData.scenarios.map((scenario) => ({
+    id: scenario.id,
+    titulo: scenario.title,
+    enderecoId: scenario.addressId,
+    ameaca: {
+      cobrade: scenario.threat.cobrade,
+      descricao: scenario.threat.description,
+    },
+    hipotese: scenario.hypothese,
+    risco: { id: scenario.risk.id, descricao: scenario.risk.description },
+    medida: {
+      id: scenario.measure.id,
+      descricao: scenario.measure.description,
+    },
+    recursoId: scenario.resourceId,
+    responsaveis: scenario.responsibles.map((responsible) => ({
+      nome: responsible.name,
+      funcao_atribuicao: responsible.role,
+      telefone: responsible.phone,
+      permissao: responsible.permission,
+      pessoaId: responsible.personId,
+      id: responsible.id,
+    })),
+  }));
 
   return payload;
 }

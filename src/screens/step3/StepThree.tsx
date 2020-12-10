@@ -21,6 +21,7 @@ import numberFormatter from "shared/utils/format/numberFormatter";
 import AttributeListing from "shared/components/AttributeListing/AttributeListing";
 import { RiskLocation } from "types/Plan";
 import { usePlanData } from "context/PlanData/planDataContext";
+import { useSystem } from "context/System/systemContext";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -43,11 +44,9 @@ const emptyAddress: RiskLocation = {
   long: "",
 };
 
-interface Props {
-  selectedTabIndex: number;
-}
+const StepThree: React.FC = () => {
+  const { selectedTabIndex } = useSystem();
 
-const StepThree: React.FC<Props> = ({ selectedTabIndex }) => {
   const { planData, addRiskLocation, removeRiskLocation } = usePlanData();
 
   const [loadMap, setLoadMap] = useState(false);

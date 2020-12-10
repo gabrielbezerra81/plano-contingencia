@@ -8,11 +8,11 @@ import { Modal, Container } from "./styles";
 import Input from "shared/components/Input/Input";
 import api from "api/config";
 import produce from "immer";
+import { useScenario } from "context/PlanData/scenarioContext";
 
 interface Props {
   show: boolean;
   setShow: (...data: any) => void;
-  setAddedCobrades: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 interface Cobrade {
@@ -27,7 +27,9 @@ interface Cobrade {
   cor: string;
 }
 
-const ThreatModal: React.FC<Props> = ({ show, setShow, setAddedCobrades }) => {
+const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
+  const { setAddedCobrades } = useScenario();
+
   const [cobrades, setCobrades] = useState<Cobrade[]>([]);
 
   const [selectedCobradeNumber, setSelectedCobradeNumber] = useState("");
