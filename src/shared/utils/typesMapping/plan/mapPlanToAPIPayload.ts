@@ -60,6 +60,7 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
       permissao: responsible.permission,
       pessoaId: responsible.personId,
       telefone: responsible.phone,
+      id: responsible.id,
     })),
     tipo: resource.type,
   }));
