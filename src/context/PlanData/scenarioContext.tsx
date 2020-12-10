@@ -437,16 +437,16 @@ const ScenarioProvider: React.FC = ({ children }) => {
     localStorage.setItem("addedMeasures", JSON.stringify(addedMeasures));
   }, [addedMeasures]);
 
-  // useEffect(() => {
-  //   localStorage.setItem(
-  //     "previousScenariosList",
-  //     JSON.stringify(previousScenariosList),
-  //   );
-  // }, [previousScenariosList]);
+  useEffect(() => {
+    localStorage.setItem(
+      "previousScenariosList",
+      JSON.stringify(previousScenariosList),
+    );
+  }, [previousScenariosList]);
 
-  // useEffect(() => {
-  //   localStorage.setItem("scenariosList", JSON.stringify(scenariosList));
-  // }, [scenariosList]);
+  useEffect(() => {
+    localStorage.setItem("scenariosList", JSON.stringify(scenariosList));
+  }, [scenariosList]);
 
   const disabledColumnsCheckbox = useMemo(() => {
     const disabledColumns = {
