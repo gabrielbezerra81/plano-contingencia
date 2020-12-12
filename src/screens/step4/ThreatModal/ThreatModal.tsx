@@ -75,12 +75,16 @@ const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
       .get("cobrades")
       .then((response) => {
         if (response.data && response.data.length) {
-          handleChangeCobradeNumber({
-            target: {
-              value: response.data[0].cobrade,
-            },
-          });
           setCobrades(response.data);
+
+          if (response.data.length) {
+            setDescription(response.data[0].descricao);
+            handleChangeCobradeNumber({
+              target: {
+                value: response.data[0].cobrade,
+              },
+            });
+          }
         }
       })
       .catch();
@@ -103,19 +107,10 @@ const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
           >
             {cobrades.map((cobradeItem) => (
               <option key={cobradeItem.cobrade} value={cobradeItem.cobrade}>
-                {cobradeItem.cobrade}
+                {cobradeItem.cobrade} - {cobradeItem.descricao}
               </option>
             ))}
           </Input>
-        </div>
-
-        <div className="inputGroup">
-          <h6>Descrição</h6>
-          <Input
-            bordered
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
         </div>
 
         <Button onClick={handleAddThreat} className="darkBlueButton">
