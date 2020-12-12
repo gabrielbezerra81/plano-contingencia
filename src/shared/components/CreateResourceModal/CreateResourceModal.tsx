@@ -323,11 +323,13 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
         break;
       case "dinheiro":
         titles.modalTitle = "Dinheiro";
-        titles.listTitle = "RECURSOS DE DINHEIRO";
+        titles.listTitle = "RECURSOS FINANCEIROS";
         break;
       default:
         break;
     }
+
+    titles.listTitle += " CADASTRADOS";
 
     return titles;
   }, [type]);

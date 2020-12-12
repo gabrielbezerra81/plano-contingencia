@@ -90,8 +90,9 @@ export const Container = styled.div`
       position: absolute;
       top: 0;
       left: 0;
-      right: 0;
+      right: 8px;
       text-align: center;
+      font-size: 19px;
     }
 
     > .inputContainer {
@@ -159,7 +160,7 @@ export const ResourceAccordionItem = styled.div<Props>`
   }
 
   header {
-    background-color: rgba(196, 196, 196, 0.25);
+    background-color: rgba(196, 196, 196, 0.4);
     height: 48px;
     display: flex;
     justify-content: center;
