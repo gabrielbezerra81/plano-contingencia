@@ -5,6 +5,7 @@ import { Form } from "react-bootstrap";
 import { FiPlus } from "react-icons/fi";
 import { GrSearch } from "react-icons/gr";
 import { TableInstance } from "react-table";
+
 import Input from "shared/components/Input/Input";
 import formatResourceAddress from "shared/utils/format/formatResourceAddress";
 import formatScenarioAddress from "shared/utils/format/formatScenarioAddress";
@@ -27,13 +28,7 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
 
   const { planData } = usePlanData();
 
-  const {
-    verifyIfPreviousScenariosHasValue,
-    addedCobrades,
-    addedHypotheses,
-    addedRisks,
-    addedMeasures,
-  } = useScenario();
+  const { verifyIfPreviousScenariosHasValue } = useScenario();
 
   const formattedRiskLocations = useMemo(() => {
     return planData.riskLocations.map((locationItem) => ({
@@ -99,55 +94,9 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
     [formattedRiskLocations],
   );
 
-  const notCheckedCobrades = useMemo(
-    () => addedCobrades.filter((cobrade) => !cobrade.checked),
-    [addedCobrades],
-  );
-
-  const notCheckedHypotheses = useMemo(
-    () => addedHypotheses.filter((item) => !item.checked),
-    [addedHypotheses],
-  );
-
-  const notCheckedRisks = useMemo(
-    () => addedRisks.filter((riskItem) => !riskItem.checked),
-    [addedRisks],
-  );
-
-  const notCheckedMeasures = useMemo(
-    () => addedMeasures.filter((measure) => !measure.checked),
-    [addedMeasures],
-  );
-
-  const notCheckedResponsibles = useMemo(
-    () => formattedResponsibles.filter((responsible) => !responsible.checked),
-    [formattedResponsibles],
-  );
-
-  const notCheckedResources = useMemo(
-    () => formattedResources.filter((resource) => !resource.checked),
-    [formattedResources],
-  );
-
   const numberOfUncheckedRows = useMemo(() => {
-    return Math.max(
-      notCheckedLocations.length,
-      notCheckedCobrades.length,
-      notCheckedHypotheses.length,
-      notCheckedRisks.length,
-      notCheckedMeasures.length,
-      notCheckedResponsibles.length,
-      notCheckedResources.length,
-    );
-  }, [
-    notCheckedLocations,
-    notCheckedCobrades,
-    notCheckedHypotheses,
-    notCheckedRisks,
-    notCheckedMeasures,
-    notCheckedResponsibles,
-    notCheckedResources,
-  ]);
+    return Math.max(notCheckedLocations.length);
+  }, [notCheckedLocations]);
 
   const notCheckedArray: any[] = Array(numberOfUncheckedRows).fill(1);
 
@@ -220,64 +169,22 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
                 </div>
               </td>
               <td>
-                <div>
-                  {!!notCheckedCobrades[index] && (
-                    <CellCheckableItem
-                      item={notCheckedCobrades[index]}
-                      attr="threat"
-                    />
-                  )}
-                </div>
+                <div></div>
               </td>
               <td>
-                <div>
-                  {!!notCheckedHypotheses[index] && (
-                    <CellCheckableItem
-                      item={notCheckedHypotheses[index]}
-                      attr="hypothese"
-                    />
-                  )}
-                </div>
+                <div></div>
               </td>
               <td>
-                <div>
-                  {!!notCheckedRisks[index] && (
-                    <CellCheckableItem
-                      item={notCheckedRisks[index]}
-                      attr="risk"
-                    />
-                  )}
-                </div>
+                <div></div>
               </td>
               <td>
-                <div>
-                  {!!notCheckedMeasures[index] && (
-                    <CellCheckableItem
-                      item={notCheckedMeasures[index]}
-                      attr="measure"
-                    />
-                  )}
-                </div>
+                <div></div>
               </td>
               <td>
-                <div>
-                  {!!notCheckedResponsibles[index] && (
-                    <CellCheckableItem
-                      attr="responsibles"
-                      item={notCheckedResponsibles[index]}
-                    />
-                  )}
-                </div>
+                <div></div>
               </td>
               <td>
-                <div>
-                  {!!notCheckedResources[index] && (
-                    <CellCheckableItem
-                      attr="resourceId"
-                      item={notCheckedResources[index]}
-                    />
-                  )}
-                </div>
+                <div></div>
               </td>
             </tr>
           );
@@ -303,6 +210,7 @@ const TableRow: React.FC<TableRowProps> = ({
   formattedResources,
 }) => {
   let cells: any = [];
+
   let len = row.cells.length;
   for (let i = 0; i < len; i++) {
     let cell = row.cells[i];
@@ -312,7 +220,7 @@ const TableRow: React.FC<TableRowProps> = ({
         <td rowSpan={cell.rowSpan} key={`cell ${cell.column.id}`}>
           <div>
             <TableCell
-              rowIndex={row.index}
+              row={row}
               cell={cell}
               formattedRiskLocations={formattedRiskLocations}
               formattedResponsibles={formattedResponsibles}
@@ -332,7 +240,7 @@ const TableRow: React.FC<TableRowProps> = ({
 };
 
 interface TableCellProps {
-  rowIndex: number;
+  row: any;
   cell: any;
   formattedRiskLocations: any[];
   formattedResponsibles: any[];
@@ -378,23 +286,16 @@ export const TableHead: React.FC<THProps> = ({
 };
 
 const TableCell: React.FC<TableCellProps> = ({
-  rowIndex,
+  row,
   cell,
   formattedRiskLocations,
   formattedResponsibles,
   formattedResources,
 }) => {
-  const {
-    addedCobrades,
-    addedHypotheses,
-    addedRisks,
-    addedMeasures,
-  } = useScenario();
-
   const [locationFilterText, setLocationFilterText] = useState("");
 
   const addressFilter = useMemo(() => {
-    if (cell.column.id === "addressId" && rowIndex === 0) {
+    if (cell.column.id === "addressId" && row.index === 0) {
       return (
         <Input
           borderBottomOnly
@@ -408,7 +309,7 @@ const TableCell: React.FC<TableCellProps> = ({
     }
 
     return null;
-  }, [cell.column.id, locationFilterText, rowIndex]);
+  }, [cell.column.id, locationFilterText, row.index]);
 
   const addressCellContent = useMemo(() => {
     if (cell.column.id === "addressId") {
@@ -430,12 +331,172 @@ const TableCell: React.FC<TableCellProps> = ({
         return null;
       }
 
-      return <CellCheckableItem attr="addressId" item={address} />;
+      return (
+        <CellCheckableItem
+          rowId={row.original.id}
+          attr="addressId"
+          item={address}
+        />
+      );
     }
 
     return null;
-  }, [cell, formattedRiskLocations, locationFilterText]);
+  }, [cell, formattedRiskLocations, locationFilterText, row.original.id]);
 
+  const threatCellContent = useMemo(() => {
+    if (cell.column.id === "threat") {
+      // const cobradeItem = addedCobrades.find(
+      //   (cobradeItem) => cobradeItem.description === cell.value,
+      // );
+
+      // if (!cobradeItem) {
+      //   return null;
+      // }
+
+      return (
+        <CellCheckableItem
+          rowId={row.original.id}
+          item={cell.value}
+          attr="threat"
+        />
+      );
+    }
+
+    return null;
+  }, [cell.column.id, cell.value, row.original.id]);
+
+  const hypotheseCellContent = useMemo(() => {
+    if (cell.column.id === "hypothese") {
+      return (
+        <CellCheckableItem
+          rowId={row.original.id}
+          item={cell.value}
+          attr="hypothese"
+        />
+      );
+    }
+
+    return null;
+  }, [cell.column.id, cell.value, row.original.id]);
+
+  const riskCellContent = useMemo(() => {
+    if (cell.column.id === "risk") {
+      return (
+        <CellCheckableItem
+          rowId={row.original.id}
+          item={cell.value}
+          attr="risk"
+        />
+      );
+    }
+
+    return null;
+  }, [cell.column.id, cell.value, row.original.id]);
+
+  return (
+    <>
+      {addressCellContent}
+      {threatCellContent}
+      {hypotheseCellContent}
+      {riskCellContent}
+      {/*
+     
+     
+      {measureCellContent}
+      {responsiblesCellContent}
+      {resourcesCellContent} */}
+    </>
+  );
+};
+
+interface CellCheckableitem {
+  attr: keyof Scenario;
+  item: any;
+  rowId?: string;
+}
+
+const CellCheckableItem: React.FC<CellCheckableitem> = ({
+  attr,
+  item,
+  rowId,
+}) => {
+  const {
+    handleCheckItem,
+    disabledColumnsCheckbox,
+    verifyIfIsChecked,
+  } = useScenario();
+
+  const props = useMemo(() => {
+    const props = {
+      checked: false,
+      disabled: false,
+      text: "",
+      value: "",
+    };
+
+    switch (attr) {
+      case "addressId":
+        props.disabled = disabledColumnsCheckbox.address;
+        props.text = item.formattedAddress.jsxElement;
+        props.value = item.id;
+        break;
+      case "threat":
+        props.disabled = disabledColumnsCheckbox.threat;
+        props.text = item.description;
+        props.value = item;
+        break;
+      case "hypothese":
+        props.disabled = disabledColumnsCheckbox.hypothese;
+        props.text = item;
+        props.value = item;
+        break;
+      case "risk":
+        props.disabled = disabledColumnsCheckbox.risk;
+        props.text = item.description;
+        props.value = item;
+        break;
+      case "measure":
+        props.disabled = disabledColumnsCheckbox.measure;
+        props.text = item.description;
+        props.value = item;
+        break;
+      case "responsibles":
+        props.disabled = disabledColumnsCheckbox.responsible;
+        props.text = `${item.name} - ${item.role}`;
+        props.value = item;
+        break;
+      case "resourceId":
+        props.text = item.formattedValue2 || item.value1;
+        props.value = item.id;
+        break;
+      default:
+        break;
+    }
+
+    props.checked = verifyIfIsChecked({ attr, value: props.value, rowId });
+
+    return props;
+  }, [attr, item, disabledColumnsCheckbox, verifyIfIsChecked, rowId]);
+
+  if (!props.text) {
+    return null;
+  }
+
+  return (
+    <div className="itemListing">
+      <Form.Check
+        custom
+        type="checkbox"
+        onChange={() => handleCheckItem({ attr, value: props.value, rowId })}
+        checked={props.checked}
+        disabled={props.disabled}
+      />
+      <ItemListingText included={props.checked}>{props.text}</ItemListingText>
+    </div>
+  );
+};
+
+/**
   const threatCellContent = useMemo(() => {
     if (cell.column.id === "threat.description") {
       const cobradeItem = addedCobrades.find(
@@ -547,94 +608,83 @@ const TableCell: React.FC<TableCellProps> = ({
 
     return null;
   }, [cell.column.id, cell.value, formattedResources]);
+ 
 
-  return (
-    <>
-      {/* {addressFilter} */}
-      {addressCellContent}
-      {threatCellContent}
-      {hypotheseCellContent}
-      {riskCellContent}
-      {measureCellContent}
-      {responsiblesCellContent}
-      {resourcesCellContent}
-    </>
-  );
-};
+{notCheckedArray.map((_, index) => {
+          return (
+            <tr>
+              <td>
+                <div>
+                  {!!notCheckedLocations[index] && (
+                    <CellCheckableItem
+                      item={notCheckedLocations[index]}
+                      attr="addressId"
+                    />
+                  )}
+                </div>
+              </td>
+              <td>
+                <div>
+                  {!!notCheckedCobrades[index] && (
+                    <CellCheckableItem
+                      item={notCheckedCobrades[index]}
+                      attr="threat"
+                    />
+                  )}
+                </div>
+              </td>
+              <td>
+                <div>
+                  {!!notCheckedHypotheses[index] && (
+                    <CellCheckableItem
+                      item={notCheckedHypotheses[index]}
+                      attr="hypothese"
+                    />
+                  )}
+                </div>
+              </td>
+              <td>
+                <div>
+                  {!!notCheckedRisks[index] && (
+                    <CellCheckableItem
+                      item={notCheckedRisks[index]}
+                      attr="risk"
+                    />
+                  )}
+                </div>
+              </td>
+              <td>
+                <div>
+                  {!!notCheckedMeasures[index] && (
+                    <CellCheckableItem
+                      item={notCheckedMeasures[index]}
+                      attr="measure"
+                    />
+                  )}
+                </div>
+              </td>
+              <td>
+                <div>
+                  {!!notCheckedResponsibles[index] && (
+                    <CellCheckableItem
+                      attr="responsibles"
+                      item={notCheckedResponsibles[index]}
+                    />
+                  )}
+                </div>
+              </td>
+              <td>
+                <div>
+                  {!!notCheckedResources[index] && (
+                    <CellCheckableItem
+                      attr="resourceId"
+                      item={notCheckedResources[index]}
+                    />
+                  )}
+                </div>
+              </td>
+            </tr>
+          );
+        })}
 
-interface CellCheckableItemProps {
-  attr: keyof Scenario;
-  item: any;
-}
-
-const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
-  attr,
-  item,
-}) => {
-  const { handleCheckItem, disabledColumnsCheckbox } = useScenario();
-
-  const props = useMemo(() => {
-    const { checked, ...itemProps } = item;
-
-    const props = {
-      checked,
-      disabled: false,
-      text: "",
-      value: "",
-    };
-
-    switch (attr) {
-      case "addressId":
-        props.disabled = disabledColumnsCheckbox.address;
-        props.text = itemProps.formattedAddress.jsxElement;
-        props.value = itemProps.id;
-        break;
-      case "threat":
-        props.disabled = disabledColumnsCheckbox.threat;
-        props.text = itemProps.description;
-        props.value = itemProps;
-        break;
-      case "hypothese":
-        props.disabled = disabledColumnsCheckbox.hypothese;
-        props.text = itemProps.hypothese;
-        props.value = itemProps.hypothese;
-        break;
-      case "risk":
-        props.disabled = disabledColumnsCheckbox.risk;
-        props.text = itemProps.description;
-        props.value = itemProps;
-        break;
-      case "measure":
-        props.disabled = disabledColumnsCheckbox.measure;
-        props.text = itemProps.description;
-        props.value = itemProps;
-        break;
-      case "responsibles":
-        props.disabled = disabledColumnsCheckbox.responsible;
-        props.text = `${itemProps.name} - ${itemProps.role}`;
-        props.value = itemProps;
-        break;
-      case "resourceId":
-        props.text = itemProps.formattedValue2 || itemProps.value1;
-        props.value = itemProps.id;
-        break;
-      default:
-        break;
-    }
-
-    return props;
-  }, [attr, item, disabledColumnsCheckbox]);
-
-  return (
-    <div className="itemListing">
-      <Form.Check
-        custom
-        type="checkbox"
-        onChange={() => handleCheckItem(attr, props.value)}
-        checked={props.checked}
-        disabled={props.disabled}
-      />
-      <ItemListingText included={props.checked}>{props.text}</ItemListingText>
-    </div>
-  );
-};
+ */

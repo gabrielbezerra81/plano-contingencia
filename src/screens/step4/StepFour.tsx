@@ -41,6 +41,8 @@ const StepFour: React.FC = () => {
     setScenarioTitle,
     verifyIfPreviousScenariosHasValue,
     setPreviousScenariosList,
+    checkedValues,
+    setCheckedValues,
   } = useScenario();
 
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -70,9 +72,14 @@ const StepFour: React.FC = () => {
   );
 
   const handleUncheckAll = useCallback(() => {
+    setCheckedValues([]);
+  }, [setCheckedValues]);
+
+  const handleClearScenarios = useCallback(() => {
     setPreviousScenariosList([]);
     setScenariosList([]);
-  }, [setPreviousScenariosList, setScenariosList]);
+    setCheckedValues([]);
+  }, [setPreviousScenariosList, setScenariosList, setCheckedValues]);
 
   // Carregar Cobrade
   useEffect(() => {
@@ -131,7 +138,7 @@ const StepFour: React.FC = () => {
             onClick={() => setShowThreatModal(true)}
           />
         ),
-        accessor: "threat.description",
+        accessor: "threat",
         enableRowSpan: true,
       },
       {
@@ -151,7 +158,7 @@ const StepFour: React.FC = () => {
             onClick={() => setShowRiskModal(true)}
           />
         ),
-        accessor: "risk.description",
+        accessor: "risk",
         enableRowSpan: true,
       },
       {
@@ -254,23 +261,51 @@ const StepFour: React.FC = () => {
         <Button onClick={handleUncheckAll} className="darkBlueButton" size="sm">
           Desmarcar todos
         </Button>
+
+        <Button
+          style={{ marginLeft: 24 }}
+          onClick={handleClearScenarios}
+          className="darkBlueButton"
+          size="sm"
+        >
+          Limpar cenários
+        </Button>
       </Container>
 
       <div style={{ marginTop: 100 }}>
-        <code>
+        <div>
           Linhas add: {scenariosList.length}
           <br />
+          {scenariosList.map((scenario, index) => (
+            <code key={index}>
+              {JSON.stringify(scenario)}
+              <br />
+            </code>
+          ))}
           <br />
-          {JSON.stringify(scenariosList)}
           <br />
-          <br />
-        </code>
-        {/* <code>
+        </div>
+        <div>
           Linhas prev: {previousScenariosList.length}
           <br />
+          {previousScenariosList.map((prevScenario, index) => (
+            <code key={index}>
+              {JSON.stringify(prevScenario)}
+              <br />
+            </code>
+          ))}
+        </div>
+        <div>
           <br />
-          {JSON.stringify(previousScenariosList)}
-        </code> */}
+          Checked:
+          <br />
+          {checkedValues.map((checkedValue, index) => (
+            <code key={index}>
+              {JSON.stringify(checkedValue)}
+              <br />
+            </code>
+          ))}
+        </div>
       </div>
 
       <LocationModal show={showLocationModal} setShow={setShowLocationModal} />

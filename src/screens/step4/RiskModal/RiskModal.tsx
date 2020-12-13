@@ -1,5 +1,4 @@
 import { useScenario } from "context/PlanData/scenarioContext";
-import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
@@ -16,7 +15,7 @@ interface Props {
 }
 
 const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
-  const { setAddedRisks } = useScenario();
+  const { handleAddValueToScenario } = useScenario();
 
   const [risk, setRisk] = useState<Risk>({ id: "", description: "" });
 
@@ -27,22 +26,10 @@ const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
   );
 
   const handleAddRisk = useCallback(() => {
-    setAddedRisks((oldValues) => {
-      const updatedAddedRisks = produce(oldValues, (draft) => {
-        const alreadyAdded = draft.some(
-          (riskItem) => riskItem.description === risk.description,
-        );
-
-        if (!alreadyAdded) {
-          draft.push(risk);
-        }
-      });
-
-      return updatedAddedRisks;
-    });
+    handleAddValueToScenario({ attr: "risk", value: risk });
 
     setShow(false);
-  }, [setShow, risk, setAddedRisks]);
+  }, [setShow, risk, handleAddValueToScenario]);
 
   const filteredSuggestionList = useMemo(() => {
     const descriptions = suggestionList.map((suggestion) => suggestion.risco);

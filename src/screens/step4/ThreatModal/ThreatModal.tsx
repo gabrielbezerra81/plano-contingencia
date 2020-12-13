@@ -7,7 +7,6 @@ import cobradesImg from "assets/images/cobrades3.png";
 import { Modal, Container } from "./styles";
 import Input from "shared/components/Input/Input";
 import api from "api/config";
-import produce from "immer";
 import { useScenario } from "context/PlanData/scenarioContext";
 
 interface Props {
@@ -28,7 +27,7 @@ interface Cobrade {
 }
 
 const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
-  const { setAddedCobrades } = useScenario();
+  const { handleAddValueToScenario } = useScenario();
 
   const [cobrades, setCobrades] = useState<Cobrade[]>([]);
 
@@ -53,22 +52,12 @@ const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
   );
 
   const handleAddThreat = useCallback(() => {
-    setAddedCobrades((oldValues) => {
-      const updatedAddedCobrades = produce(oldValues, (draft) => {
-        const alreadyAdded = draft.some(
-          (cobradeItem) => cobradeItem.cobrade === selectedCobradeNumber,
-        );
+    const cobradeValue = { cobrade: selectedCobradeNumber, description };
 
-        if (!alreadyAdded) {
-          draft.push({ cobrade: selectedCobradeNumber, description });
-        }
-      });
-
-      return updatedAddedCobrades;
-    });
+    handleAddValueToScenario({ attr: "threat", value: cobradeValue });
 
     setShow(false);
-  }, [selectedCobradeNumber, description, setShow, setAddedCobrades]);
+  }, [selectedCobradeNumber, description, setShow, handleAddValueToScenario]);
 
   useEffect(() => {
     api
@@ -117,7 +106,7 @@ const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
           Adicionar
         </Button>
 
-        <img src={cobradesImg} alt="" />
+        {/* <img src={cobradesImg} alt="" /> */}
       </Container>
     </Modal>
   );
