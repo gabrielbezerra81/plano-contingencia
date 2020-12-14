@@ -15,9 +15,9 @@ interface Props {
 }
 
 const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
-  const { handleAddValueToScenario } = useScenario();
+  const { handleAddValueToScenario, generateMergeKey } = useScenario();
 
-  const [risk, setRisk] = useState<Risk>({ id: "", description: "" });
+  const [risk, setRisk] = useState<Partial<Risk>>({ id: "", description: "" });
 
   const handleChangeDescription = useCallback(
     (e) =>
@@ -26,10 +26,12 @@ const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
   );
 
   const handleAddRisk = useCallback(() => {
-    handleAddValueToScenario({ attr: "risk", value: risk });
+    const riskValue = { ...risk, mergeKey: generateMergeKey() };
+
+    handleAddValueToScenario({ attr: "risk", value: riskValue });
 
     setShow(false);
-  }, [setShow, risk, handleAddValueToScenario]);
+  }, [setShow, risk, handleAddValueToScenario, generateMergeKey]);
 
   const filteredSuggestionList = useMemo(() => {
     const descriptions = suggestionList.map((suggestion) => suggestion.risco);

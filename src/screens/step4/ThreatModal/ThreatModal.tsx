@@ -27,7 +27,7 @@ interface Cobrade {
 }
 
 const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
-  const { handleAddValueToScenario } = useScenario();
+  const { handleAddValueToScenario, generateMergeKey } = useScenario();
 
   const [cobrades, setCobrades] = useState<Cobrade[]>([]);
 
@@ -52,12 +52,22 @@ const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
   );
 
   const handleAddThreat = useCallback(() => {
-    const cobradeValue = { cobrade: selectedCobradeNumber, description };
+    const cobradeValue = {
+      cobrade: selectedCobradeNumber,
+      description,
+      mergeKey: generateMergeKey(),
+    };
 
     handleAddValueToScenario({ attr: "threat", value: cobradeValue });
 
     setShow(false);
-  }, [selectedCobradeNumber, description, setShow, handleAddValueToScenario]);
+  }, [
+    selectedCobradeNumber,
+    description,
+    setShow,
+    handleAddValueToScenario,
+    generateMergeKey,
+  ]);
 
   useEffect(() => {
     api

@@ -20,7 +20,7 @@ import _ from "lodash";
 import ScenarioTable, { TableHead } from "./ScenarioTable/ScenarioTable";
 import { useScenario } from "context/PlanData/scenarioContext";
 import { usePlanData } from "context/PlanData/planDataContext";
-import { Button } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { useSystem } from "context/System/systemContext";
 
 const StepFour: React.FC = () => {
@@ -43,6 +43,8 @@ const StepFour: React.FC = () => {
     setPreviousScenariosList,
     checkedValues,
     setCheckedValues,
+    setScenarioSaveEnabled,
+    scenarioSaveEnabled,
   } = useScenario();
 
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -109,10 +111,11 @@ const StepFour: React.FC = () => {
   const sortedScenarioList = useMemo(() => {
     return _.orderBy(scenariosList, [
       "addressId",
-      "threat.cobrade",
-      "hypothese",
-      "risk.description",
-      "measure.description",
+      "threat.mergeKey",
+      "hypothese.mergeKey",
+      "risk.mergeKey",
+      "measure.mergeKey",
+      "resourceId.mergeKey",
     ]);
   }, [scenariosList]);
 
@@ -168,7 +171,7 @@ const StepFour: React.FC = () => {
             onClick={() => setShowMeasureModal(true)}
           />
         ),
-        accessor: "measure.description",
+        accessor: "measure",
         enableRowSpan: true,
       },
       {
@@ -272,11 +275,17 @@ const StepFour: React.FC = () => {
         </Button>
       </Container>
 
+      <Form.Check
+        label="Salvar cenários"
+        checked={scenarioSaveEnabled}
+        onChange={() => setScenarioSaveEnabled((oldValue) => !oldValue)}
+      />
+
       <div style={{ marginTop: 100 }}>
         <div>
-          Linhas add: {scenariosList.length}
+          Linhas add: {sortedScenarioList.length}
           <br />
-          {scenariosList.map((scenario, index) => (
+          {sortedScenarioList.map((scenario, index) => (
             <code key={index}>
               {JSON.stringify(scenario)}
               <br />
@@ -292,6 +301,7 @@ const StepFour: React.FC = () => {
             <code key={index}>
               {JSON.stringify(prevScenario)}
               <br />
+              <br />
             </code>
           ))}
         </div>
@@ -302,6 +312,7 @@ const StepFour: React.FC = () => {
           {checkedValues.map((checkedValue, index) => (
             <code key={index}>
               {JSON.stringify(checkedValue)}
+              <br />
               <br />
             </code>
           ))}

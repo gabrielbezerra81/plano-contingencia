@@ -79,25 +79,38 @@ export interface Resource {
 export interface Risk {
   id: string;
   description: string;
+  mergeKey: number;
 }
 
 export interface Threat {
   cobrade: string;
   description: string;
+  mergeKey: number;
 }
 
 export interface Measure {
   id: string;
   description: string;
+  mergeKey: number;
+}
+
+export interface Hypothese {
+  hypothese: string;
+  mergeKey: number;
+}
+
+export interface ScenarioResource {
+  resourceId: string;
+  mergeKey: number;
 }
 
 export interface Scenario {
   id?: string;
   title: string;
   addressId: string;
-  hypothese: string;
+  hypothese: Hypothese;
   measure: Measure;
-  resourceId: string;
+  resourceId: ScenarioResource;
   responsibles: Array<Responsible>;
   risk: Risk;
   threat: Threat;

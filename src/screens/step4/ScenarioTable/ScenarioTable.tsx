@@ -120,9 +120,23 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
             let cell = row.allCells[j] as any;
             let column = cell.column as any;
 
+            let isValueDiff = true;
+
+            if (typeof cell.value === "object" && column.topCellValue) {
+              if (cell.value.mergeKey && column.topCellValue.mergeKey) {
+                isValueDiff =
+                  cell.value.mergeKey !== column.topCellValue.mergeKey;
+              } //
+              else {
+                isValueDiff = column.topCellValue !== cell.value;
+              }
+            } //
+            else {
+              isValueDiff = column.topCellValue !== cell.value;
+            }
             if (column.enableRowSpan) {
               if (
-                column.topCellValue !== cell.value ||
+                isValueDiff ||
                 column.topCellValue === null
                 //  cell.value === "" ||
               ) {
@@ -393,16 +407,31 @@ const TableCell: React.FC<TableCellProps> = ({
     return null;
   }, [cell.column.id, cell.value, row.original.id]);
 
+  const measureCellContent = useMemo(() => {
+    if (cell.column.id === "measure") {
+      return (
+        <CellCheckableItem
+          rowId={row.original.id}
+          item={cell.value}
+          attr="measure"
+        />
+      );
+    }
+
+    return null;
+  }, [cell.column.id, cell.value, row.original.id]);
+
   return (
     <>
       {addressCellContent}
       {threatCellContent}
       {hypotheseCellContent}
       {riskCellContent}
+      {measureCellContent}
       {/*
      
      
-      {measureCellContent}
+      
       {responsiblesCellContent}
       {resourcesCellContent} */}
     </>
@@ -447,7 +476,7 @@ const CellCheckableItem: React.FC<CellCheckableitem> = ({
         break;
       case "hypothese":
         props.disabled = disabledColumnsCheckbox.hypothese;
-        props.text = item;
+        props.text = item.hypothese;
         props.value = item;
         break;
       case "risk":

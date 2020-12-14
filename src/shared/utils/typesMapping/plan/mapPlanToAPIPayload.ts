@@ -73,13 +73,13 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
       cobrade: scenario.threat.cobrade,
       descricao: scenario.threat.description,
     },
-    hipotese: scenario.hypothese,
+    hipotese: scenario.hypothese.hypothese,
     risco: { id: scenario.risk.id, descricao: scenario.risk.description },
     medida: {
       id: scenario.measure.id,
       descricao: scenario.measure.description,
     },
-    recursoId: scenario.resourceId,
+    recursoId: scenario.resourceId.resourceId,
     responsaveis: scenario.responsibles.map((responsible) => ({
       nome: responsible.name,
       funcao_atribuicao: responsible.role,
