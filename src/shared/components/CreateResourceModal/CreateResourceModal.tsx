@@ -12,6 +12,7 @@ import {
   Resource,
   ResourceType,
   Responsible,
+  ScenarioResource,
 } from "types/Plan";
 import AttributeListing from "../AttributeListing/AttributeListing";
 import Input from "../Input/Input";
@@ -24,6 +25,7 @@ import formatResources from "shared/utils/format/formatResources";
 import NumberInput from "../NumberInput/NumberInput";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 import AddResponsibleModal from "../AddResponsibleModal/AddResponsibleModal";
+import { useScenario } from "context/Scenario/scenarioContext";
 
 interface Props {
   show: boolean;
@@ -57,6 +59,8 @@ const emptyResource: Resource = {
 
 const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
   const { planData, addResource } = usePlanData();
+
+  const { handleAddValueToScenario, generateMergeKey } = useScenario();
 
   const [activeKey, setActiveKey] = useState<string | null>("0");
 
@@ -132,6 +136,18 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
 
     setSelectedResponsibleToAdd({ ...member, role: "" });
   }, []);
+
+  const addResourceToScenario = useCallback(
+    (resource: Resource) => {
+      const resourceValue: ScenarioResource = {
+        resourceId: resource.id,
+        mergeKey: generateMergeKey(),
+      };
+
+      handleAddValueToScenario({ attr: "resourceId", value: resourceValue });
+    },
+    [generateMergeKey, handleAddValueToScenario],
+  );
 
   const clearInputs = useCallback(() => {
     const clearedResource = produce(resource, (draft) => {
@@ -503,7 +519,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
               onClick={handleIncludeResourceInPlan}
               className="darkBlueButton"
             >
-              Incluir Recurso
+              Incluir Novo Recurso
             </Button>
           </div>
 
@@ -527,6 +543,13 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                   className="resourceListItem"
                   key={`${resourceItem.id}${index}`}
                 >
+                  <Button
+                    className="darkBlueButton"
+                    size="sm"
+                    onClick={() => addResourceToScenario(resourceItem)}
+                  >
+                    Adicionar este recurso
+                  </Button>
                   <div>
                     <h6>{inputLabels.label1}</h6>
                     <span>{resourceItem.value1}</span>

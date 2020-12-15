@@ -18,7 +18,7 @@ import { FaSortDown, FaSortUp, FaSort } from "react-icons/fa";
 import { Member, Responsible } from "types/Plan";
 import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
 import { usePlanData } from "context/PlanData/planDataContext";
-import { useScenario } from "context/PlanData/scenarioContext";
+import { useScenario } from "context/Scenario/scenarioContext";
 import PeopleResourceModal from "shared/components/PeopleResourceModal/PeopleResourceModal";
 
 type ReducedMember = Omit<Member, "group" | "permission" | "personId">;
@@ -42,7 +42,7 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
   const { planData } = usePlanData();
 
   const {
-    verifyIfPreviousScenariosHasValue,
+    verifyIfScenariosHistoryHasValue,
     handleAddValueToScenario,
   } = useScenario();
 
@@ -64,14 +64,14 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
     });
 
     return responsibles.map((responsible) => {
-      const checked = verifyIfPreviousScenariosHasValue(
+      const checked = verifyIfScenariosHistoryHasValue(
         "responsibles",
         `${responsible.name} ${responsible.role} ${responsible.permission}`,
       );
 
       return { ...responsible, checked };
     });
-  }, [planData.resources, verifyIfPreviousScenariosHasValue]);
+  }, [planData.resources, verifyIfScenariosHistoryHasValue]);
 
   const responsibles = useMemo(() => {
     const resp: ReducedMember[] = [];
@@ -185,7 +185,7 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
           </header>
           <div>
             <Button onClick={handleOpenPeopleResourceModal}>
-              ADICIONAR MEMBRO
+              ADICIONAR RESPONSÁVEL
             </Button>
             <MembersContainer>
               <GlobalFilter

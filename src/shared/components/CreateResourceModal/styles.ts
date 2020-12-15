@@ -45,7 +45,6 @@ export const Container = styled.div`
       margin: 0 auto;
       font-weight: 500;
       height: 48px;
-      width: 152px;
       font-size: 18px;
     }
 
@@ -112,9 +111,19 @@ export const Container = styled.div`
       padding: 8px 2px;
       border-bottom: 1px solid #9f9f9f;
       border-top: 1px solid #9f9f9f;
+      position: relative;
 
       & + .resourceListItem {
         border-top: none;
+      }
+
+      > .darkBlueButton {
+        position: absolute;
+        right: 0;
+        margin: auto 0;
+        top: 0;
+        bottom: 0;
+        height: 31px;
       }
 
       > div {

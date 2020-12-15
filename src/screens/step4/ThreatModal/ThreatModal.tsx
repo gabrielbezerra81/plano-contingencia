@@ -7,7 +7,7 @@ import cobradesImg from "assets/images/cobrades3.png";
 import { Modal, Container } from "./styles";
 import Input from "shared/components/Input/Input";
 import api from "api/config";
-import { useScenario } from "context/PlanData/scenarioContext";
+import { useScenario } from "context/Scenario/scenarioContext";
 
 interface Props {
   show: boolean;

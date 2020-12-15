@@ -1,7 +1,7 @@
 import React from "react";
 import GlobalStyle from "../assets/global";
 import PlanDataProvider from "./PlanData/planDataContext";
-import ScenarioProvider from "./PlanData/scenarioContext";
+import ScenarioProvider from "./Scenario/scenarioContext";
 import SystemProvider from "./System/systemContext";
 
 const AppProvider: React.FC = ({ children }) => {

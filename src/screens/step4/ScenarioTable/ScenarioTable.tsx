@@ -1,5 +1,5 @@
 import { usePlanData } from "context/PlanData/planDataContext";
-import { useScenario } from "context/PlanData/scenarioContext";
+import { useScenario } from "context/Scenario/scenarioContext";
 import React, { useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
 import { FiPlus, FiX } from "react-icons/fi";
@@ -28,15 +28,15 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
 
   const { planData } = usePlanData();
 
-  const { verifyIfPreviousScenariosHasValue } = useScenario();
+  const { verifyIfScenariosHistoryHasValue } = useScenario();
 
   const formattedRiskLocations = useMemo(() => {
     return planData.riskLocations.map((locationItem) => ({
       ...locationItem,
       formattedAddress: formatScenarioAddress(locationItem),
-      checked: verifyIfPreviousScenariosHasValue("addressId", locationItem.id),
+      checked: verifyIfScenariosHistoryHasValue("addressId", locationItem.id),
     }));
-  }, [planData.riskLocations, verifyIfPreviousScenariosHasValue]);
+  }, [planData.riskLocations, verifyIfScenariosHistoryHasValue]);
 
   const formattedResponsibles = useMemo(() => {
     const responsibles: Responsible[] = [];
@@ -56,20 +56,20 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
     });
 
     return responsibles.map((responsible) => {
-      const checked = verifyIfPreviousScenariosHasValue(
+      const checked = verifyIfScenariosHistoryHasValue(
         "responsibles",
         `${responsible.name} ${responsible.role} ${responsible.permission}`,
       );
 
       return { ...responsible, checked };
     });
-  }, [planData.resources, verifyIfPreviousScenariosHasValue]);
+  }, [planData.resources, verifyIfScenariosHistoryHasValue]);
 
   const formattedResources = useMemo(() => {
     return planData.resources
       .filter((resource) => resource.type !== "pessoa")
       .map((resource) => {
-        const checked = verifyIfPreviousScenariosHasValue(
+        const checked = verifyIfScenariosHistoryHasValue(
           "resourceId",
           resource.id,
         );
@@ -91,7 +91,7 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
           formattedValue2: value2 ? value2 : undefined,
         };
       });
-  }, [planData.resources, verifyIfPreviousScenariosHasValue]);
+  }, [planData.resources, verifyIfScenariosHistoryHasValue]);
 
   const notCheckedLocations = useMemo(
     () => formattedRiskLocations.filter((location) => !location.checked),
@@ -399,8 +399,6 @@ const TableCell: React.FC<TableCellProps> = ({
     if (cell.column.id === "responsibles") {
       const ids = cell.value.split(" ");
 
-      console.log(cell.value);
-
       if (!ids || !Array.isArray(ids)) {
         return null;
       }
@@ -418,12 +416,35 @@ const TableCell: React.FC<TableCellProps> = ({
           return null;
         }
 
-        return <CellCheckableItem item={responsible} attr="responsibles" />;
+        return (
+          <CellCheckableItem row={row} item={responsible} attr="responsibles" />
+        );
       });
     }
 
     return null;
-  }, [cell.column.id, cell.value, formattedResponsibles]);
+  }, [cell.column.id, cell.value, formattedResponsibles, row]);
+
+  const resourcesCellContent = useMemo(() => {
+    if (cell.column.id === "resourceId") {
+      const resource = formattedResources.find(
+        (item: any) => item.id === cell.value.resourceId,
+      );
+
+      if (!resource) {
+        return null;
+      }
+
+      return (
+        <CellCheckableItem
+          item={{ ...resource, mergeKey: cell.value.mergeKey }}
+          attr="resourceId"
+        />
+      );
+    }
+
+    return null;
+  }, [cell.column.id, cell.value, formattedResources]);
 
   return (
     <>
@@ -434,12 +455,7 @@ const TableCell: React.FC<TableCellProps> = ({
       {riskCellContent}
       {measureCellContent}
       {responsiblesCellContent}
-
-      {/*
-     
-     
-      
-      {resourcesCellContent} */}
+      {resourcesCellContent}
     </>
   );
 };

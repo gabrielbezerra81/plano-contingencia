@@ -17,7 +17,7 @@ export interface ScenarioDTO {
     responsible: boolean;
   };
   handleCheckItem: (attr: keyof Scenario, value: any) => void;
-  verifyIfPreviousScenariosHasValue: (
+  verifyIfScenariosHistoryHasValue: (
     attr: keyof Scenario,
     value: any,
   ) => boolean;

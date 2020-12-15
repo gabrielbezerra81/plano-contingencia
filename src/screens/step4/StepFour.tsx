@@ -17,7 +17,7 @@ import { SuggestionList } from "./types";
 import { useTable } from "react-table";
 
 import ScenarioTable, { TableHead } from "./ScenarioTable/ScenarioTable";
-import { useScenario } from "context/PlanData/scenarioContext";
+import { useScenario } from "context/Scenario/scenarioContext";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { Button, Form } from "react-bootstrap";
 import { useSystem } from "context/System/systemContext";
@@ -34,7 +34,7 @@ const StepFour: React.FC = () => {
     setScenariosList,
     scenarioTitle,
     setScenarioTitle,
-    verifyIfPreviousScenariosHasValue,
+    verifyIfScenariosHistoryHasValue,
     setScenariosHistory,
     checkedValues,
     setCheckedValues,
@@ -47,8 +47,8 @@ const StepFour: React.FC = () => {
   const [showHypotheseModal, setShowHypotheseModal] = useState(false);
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [showMeasureModal, setShowMeasureModal] = useState(false);
-  const [showResourceModal, setShowResourceModal] = useState(false);
   const [showResponsibleModal, setShowResponsibleModal] = useState(false);
+  const [showResourceModal, setShowResourceModal] = useState(false);
   const [isUndoDisabled, setIsUndoDisabled] = useState(true);
 
   const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
@@ -224,7 +224,7 @@ const StepFour: React.FC = () => {
 
   const shouldUpdatePlanData = useMemo(() => {
     const hasCompletedScenarios = planData.resources.some((resource) => {
-      const checked = verifyIfPreviousScenariosHasValue(
+      const checked = verifyIfScenariosHistoryHasValue(
         "resourceId",
         resource.id,
       );
@@ -233,7 +233,7 @@ const StepFour: React.FC = () => {
     });
 
     return hasCompletedScenarios;
-  }, [verifyIfPreviousScenariosHasValue, planData.resources]);
+  }, [verifyIfScenariosHistoryHasValue, planData.resources]);
 
   useEffect(() => {
     async function submitScenariosChange() {
@@ -300,11 +300,11 @@ const StepFour: React.FC = () => {
         </Button>
       </Container>
 
-      {/* <Form.Check
+      <Form.Check
         label="Salvar cenários"
         checked={scenarioSaveEnabled}
         onChange={() => setScenarioSaveEnabled((oldValue) => !oldValue)}
-      /> */}
+      />
 
       {/* <div style={{ marginTop: 48 }}>
         <div>
