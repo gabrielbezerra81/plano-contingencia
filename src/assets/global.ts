@@ -40,6 +40,12 @@ const GlobalStyle = createGlobalStyle`
       background-color: ${colors.darkBlue};
       border-color: ${colors.darkBlue};
 
+      &.btn-primary.disabled,
+      &.btn-primary:disabled {
+        background-color: ${colors.darkBlue};
+        border-color: ${colors.darkBlue};
+      }
+
       &:focus {
         background-color: ${colors.darkBlue};
       }

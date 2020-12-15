@@ -16,31 +16,26 @@ import { SuggestionList } from "./types";
 
 import { useTable } from "react-table";
 
-import _ from "lodash";
 import ScenarioTable, { TableHead } from "./ScenarioTable/ScenarioTable";
 import { useScenario } from "context/PlanData/scenarioContext";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { Button, Form } from "react-bootstrap";
 import { useSystem } from "context/System/systemContext";
+import ResponsibleModal from "./ResponsibleModal/ResponsibleModal";
 
 const StepFour: React.FC = () => {
   const { selectedTab } = useSystem();
 
-  const {
-    planData,
-    getSequenceId,
-    updateLocalPlanData,
-    updateAPIPlanData,
-  } = usePlanData();
+  const { planData, getSequenceId, updateLocalPlanData } = usePlanData();
 
   const {
-    previousScenariosList,
+    scenariosHistory,
     scenariosList,
     setScenariosList,
     scenarioTitle,
     setScenarioTitle,
     verifyIfPreviousScenariosHasValue,
-    setPreviousScenariosList,
+    setScenariosHistory,
     checkedValues,
     setCheckedValues,
     setScenarioSaveEnabled,
@@ -53,6 +48,8 @@ const StepFour: React.FC = () => {
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [showMeasureModal, setShowMeasureModal] = useState(false);
   const [showResourceModal, setShowResourceModal] = useState(false);
+  const [showResponsibleModal, setShowResponsibleModal] = useState(false);
+  const [isUndoDisabled, setIsUndoDisabled] = useState(true);
 
   const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
 
@@ -78,10 +75,30 @@ const StepFour: React.FC = () => {
   }, [setCheckedValues]);
 
   const handleClearScenarios = useCallback(() => {
-    setPreviousScenariosList([]);
+    setScenariosHistory([]);
     setScenariosList([]);
     setCheckedValues([]);
-  }, [setPreviousScenariosList, setScenariosList, setCheckedValues]);
+  }, [setScenariosHistory, setScenariosList, setCheckedValues]);
+
+  const undoLastChange = useCallback(() => {
+    const previousList = localStorage.getItem("previousScenariosList");
+    const previousHistory = localStorage.getItem("previousHistory");
+    const previousChecked = localStorage.getItem("previousCheckedValues");
+
+    if (previousList) {
+      setScenariosList(JSON.parse(previousList));
+    }
+
+    if (previousHistory) {
+      setScenariosHistory(JSON.parse(previousHistory));
+    }
+
+    if (previousChecked) {
+      setCheckedValues(JSON.parse(previousChecked));
+    }
+
+    setTimeout(() => setIsUndoDisabled(true), 500);
+  }, [setScenariosList, setScenariosHistory, setCheckedValues]);
 
   // Carregar Cobrade
   useEffect(() => {
@@ -106,17 +123,6 @@ const StepFour: React.FC = () => {
     }
 
     loadSuggestions();
-  }, [scenariosList]);
-
-  const sortedScenarioList = useMemo(() => {
-    return _.orderBy(scenariosList, [
-      "addressId",
-      "threat.mergeKey",
-      "hypothese.mergeKey",
-      "risk.mergeKey",
-      "measure.mergeKey",
-      "resourceId.mergeKey",
-    ]);
   }, [scenariosList]);
 
   const columns: any[] = useMemo(() => {
@@ -175,7 +181,12 @@ const StepFour: React.FC = () => {
         enableRowSpan: true,
       },
       {
-        Header: <TableHead title={"Responsáveis"} onClick={() => {}} />,
+        Header: (
+          <TableHead
+            title={"Responsáveis"}
+            onClick={() => setShowResponsibleModal(true)}
+          />
+        ),
         accessor: (row: any) => {
           if (!row.responsibles.length) {
             return "none";
@@ -204,7 +215,7 @@ const StepFour: React.FC = () => {
   const tableInstance = useTable(
     {
       columns,
-      data: sortedScenarioList,
+      data: scenariosList,
     },
     (hooks) => {
       hooks.useInstance.push(useRowSpan);
@@ -250,6 +261,10 @@ const StepFour: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldUpdatePlanData, selectedTab]);
 
+  useEffect(() => {
+    setIsUndoDisabled(false);
+  }, [scenariosList]);
+
   return (
     <>
       <Container>
@@ -267,11 +282,21 @@ const StepFour: React.FC = () => {
 
         <Button
           style={{ marginLeft: 24 }}
+          onClick={undoLastChange}
+          className="darkBlueButton"
+          size="sm"
+          disabled={isUndoDisabled}
+        >
+          Desfazer última alteração
+        </Button>
+
+        <Button
+          style={{ marginLeft: 24 }}
           onClick={handleClearScenarios}
           className="darkBlueButton"
           size="sm"
         >
-          Limpar cenários
+          Limpar tudo
         </Button>
       </Container>
 
@@ -281,23 +306,23 @@ const StepFour: React.FC = () => {
         onChange={() => setScenarioSaveEnabled((oldValue) => !oldValue)}
       />
 
-      <div style={{ marginTop: 100 }}>
+      <div style={{ marginTop: 48 }}>
         <div>
-          Linhas add: {sortedScenarioList.length}
+          Linhas adicionadas: {scenariosList.length}
           <br />
-          {sortedScenarioList.map((scenario, index) => (
+          {scenariosList.map((scenario, index) => (
             <code key={index}>
               {JSON.stringify(scenario)}
+              <br />
               <br />
             </code>
           ))}
           <br />
-          <br />
         </div>
         <div>
-          Linhas prev: {previousScenariosList.length}
+          Linhas prev: {scenariosHistory.length}
           <br />
-          {previousScenariosList.map((prevScenario, index) => (
+          {scenariosHistory.map((prevScenario, index) => (
             <code key={index}>
               {JSON.stringify(prevScenario)}
               <br />
@@ -340,6 +365,11 @@ const StepFour: React.FC = () => {
         suggestionList={suggestionList}
       />
 
+      <ResponsibleModal
+        show={showResponsibleModal}
+        setShow={setShowResponsibleModal}
+      />
+
       <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
     </>
   );
@@ -373,6 +403,7 @@ function useInstance(instance: any) {
         ...rowSpanHeaders,
         { id, topCellValue: null, topCellIndex: 0 },
       ];
+      
     }
   });
 

@@ -13,16 +13,14 @@ import { Modal, Container, MembersContainer } from "./styles";
 import Input from "shared/components/Input/Input";
 
 import peopleIcon from "assets/images/pessoas.png";
-import vehiclesIcon from "assets/images/veiculos.png";
-import materialsIcon from "assets/images/materiais.png";
-import foodIcon from "assets/images/alimentacao.png";
-import homeIcon from "assets/images/abrigo.png";
-import moneyIcon from "assets/images/dinheiro.png";
+
 import { FaSortDown, FaSortUp, FaSort } from "react-icons/fa";
 import AddToGroupModal from "shared/components/AddToGroupModal/AddToGroupModal";
-import { Member, ResourceType } from "types/Plan";
-import CreateResourceModal from "../CreateResourceModal/CreateResourceModal";
-import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
+import { Member } from "types/Plan";
+import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
+import { usePlanData } from "context/PlanData/planDataContext";
+import { useScenario } from "context/PlanData/scenarioContext";
+import formatResourceAddress from "shared/utils/format/formatResourceAddress";
 
 type ReducedMember = Omit<Member, "group" | "permission" | "personId">;
 
@@ -41,7 +39,11 @@ interface GlobalFilterProps {
   globalFilter: string;
 }
 
-const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
+const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
+  const { planData } = usePlanData();
+
+  const { verifyIfPreviousScenariosHasValue } = useScenario();
+
   const [members] = useState<ReducedMember[]>([
     {
       id: "1",
@@ -60,17 +62,33 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
   ]);
 
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
-  const [showCreateResourceModal, setShowCreateResourceModal] = useState(false);
 
-  const [resourceType, setResourceType] = useState<ResourceType | null>(null);
+  const formattedResources = useMemo(() => {
+    return planData.resources.map((resource) => {
+      const checked = verifyIfPreviousScenariosHasValue(
+        "resourceId",
+        resource.id,
+      );
+
+      const formattedAddress = formatResourceAddress(resource.address);
+
+      let value2;
+
+      if (resource.type === "dinheiro" && resource.value2) {
+        value2 = "R$ " + resource.value2;
+      }
+
+      return {
+        ...resource,
+        formattedAddress,
+        checked,
+        formattedValue2: value2 ? value2 : undefined,
+      };
+    });
+  }, [planData.resources, verifyIfPreviousScenariosHasValue]);
 
   const handleOpenAddToGroupModal = useCallback(() => {
     setShowAddToGroupModal(true);
-  }, []);
-
-  const handleOpenCreateResourceModal = useCallback((e) => {
-    setShowCreateResourceModal(true);
-    setResourceType(e.currentTarget.name);
   }, []);
 
   const handleInclude = useCallback(() => {}, []);
@@ -148,31 +166,6 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
               <img src={peopleIcon} alt="PESSOAL" />
               <span>PESSOAL</span>
             </button>
-
-            <button name="veiculo" onClick={handleOpenCreateResourceModal}>
-              <img src={vehiclesIcon} alt="VEÍCULOS E MAQUINÁRIOS" />
-              <span>VEÍCULOS E MAQUINÁRIOS</span>
-            </button>
-
-            <button name="material" onClick={handleOpenCreateResourceModal}>
-              <img src={materialsIcon} alt="MATERIAIS" />
-              <span>MATERIAIS</span>
-            </button>
-
-            <button name="alimentacao" onClick={handleOpenCreateResourceModal}>
-              <img src={foodIcon} alt="ALIMENTAÇÃO" />
-              <span>ALIMENTAÇÃO</span>
-            </button>
-
-            <button name="abrigo" onClick={handleOpenCreateResourceModal}>
-              <img src={homeIcon} alt="ABRIGO" />
-              <span>ABRIGO</span>
-            </button>
-
-            <button name="dinheiro" onClick={handleOpenCreateResourceModal}>
-              <img src={moneyIcon} alt="DINHEIRO" />
-              <span>DINHEIRO</span>
-            </button>
           </header>
           <div>
             <Button onClick={handleOpenAddToGroupModal}>
@@ -249,19 +242,11 @@ const ResourcesModal: React.FC<Props> = ({ show, setShow }) => {
         show={showAddToGroupModal}
         setShow={setShowAddToGroupModal}
       />
-
-      {!!resourceType && (
-        <CreateResourceModal
-          show={showCreateResourceModal}
-          setShow={setShowCreateResourceModal}
-          type={resourceType}
-        />
-      )}
     </>
   );
 };
 
-export default ResourcesModal;
+export default ResponsibleModal;
 
 const IndeterminateCheckbox = React.forwardRef(
   ({ indeterminate, ...rest }: any, ref) => {

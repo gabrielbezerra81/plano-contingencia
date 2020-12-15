@@ -2,7 +2,7 @@ import { usePlanData } from "context/PlanData/planDataContext";
 import { useScenario } from "context/PlanData/scenarioContext";
 import React, { useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiX } from "react-icons/fi";
 import { GrSearch } from "react-icons/gr";
 import { TableInstance } from "react-table";
 
@@ -100,6 +100,8 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
 
   const notCheckedArray: any[] = Array(numberOfUncheckedRows).fill(1);
 
+  console.log(numberOfUncheckedRows);
+
   return (
     <Table {...getTableProps()}>
       <thead>
@@ -171,7 +173,7 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
 
         {notCheckedArray.map((_, index) => {
           return (
-            <tr>
+            <tr key={index}>
               <td>
                 <div>
                   {!!notCheckedLocations[index] && (
@@ -345,17 +347,11 @@ const TableCell: React.FC<TableCellProps> = ({
         return null;
       }
 
-      return (
-        <CellCheckableItem
-          rowId={row.original.id}
-          attr="addressId"
-          item={address}
-        />
-      );
+      return <CellCheckableItem attr="addressId" item={address} row={row} />;
     }
 
     return null;
-  }, [cell, formattedRiskLocations, locationFilterText, row.original.id]);
+  }, [cell, formattedRiskLocations, locationFilterText, row]);
 
   const threatCellContent = useMemo(() => {
     if (cell.column.id === "threat") {
@@ -367,62 +363,39 @@ const TableCell: React.FC<TableCellProps> = ({
       //   return null;
       // }
 
-      return (
-        <CellCheckableItem
-          rowId={row.original.id}
-          item={cell.value}
-          attr="threat"
-        />
-      );
+      return <CellCheckableItem row={row} item={cell.value} attr="threat" />;
     }
 
     return null;
-  }, [cell.column.id, cell.value, row.original.id]);
+  }, [cell.column.id, cell.value, row]);
 
   const hypotheseCellContent = useMemo(() => {
     if (cell.column.id === "hypothese") {
-      return (
-        <CellCheckableItem
-          rowId={row.original.id}
-          item={cell.value}
-          attr="hypothese"
-        />
-      );
+      return <CellCheckableItem row={row} item={cell.value} attr="hypothese" />;
     }
 
     return null;
-  }, [cell.column.id, cell.value, row.original.id]);
+  }, [cell.column.id, cell.value, row]);
 
   const riskCellContent = useMemo(() => {
     if (cell.column.id === "risk") {
-      return (
-        <CellCheckableItem
-          rowId={row.original.id}
-          item={cell.value}
-          attr="risk"
-        />
-      );
+      return <CellCheckableItem row={row} item={cell.value} attr="risk" />;
     }
 
     return null;
-  }, [cell.column.id, cell.value, row.original.id]);
+  }, [cell.column.id, cell.value, row]);
 
   const measureCellContent = useMemo(() => {
     if (cell.column.id === "measure") {
-      return (
-        <CellCheckableItem
-          rowId={row.original.id}
-          item={cell.value}
-          attr="measure"
-        />
-      );
+      return <CellCheckableItem row={row} item={cell.value} attr="measure" />;
     }
 
     return null;
-  }, [cell.column.id, cell.value, row.original.id]);
+  }, [cell.column.id, cell.value, row]);
 
   return (
     <>
+      {!!addressFilter && null}
       {addressCellContent}
       {threatCellContent}
       {hypotheseCellContent}
@@ -438,22 +411,30 @@ const TableCell: React.FC<TableCellProps> = ({
   );
 };
 
-interface CellCheckableitem {
+interface CellCheckableItemProps {
   attr: keyof Scenario;
   item: any;
-  rowId?: string;
+  row?: any;
 }
 
-const CellCheckableItem: React.FC<CellCheckableitem> = ({
+const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
   attr,
   item,
-  rowId,
+  row,
 }) => {
   const {
     handleCheckItem,
     disabledColumnsCheckbox,
     verifyIfIsChecked,
+    handleRemoveItem,
   } = useScenario();
+
+  const rowId = useMemo(() => {
+    if (row) {
+      return row.original.id;
+    }
+    return undefined;
+  }, [row]);
 
   const props = useMemo(() => {
     const props = {
@@ -502,7 +483,12 @@ const CellCheckableItem: React.FC<CellCheckableitem> = ({
         break;
     }
 
-    props.checked = verifyIfIsChecked({ attr, value: props.value, rowId });
+    props.checked = verifyIfIsChecked({
+      attr,
+      value: props.value,
+      rowId,
+      compareMode: "rowId",
+    });
 
     return props;
   }, [attr, item, disabledColumnsCheckbox, verifyIfIsChecked, rowId]);
@@ -516,11 +502,30 @@ const CellCheckableItem: React.FC<CellCheckableitem> = ({
       <Form.Check
         custom
         type="checkbox"
-        onChange={() => handleCheckItem({ attr, value: props.value, rowId })}
+        onChange={() =>
+          handleCheckItem({
+            attr,
+            value: props.value,
+            rowId,
+            rowIndex: row?.index,
+          })
+        }
         checked={props.checked}
         disabled={props.disabled}
       />
       <ItemListingText included={props.checked}>{props.text}</ItemListingText>
+      <button
+        onClick={() =>
+          handleRemoveItem({
+            attr,
+            value: props.value,
+            rowId,
+            rowIndex: row?.index,
+          })
+        }
+      >
+        <FiX color="red" size={12} />
+      </button>
     </div>
   );
 };

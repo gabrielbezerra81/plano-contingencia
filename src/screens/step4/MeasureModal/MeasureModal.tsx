@@ -1,5 +1,4 @@
 import { useScenario } from "context/PlanData/scenarioContext";
-import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
