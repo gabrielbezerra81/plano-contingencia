@@ -1,5 +1,4 @@
-import produce from "immer";
-import { WritableDraft } from "immer/dist/internal";
+import produce, { setAutoFreeze } from "immer";
 import React, {
   useContext,
   useMemo,
@@ -7,26 +6,23 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { Measure, Risk, Scenario, Threat } from "types/Plan";
+import { Scenario } from "types/Plan";
+import _ from "lodash";
+
+setAutoFreeze(false);
 
 interface ScenarioContextData {
-  addedCobrades: Array<Threat & { checked: boolean }>;
-  setAddedCobrades: React.Dispatch<React.SetStateAction<Threat[]>>;
-  addedHypotheses: Array<{ hypothese: string; checked: boolean }>;
-  setAddedHypotheses: React.Dispatch<React.SetStateAction<string[]>>;
-  addedRisks: Array<Risk & { checked: boolean }>;
-  setAddedRisks: React.Dispatch<React.SetStateAction<Risk[]>>;
-  addedMeasures: Array<Measure & { checked: boolean }>;
-  setAddedMeasures: React.Dispatch<React.SetStateAction<Measure[]>>;
+  checkedValues: Array<CheckedValue>;
+  setCheckedValues: React.Dispatch<React.SetStateAction<CheckedValue[]>>;
   scenariosList: Scenario[];
   setScenariosList: React.Dispatch<React.SetStateAction<Scenario[]>>;
-  previousScenariosList: Scenario[];
-  setPreviousScenariosList: React.Dispatch<React.SetStateAction<Scenario[]>>;
+  scenariosHistory: Scenario[];
+  setScenariosHistory: React.Dispatch<React.SetStateAction<Scenario[]>>;
   verifyIfPreviousScenariosHasValue: (
     attr: keyof Scenario,
     value: any,
   ) => boolean;
-  handleCheckItem: (attr: keyof Scenario, value: any) => void;
+  handleCheckItem: (data: HandleCheckItem) => void;
   scenarioTitle: string;
   setScenarioTitle: React.Dispatch<React.SetStateAction<string>>;
   disabledColumnsCheckbox: {
@@ -37,6 +33,17 @@ interface ScenarioContextData {
     measure: boolean;
     responsible: boolean;
   };
+  handleAddValueToScenario: (data: HandleAddValueToScenario) => any;
+  verifyIfIsChecked: (data: VerifyIfIsChecked) => boolean;
+  scenarioSaveEnabled: boolean;
+  setScenarioSaveEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  generateMergeKey: () => number;
+  handleRemoveItem: ({
+    attr,
+    value,
+    rowId,
+    rowIndex,
+  }: HandleRemoveItem) => void;
 }
 
 const ScenarioContext = React.createContext<ScenarioContextData>(
@@ -45,55 +52,50 @@ const ScenarioContext = React.createContext<ScenarioContextData>(
 
 const emptyScenario: Scenario = {
   addressId: "",
-  hypothese: "",
+  hypothese: {
+    hypothese: "",
+    mergeKey: 0,
+  },
   id: "",
   measure: {
     description: "",
     id: "",
+    mergeKey: 0,
   },
-  resourceId: "",
+  resourceId: {
+    resourceId: "",
+    mergeKey: 0,
+  },
   responsibles: [],
-  risk: { description: "", id: "" },
-  threat: { cobrade: "", description: "" },
+  risk: { description: "", id: "", mergeKey: 0 },
+  threat: { cobrade: "", description: "", mergeKey: 0 },
   title: "",
 };
 
 const ScenarioProvider: React.FC = ({ children }) => {
+  const [scenarioSaveEnabled, setScenarioSaveEnabled] = useState(false);
+
+  const [, setMergeKey] = useState(() => {
+    const mergeKey = localStorage.getItem("mergeKey");
+
+    if (mergeKey) {
+      return Number(mergeKey);
+    }
+
+    return 0;
+  });
+
   const [scenarioTitle, setScenarioTitle] = useState(() => {
     const title = localStorage.getItem("scenarioTitle");
 
     return title || "";
   });
 
-  const [addedCobrades, setAddedCobrades] = useState<Threat[]>(() => {
-    const cobrades = localStorage.getItem("addedCobrades");
+  const [checkedValues, setCheckedValues] = useState<CheckedValue[]>(() => {
+    const cobrades = localStorage.getItem("checkedValues");
 
     if (cobrades) {
       return JSON.parse(cobrades);
-    }
-    return [];
-  });
-  const [addedHypotheses, setAddedHypotheses] = useState<string[]>(() => {
-    const hypotheses = localStorage.getItem("addedHypotheses");
-
-    if (hypotheses) {
-      return JSON.parse(hypotheses);
-    }
-    return [];
-  });
-  const [addedRisks, setAddedRisks] = useState<Risk[]>(() => {
-    const risks = localStorage.getItem("addedRisks");
-
-    if (risks) {
-      return JSON.parse(risks);
-    }
-    return [];
-  });
-  const [addedMeasures, setAddedMeasures] = useState<Measure[]>(() => {
-    const risks = localStorage.getItem("addedMeasures");
-
-    if (risks) {
-      return JSON.parse(risks);
     }
     return [];
   });
@@ -107,10 +109,8 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
     return [];
   });
-  const [previousScenariosList, setPreviousScenariosList] = useState<
-    Scenario[]
-  >(() => {
-    const scenarios = localStorage.getItem("previousScenariosList");
+  const [scenariosHistory, setScenariosHistory] = useState<Scenario[]>(() => {
+    const scenarios = localStorage.getItem("scenariosHistory");
 
     if (scenarios) {
       return JSON.parse(scenarios);
@@ -119,88 +119,54 @@ const ScenarioProvider: React.FC = ({ children }) => {
     return [];
   });
 
-  const filterScenariosList = useCallback(
-    ({ list, attr, value }: FilterScenarioList) => {
-      if (attr === "responsibles") {
-        list.forEach((scenario: Scenario) => {
-          scenario.responsibles.forEach((responsible, index) => {
-            if (
-              `${responsible.name} ${responsible.role} ${responsible.permission}` ===
-              value
-            ) {
-              scenario.responsibles.splice(index, 1);
-            }
-          });
-        });
-      } //
-      else {
-        // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
-        const filtered = list.filter((scenario: Scenario) => {
-          switch (attr) {
-            case "addressId":
-              return scenario.addressId !== value;
-            case "threat":
-              return scenario.threat.cobrade !== value;
-            case "hypothese":
-              return scenario.hypothese !== value;
-            case "risk":
-              return scenario.risk.description !== value;
-            case "measure":
-              return scenario.measure.description !== value;
-            case "resourceId":
-              return scenario.resourceId !== value;
-            default:
-              return true;
-          }
-        });
+  const sortedScenarioList = useMemo(() => {
+    return _.orderBy(scenariosList, [
+      "addressId",
+      "threat.mergeKey",
+      "hypothese.mergeKey",
+      "risk.mergeKey",
+      "measure.mergeKey",
+      "resourceId.mergeKey",
+    ]);
+  }, [scenariosList]);
 
-        // Se a coluna tiver so 1 item selecionado, a lista não será filtrada para não  zerar a quantidade de linhas
-        // e sim o campo vai ser atribuido a "". Isto não vale para o campo de endereço que é a primeira coluna.
-        if (filtered.length === 0 && attr !== "addressId") {
-          list.forEach((scenario: Scenario) => {
-            switch (attr) {
-              case "threat":
-                if (scenario.threat.cobrade === value) {
-                  scenario.threat.cobrade = "";
-                  scenario.threat.description = "";
-                }
-                break;
-              case "hypothese":
-                if (scenario.hypothese === value) {
-                  scenario.hypothese = "";
-                }
-                break;
-              case "risk":
-                if (scenario.risk.description === value) {
-                  scenario.risk.description = "";
-                }
-                break;
-              case "measure":
-                if (scenario.measure.description === value) {
-                  scenario.measure.description = "";
-                }
-                break;
-              case "resourceId":
-                if (scenario.resourceId === value) {
-                  scenario.resourceId = "";
-                }
-                break;
-              default:
-                break;
-            }
-          });
-        } //
-        else {
-          return filtered;
-        }
+  const savePreviousState = useCallback(() => {
+    localStorage.setItem(
+      "previousScenariosList",
+      JSON.stringify(scenariosList),
+    );
+    localStorage.setItem("previousHistory", JSON.stringify(scenariosHistory));
+    localStorage.setItem(
+      "previousCheckedValues",
+      JSON.stringify(checkedValues),
+    );
+  }, [scenariosList, scenariosHistory, checkedValues]);
+
+  const getAttrCompareValue = useCallback(
+    (attr: keyof Scenario, value: any) => {
+      let compareValue = value;
+
+      if (attr === "threat") {
+        compareValue = value.cobrade;
+      } //
+      else if (["risk", "measure"].includes(attr)) {
+        compareValue = value.description;
+      } //
+      else if (attr === "responsibles") {
+        compareValue = `${value.name} ${value.role} ${value.permission}`;
+      } //
+      else if (attr === "hypothese") {
+        compareValue = value.hypothese;
       }
+
+      return compareValue;
     },
     [],
   );
 
   const verifyIfPreviousScenariosHasValue = useCallback(
     (attr: keyof Scenario, value: any): boolean => {
-      const valueExists = previousScenariosList.some((scenario) => {
+      const valueExists = scenariosHistory.some((scenario) => {
         if (["addressId", "hypothese", "resourceId"].includes(attr)) {
           return scenario[attr] === value;
         }
@@ -226,71 +192,325 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
       return valueExists;
     },
-    [previousScenariosList],
+    [scenariosHistory],
   );
 
-  const duplicateScenariosLines = useCallback(
-    ({ attr, value, draftScenariosList }: DuplicateScenariosLines) => {
-      let compareValue = value;
+  const filterScenariosList = useCallback(
+    ({ list, attr, value }: any) => {
+      const compareValue = getAttrCompareValue(attr, value);
 
-      if (attr === "threat") {
-        compareValue = value.cobrade;
+      if (attr === "responsibles") {
+        list.forEach((scenario: Scenario) => {
+          scenario.responsibles.forEach((responsible, index) => {
+            if (
+              `${responsible.name} ${responsible.role} ${responsible.permission}` ===
+              compareValue
+            ) {
+              scenario.responsibles.splice(index, 1);
+            }
+          });
+        });
       } //
-      else if (["risk", "measure"].includes(attr)) {
-        compareValue = value.description;
-      } //
-      else if (attr === "responsibles") {
-        compareValue = `${value.name} ${value.role} ${value.permission}`;
+      else {
+        // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
+        const filtered = list.filter((scenario: Scenario) => {
+          switch (attr) {
+            case "addressId":
+              return scenario.addressId !== compareValue;
+            case "threat":
+              return scenario.threat.cobrade !== compareValue;
+            case "hypothese":
+              return scenario.hypothese.hypothese !== compareValue;
+            case "risk":
+              return scenario.risk.description !== compareValue;
+            case "measure":
+              return scenario.measure.description !== compareValue;
+            case "resourceId":
+              return scenario.resourceId !== compareValue;
+            default:
+              return true;
+          }
+        });
+
+        // Se a coluna tiver so 1 item selecionado, a lista não será filtrada para não  zerar a quantidade de linhas
+        // e sim o campo vai ser atribuido a "". Isto não vale para o campo de endereço que é a primeira coluna.
+        if (filtered.length === 0 && attr !== "addressId") {
+          list.forEach((scenario: Scenario) => {
+            if (
+              ["threat", "hypothese", "risk", "measure", "resourceId"].includes(
+                attr,
+              )
+            ) {
+              const column: any = scenario[attr as keyof Scenario];
+              Object.keys(column).forEach((key: any) => {
+                Object.assign(column, { [key]: "" });
+              });
+            }
+          });
+        } //
+        else {
+          return filtered;
+        }
+      }
+    },
+    [getAttrCompareValue],
+  );
+
+  const handleRemoveItem = useCallback(
+    ({ attr, value, rowId, rowIndex }: HandleRemoveItem) => {
+      savePreviousState();
+
+      const updatedScenariosList = produce(sortedScenarioList, (draft) => {
+        if (rowIndex || rowIndex === 0) {
+          const excludedKeys = ["id", "title"];
+
+          setScenariosHistory((oldHistory) =>
+            filterScenariosList({
+              list: oldHistory,
+              attr,
+              value,
+            }),
+          );
+
+          const filtered = filterScenariosList({
+            list: draft,
+            attr,
+            value,
+          });
+
+          if (filtered) {
+            return filtered;
+          }
+        }
+      });
+
+      setScenariosList(updatedScenariosList);
+    },
+    [sortedScenarioList, savePreviousState, filterScenariosList],
+  );
+
+  const handleCheckItem = useCallback(
+    ({ attr, value, rowId, rowIndex }: HandleCheckItem) => {
+      const id = (Math.random() * 100).toFixed(2);
+
+      let list: Scenario[] = [];
+
+      // push inicial das linhas de cenário
+      if (attr === "addressId") {
+        setScenariosList((oldScenarioList) => {
+          savePreviousState();
+
+          const draft = [...oldScenarioList];
+
+          const alreadyAdded = verifyIfPreviousScenariosHasValue(attr, value);
+
+          if (!alreadyAdded) {
+            draft.push({
+              ...emptyScenario,
+              addressId: value,
+              title: scenarioTitle,
+              id,
+            });
+            setScenariosHistory((oldValues) => [
+              ...oldValues,
+              { ...emptyScenario, addressId: value, id },
+            ]);
+          } //
+
+          list = draft;
+
+          return draft;
+        });
       }
 
-      const alreadyAdded = verifyIfPreviousScenariosHasValue(
-        attr,
-        compareValue,
-      );
+      const updatedCheckedValues = produce(checkedValues, (checkedDraft) => {
+        const compareValue = getAttrCompareValue(attr, value);
 
-      if (!alreadyAdded) {
-        // Cenario possui um array de responsaveis, então so precisa fazer o push
-        if (attr === "responsibles") {
-          draftScenariosList.forEach((scenario) => {
-            scenario.responsibles.push(value);
+        const checkedIndex = checkedDraft.findIndex((checkedItem) => {
+          const alreadyCheckedValue = getAttrCompareValue(
+            attr,
+            checkedItem.value,
+          );
+
+          const isValueEqual = alreadyCheckedValue === compareValue;
+
+          const isRowIdEqual = checkedItem.rowId === rowId;
+
+          return isValueEqual && isRowIdEqual;
+        });
+
+        if (attr === "addressId") {
+          const filterIndexes: number[] = [];
+
+          list.forEach((scenario) => {
+            if (checkedIndex === -1 && scenario.addressId === value) {
+              checkedDraft.push({ attr, value, rowId: scenario.id || id });
+            } //
+            else {
+              const removeIndex = checkedDraft.findIndex(
+                (checkedItem) =>
+                  checkedItem.rowId === scenario.id &&
+                  checkedItem.value === value,
+              );
+              if (removeIndex !== -1) {
+                filterIndexes.push(removeIndex);
+              }
+            }
           });
-          setPreviousScenariosList((previousScenarios) => {
-            const updatedPreviousScenarios = produce(
-              previousScenarios,
-              (previousDraft) => {
-                previousDraft.forEach((previousScenario) => {
-                  previousScenario.responsibles.push(value);
-                });
-              },
+
+          if (checkedIndex !== -1) {
+            return checkedDraft.filter(
+              (_, index) => !filterIndexes.includes(index),
             );
+          }
+        } //
+        else if (rowIndex || rowIndex === 0) {
+          const filterIndexes: number[] = [];
 
-            return updatedPreviousScenarios;
+          for (
+            let index = rowIndex;
+            index < sortedScenarioList.length;
+            index++
+          ) {
+            const curr = sortedScenarioList[index] as any;
+            const next = sortedScenarioList[index + 1] as any;
+
+            let shouldPushNextAndContinue = false;
+
+            if (curr && typeof curr[attr] === "object") {
+              shouldPushNextAndContinue =
+                next && curr[attr].mergeKey === next[attr].mergeKey;
+
+              if (checkedIndex === -1) {
+                checkedDraft.push({
+                  attr,
+                  value: curr[attr],
+                  rowId: curr.id || rowId,
+                });
+              } //
+              else {
+                const removeIndex = checkedDraft.findIndex(
+                  (checkedItem) =>
+                    checkedItem.rowId === curr.id &&
+                    checkedItem.value.mergeKey === curr[attr].mergeKey,
+                );
+                if (removeIndex !== -1) {
+                  filterIndexes.push(removeIndex);
+                }
+              }
+            }
+
+            if (!shouldPushNextAndContinue) {
+              break;
+            }
+          }
+
+          if (checkedIndex !== -1) {
+            return checkedDraft.filter(
+              (_, index) => !filterIndexes.includes(index),
+            );
+          }
+        }
+      });
+
+      setCheckedValues(updatedCheckedValues);
+    },
+    [
+      verifyIfPreviousScenariosHasValue,
+      scenarioTitle,
+      getAttrCompareValue,
+      checkedValues,
+      sortedScenarioList,
+      savePreviousState,
+    ],
+  );
+
+  const verifyIfIsChecked = useCallback(
+    ({ attr, value, rowId, compareMode }: VerifyIfIsChecked) => {
+      if (!attr) {
+        return false;
+      }
+
+      const compareValue = getAttrCompareValue(attr, value);
+
+      return checkedValues.some((checkedItem) => {
+        const alreadyCheckedValue = getAttrCompareValue(
+          attr,
+          checkedItem.value,
+        );
+
+        const isValueEqual = alreadyCheckedValue === compareValue;
+
+        if (compareMode === "rowId") {
+          const isRowIdEqual = rowId === checkedItem.rowId;
+
+          return isValueEqual && isRowIdEqual;
+        }
+
+        const isMergeKeyEqual = checkedItem.value.mergeKey === value.mergeKey;
+
+        return isValueEqual && isMergeKeyEqual;
+      });
+    },
+    [checkedValues, getAttrCompareValue],
+  );
+
+  const handleAddValueToScenario = useCallback(
+    ({ attr, value }: HandleAddValueToScenario) => {
+      // const compareValue = getAttrCompareValue(attr, value);
+
+      setScenariosList((oldScenarioList) => {
+        savePreviousState();
+
+        const draft = [...oldScenarioList];
+
+        if (attr === "responsibles") {
+          draft.forEach((scenario) => {
+            const isMeasureChecked = verifyIfIsChecked({
+              attr: "measure",
+              rowId: scenario.id,
+              compareMode: "rowId",
+              value: scenario.measure,
+            });
+
+            if (isMeasureChecked) {
+              scenario.responsibles.push(...value);
+            }
           });
-        } // Demais atributos que possuem que cada cenario possui apenas 1 irão ramificar
+        } //
         else {
-          previousScenariosList.forEach((prevScenario) => {
+          for (const prevScenario of scenariosHistory) {
             let shouldChangeAttrInLine: boolean = false;
             let nestedFindValue = "";
+            let isPreviousColumnChecked = false;
+            let previousAttr: keyof Scenario = "" as any;
 
             switch (attr) {
               case "threat":
                 shouldChangeAttrInLine = !prevScenario.threat.cobrade;
                 nestedFindValue = "cobrade";
+                previousAttr = "addressId";
                 break;
               case "hypothese":
                 shouldChangeAttrInLine =
-                  !!prevScenario.threat.cobrade && !prevScenario.hypothese;
+                  !!prevScenario.threat.cobrade &&
+                  !prevScenario.hypothese.hypothese;
+                nestedFindValue = "hypothese";
+                previousAttr = "threat";
                 break;
               case "risk":
                 shouldChangeAttrInLine =
-                  !!prevScenario.hypothese && !prevScenario.risk.description;
+                  !!prevScenario.hypothese.hypothese &&
+                  !prevScenario.risk.description;
                 nestedFindValue = "description";
+                previousAttr = "hypothese";
                 break;
               case "measure":
                 shouldChangeAttrInLine =
                   !!prevScenario.risk.description &&
                   !prevScenario.measure.description;
                 nestedFindValue = "description";
+                previousAttr = "risk";
                 break;
               case "resourceId":
                 shouldChangeAttrInLine =
@@ -302,151 +522,109 @@ const ScenarioProvider: React.FC = ({ children }) => {
                 break;
             }
 
-            if (shouldChangeAttrInLine) {
+            isPreviousColumnChecked = verifyIfIsChecked({
+              attr: previousAttr as any,
+              value: prevScenario[previousAttr as keyof Scenario],
+              compareMode: "rowId",
+              rowId: prevScenario.id,
+            });
+
+            console.log(shouldChangeAttrInLine, isPreviousColumnChecked);
+
+            if (shouldChangeAttrInLine && isPreviousColumnChecked) {
+              let newLineId: any;
+
               // Procurar cenário que está com o atributo atual vazio
-              const scenarioItem = draftScenariosList.find((scenario) => {
+              const scenarioItem = draft.find((scenario) => {
                 let findValue: any = scenario[attr];
 
                 if (nestedFindValue) {
                   findValue = findValue[nestedFindValue];
                 }
 
-                return !findValue;
+                const isChecked = verifyIfIsChecked({
+                  attr: previousAttr,
+                  value: scenario[previousAttr],
+                  rowId: scenario.id,
+                  compareMode: "rowId",
+                });
+
+                return !findValue && isChecked;
               });
 
-              // Se encontrar um com o atributo vazio, preenche o valor dessa linha
-              if (scenarioItem) {
+              // Se encontrar um com o atributo vazio, preenche o valor dessa linha. O atributo da linha do prev e da linha atual precisam
+              // bater. Os dois cenários precisam ter addressId = 10 para adicionar a ameaça.
+              if (
+                scenarioItem &&
+                _.isEqual(
+                  scenarioItem[previousAttr],
+                  prevScenario[previousAttr],
+                )
+              ) {
                 scenarioItem[attr] = value;
+                newLineId = scenarioItem.id;
               } // Caso contrario, será criada uma nova linha com o nvo valor marcado
               else {
-                draftScenariosList.push({
+                newLineId = (Math.random() * 100).toFixed(2);
+                draft.push({
                   ...prevScenario,
                   [attr]: value,
                   title: scenarioTitle,
+                  id: newLineId,
                 });
               }
-              setPreviousScenariosList((oldValues) => [
+
+              setScenariosHistory((oldValues) => [
                 ...oldValues,
-                { ...prevScenario, [attr]: value },
+                { ...prevScenario, [attr]: value, id: newLineId },
               ]);
             }
-          });
-        }
-      } //
-      else {
-        setPreviousScenariosList((oldList) => {
-          const updatedOldList = produce(oldList, (oldListDraft) => {
-            return filterScenariosList({
-              list: oldListDraft,
-              attr,
-              value: compareValue,
-            });
-          });
-          return updatedOldList;
-        });
-
-        return filterScenariosList({
-          list: draftScenariosList,
-          attr,
-          value: compareValue,
-        });
-      }
-    },
-    [
-      verifyIfPreviousScenariosHasValue,
-      filterScenariosList,
-      previousScenariosList,
-      scenarioTitle,
-    ],
-  );
-
-  const handleCheckItem = useCallback(
-    (attr: keyof Scenario, value: any) => {
-      const updatedScenarios = produce(scenariosList, (draft) => {
-        if (attr === "addressId") {
-          const alreadyAdded = verifyIfPreviousScenariosHasValue(attr, value);
-
-          if (!alreadyAdded) {
-            draft.push({
-              ...emptyScenario,
-              addressId: value,
-              title: scenarioTitle,
-            });
-            setPreviousScenariosList((oldValues) => [
-              ...oldValues,
-              { ...emptyScenario, addressId: value },
-            ]);
-          } //
-          else {
-            setPreviousScenariosList((oldValues) => {
-              const updatedOldValues = produce(oldValues, (oldValuesDraft) => {
-                return filterScenariosList({
-                  list: oldValuesDraft,
-                  attr: "addressId",
-                  value,
-                });
-              });
-
-              return updatedOldValues;
-            });
-            return filterScenariosList({
-              list: draft,
-              attr: "addressId",
-              value,
-            });
           }
-        } //
-        else {
-          // Para demais atributos
-          return duplicateScenariosLines({
-            attr,
-            value,
-            draftScenariosList: draft,
-          });
         }
-      });
 
-      setScenariosList(updatedScenarios);
+        return draft;
+      });
     },
-    [
-      scenariosList,
-      verifyIfPreviousScenariosHasValue,
-      filterScenariosList,
-      duplicateScenariosLines,
-      scenarioTitle,
-    ],
+    [scenariosHistory, scenarioTitle, verifyIfIsChecked, savePreviousState],
   );
 
-  // Salvar hipoteses - armazenamento local
-  useEffect(() => {
-    localStorage.setItem("addedHypotheses", JSON.stringify(addedHypotheses));
-  }, [addedHypotheses]);
+  const generateMergeKey = useCallback(() => {
+    let currentMergeKey = -1;
+
+    setMergeKey((oldKey) => {
+      currentMergeKey = oldKey;
+
+      const newKey = oldKey + 1;
+
+      localStorage.setItem("mergeKey", newKey.toString());
+
+      return newKey;
+    });
+
+    return currentMergeKey;
+  }, []);
 
   // Salvar cobrades - A.L.
   useEffect(() => {
-    localStorage.setItem("addedCobrades", JSON.stringify(addedCobrades));
-  }, [addedCobrades]);
-
-  // Salvar hipoteses - A.L.
-  useEffect(() => {
-    localStorage.setItem("addedRisks", JSON.stringify(addedRisks));
-  }, [addedRisks]);
-
-  // Salvar medidas - A.L.
-  useEffect(() => {
-    localStorage.setItem("addedMeasures", JSON.stringify(addedMeasures));
-  }, [addedMeasures]);
+    if (scenarioSaveEnabled) {
+      localStorage.setItem("checkedValues", JSON.stringify(checkedValues));
+    }
+  }, [checkedValues, scenarioSaveEnabled]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "previousScenariosList",
-      JSON.stringify(previousScenariosList),
-    );
-  }, [previousScenariosList]);
+    if (scenarioSaveEnabled) {
+      localStorage.setItem(
+        "scenariosHistory",
+        JSON.stringify(scenariosHistory),
+      );
+    }
+  }, [scenariosHistory, scenarioSaveEnabled]);
 
   useEffect(() => {
-    localStorage.setItem("scenariosList", JSON.stringify(scenariosList));
-  }, [scenariosList]);
+    if (scenarioSaveEnabled) {
+      localStorage.setItem("scenariosList", JSON.stringify(scenariosList));
+    }
+  }, [scenariosList, scenarioSaveEnabled]);
 
   const disabledColumnsCheckbox = useMemo(() => {
     const disabledColumns = {
@@ -458,112 +636,31 @@ const ScenarioProvider: React.FC = ({ children }) => {
       responsible: false,
     };
 
-    scenariosList.forEach((scenario) => {
-      if (!!scenario.threat.cobrade) {
-        disabledColumns.address = true;
-      }
-
-      if (!!scenario.hypothese) {
-        disabledColumns.threat = true;
-      }
-
-      if (!!scenario.risk.description) {
-        disabledColumns.hypothese = true;
-      }
-
-      if (!!scenario.measure.description) {
-        disabledColumns.risk = true;
-      }
-
-      if (!!scenario.responsibles.length) {
-        disabledColumns.measure = true;
-      }
-
-      if (!!scenario.resourceId) {
-        disabledColumns.responsible = true;
-      }
-    });
-
     return disabledColumns;
-  }, [scenariosList]);
-
-  const formattedAddedCobrades = useMemo(() => {
-    return addedCobrades.map((cobradeItem) => {
-      const checked = verifyIfPreviousScenariosHasValue(
-        "threat",
-        cobradeItem.cobrade,
-      );
-      return { ...cobradeItem, checked };
-    });
-  }, [addedCobrades, verifyIfPreviousScenariosHasValue]);
-
-  const formattedHypotheses = useMemo(() => {
-    return addedHypotheses.map((hypothese) => {
-      const checked = verifyIfPreviousScenariosHasValue("hypothese", hypothese);
-
-      return { hypothese, checked };
-    });
-  }, [addedHypotheses, verifyIfPreviousScenariosHasValue]);
-
-  const formattedRisks = useMemo(() => {
-    return addedRisks.map((riskItem) => {
-      const checked = verifyIfPreviousScenariosHasValue(
-        "risk",
-        riskItem.description,
-      );
-
-      return { ...riskItem, checked };
-    });
-  }, [addedRisks, verifyIfPreviousScenariosHasValue]);
-
-  const formattedMeasures = useMemo(() => {
-    return addedMeasures.map((measureItem) => {
-      const checked = verifyIfPreviousScenariosHasValue(
-        "measure",
-        measureItem.description,
-      );
-
-      return { ...measureItem, checked };
-    });
-  }, [addedMeasures, verifyIfPreviousScenariosHasValue]);
-
-  const value = useMemo(
-    () => ({
-      addedCobrades: formattedAddedCobrades,
-      setAddedCobrades,
-      addedHypotheses: formattedHypotheses,
-      setAddedHypotheses,
-      addedRisks: formattedRisks,
-      setAddedRisks,
-      addedMeasures: formattedMeasures,
-      setAddedMeasures,
-      scenariosList,
-      setScenariosList,
-      previousScenariosList,
-      setPreviousScenariosList,
-      verifyIfPreviousScenariosHasValue,
-      handleCheckItem,
-      scenarioTitle,
-      setScenarioTitle,
-      disabledColumnsCheckbox,
-    }),
-    [
-      formattedAddedCobrades,
-      formattedHypotheses,
-      formattedRisks,
-      addedMeasures,
-      scenariosList,
-      previousScenariosList,
-      verifyIfPreviousScenariosHasValue,
-      handleCheckItem,
-      scenarioTitle,
-      setScenarioTitle,
-      disabledColumnsCheckbox,
-    ],
-  );
+  }, []);
 
   return (
-    <ScenarioContext.Provider value={value}>
+    <ScenarioContext.Provider
+      value={{
+        checkedValues,
+        setCheckedValues,
+        scenariosList: sortedScenarioList,
+        setScenariosList,
+        scenariosHistory,
+        setScenariosHistory,
+        verifyIfPreviousScenariosHasValue,
+        handleCheckItem,
+        scenarioTitle,
+        setScenarioTitle,
+        disabledColumnsCheckbox,
+        handleAddValueToScenario,
+        verifyIfIsChecked,
+        setScenarioSaveEnabled,
+        scenarioSaveEnabled,
+        generateMergeKey,
+        handleRemoveItem,
+      }}
+    >
       {children}
     </ScenarioContext.Provider>
   );
@@ -577,14 +674,34 @@ export const useScenario = () => {
   return context;
 };
 
-interface FilterScenarioList {
-  list: any[];
+interface CheckedValue {
+  attr: keyof Scenario;
+  value: any;
+  rowId: string;
+}
+
+interface HandleAddValueToScenario {
   attr: keyof Scenario;
   value: any;
 }
 
-interface DuplicateScenariosLines {
+interface VerifyIfIsChecked {
   attr: keyof Scenario;
   value: any;
-  draftScenariosList: WritableDraft<Scenario>[];
+  rowId?: string;
+  compareMode: "rowId" | "mergeKey";
+}
+
+interface HandleCheckItem {
+  attr: keyof Scenario;
+  value: any;
+  rowId?: string;
+  rowIndex?: number;
+}
+
+interface HandleRemoveItem {
+  attr: keyof Scenario;
+  value: any;
+  rowId?: string;
+  rowIndex?: number;
 }

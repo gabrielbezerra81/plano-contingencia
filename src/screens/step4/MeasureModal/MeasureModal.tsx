@@ -1,5 +1,4 @@
 import { useScenario } from "context/PlanData/scenarioContext";
-import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
@@ -16,9 +15,12 @@ interface Props {
 }
 
 const MeasureModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
-  const { setAddedMeasures } = useScenario();
+  const { handleAddValueToScenario, generateMergeKey } = useScenario();
 
-  const [measure, setMeasure] = useState<Measure>({ id: "", description: "" });
+  const [measure, setMeasure] = useState<Partial<Measure>>({
+    id: "",
+    description: "",
+  });
 
   const handleChangeDescription = useCallback(
     (e) =>
@@ -27,22 +29,12 @@ const MeasureModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
   );
 
   const handleAddMeasure = useCallback(() => {
-    setAddedMeasures((oldValues) => {
-      const updatedAddedMeasures = produce(oldValues, (draft) => {
-        const alreadyAdded = draft.some(
-          (measureItem) => measureItem.description === measure.description,
-        );
+    const measureValue = { ...measure, mergeKey: generateMergeKey() };
 
-        if (!alreadyAdded) {
-          draft.push(measure);
-        }
-      });
-
-      return updatedAddedMeasures;
-    });
+    handleAddValueToScenario({ attr: "measure", value: measureValue });
 
     setShow(false);
-  }, [setShow, measure, setAddedMeasures]);
+  }, [setShow, measure, handleAddValueToScenario, generateMergeKey]);
 
   const filteredSuggestionList = useMemo(() => {
     const descriptions = suggestionList.map((suggestion) => suggestion.medida);

@@ -95,7 +95,7 @@ export const Container = styled.div`
   }
 
   > .darkBlueButton {
-    margin-top: 24px;
+    margin-top: 32px;
   }
 `;
 

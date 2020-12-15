@@ -49,7 +49,9 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
 
   payload.recursos = planData.resources.map((resource) => ({
     id: resource.id,
-    endereco: mapAddressToEndereco(resource.address),
+    endereco: resource.address
+      ? mapAddressToEndereco(resource.address)
+      : undefined,
     valor1: resource.value1,
     valor2: resource.value2,
     valor3: resource.value3,
@@ -73,13 +75,13 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
       cobrade: scenario.threat.cobrade,
       descricao: scenario.threat.description,
     },
-    hipotese: scenario.hypothese,
+    hipotese: scenario.hypothese.hypothese,
     risco: { id: scenario.risk.id, descricao: scenario.risk.description },
     medida: {
       id: scenario.measure.id,
       descricao: scenario.measure.description,
     },
-    recursoId: scenario.resourceId,
+    recursoId: scenario.resourceId.resourceId,
     responsaveis: scenario.responsibles.map((responsible) => ({
       nome: responsible.name,
       funcao_atribuicao: responsible.role,

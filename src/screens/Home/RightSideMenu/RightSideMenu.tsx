@@ -31,10 +31,6 @@ const RightSideMenu: React.FC = () => {
   const [showCreateResourceModal, setShowCreateResourceModal] = useState(false);
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
 
-  const openAddToGroupModal = useCallback(() => {
-    setShowAddToGroupModal(true);
-  }, []);
-
   const handleClickPeople = useCallback(() => {
     setActiveItem("pessoa");
     changeRightSideMenuVisibility(true);

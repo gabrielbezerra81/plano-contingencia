@@ -5,7 +5,7 @@ export default function formatResources(resources: Resource[]) {
   const formatted = resources.map((resourceItem) => {
     const { address } = resourceItem;
 
-    const formattedAddress = formatResourceAddress(address);
+    const formattedAddress = address ? formatResourceAddress(address) : "";
 
     let value2;
 

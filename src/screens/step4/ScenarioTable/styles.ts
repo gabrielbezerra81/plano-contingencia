@@ -40,6 +40,8 @@ export const Table = styled.table`
 
   .itemListing {
     display: inline-flex;
+    position: relative;
+    padding-right: 12px;
 
     > .custom-checkbox {
       margin-top: 0px;
@@ -74,6 +76,14 @@ export const Table = styled.table`
           border-color: #4f4f4f;
         }
       }
+    }
+
+    > button {
+      position: absolute;
+      right: 0;
+      align-self: center;
+      top: 0;
+      bottom: 0;
     }
   }
 `;

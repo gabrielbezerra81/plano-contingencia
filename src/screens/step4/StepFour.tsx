@@ -16,31 +16,30 @@ import { SuggestionList } from "./types";
 
 import { useTable } from "react-table";
 
-import _ from "lodash";
 import ScenarioTable, { TableHead } from "./ScenarioTable/ScenarioTable";
 import { useScenario } from "context/PlanData/scenarioContext";
 import { usePlanData } from "context/PlanData/planDataContext";
-import { Button } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { useSystem } from "context/System/systemContext";
+import ResponsibleModal from "./ResponsibleModal/ResponsibleModal";
 
 const StepFour: React.FC = () => {
   const { selectedTab } = useSystem();
 
-  const {
-    planData,
-    getSequenceId,
-    updateLocalPlanData,
-    updateAPIPlanData,
-  } = usePlanData();
+  const { planData, getSequenceId, updateLocalPlanData } = usePlanData();
 
   const {
-    previousScenariosList,
+    scenariosHistory,
     scenariosList,
     setScenariosList,
     scenarioTitle,
     setScenarioTitle,
     verifyIfPreviousScenariosHasValue,
-    setPreviousScenariosList,
+    setScenariosHistory,
+    checkedValues,
+    setCheckedValues,
+    setScenarioSaveEnabled,
+    scenarioSaveEnabled,
   } = useScenario();
 
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -49,6 +48,8 @@ const StepFour: React.FC = () => {
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [showMeasureModal, setShowMeasureModal] = useState(false);
   const [showResourceModal, setShowResourceModal] = useState(false);
+  const [showResponsibleModal, setShowResponsibleModal] = useState(false);
+  const [isUndoDisabled, setIsUndoDisabled] = useState(true);
 
   const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
 
@@ -70,9 +71,34 @@ const StepFour: React.FC = () => {
   );
 
   const handleUncheckAll = useCallback(() => {
-    setPreviousScenariosList([]);
+    setCheckedValues([]);
+  }, [setCheckedValues]);
+
+  const handleClearScenarios = useCallback(() => {
+    setScenariosHistory([]);
     setScenariosList([]);
-  }, [setPreviousScenariosList, setScenariosList]);
+    setCheckedValues([]);
+  }, [setScenariosHistory, setScenariosList, setCheckedValues]);
+
+  const undoLastChange = useCallback(() => {
+    const previousList = localStorage.getItem("previousScenariosList");
+    const previousHistory = localStorage.getItem("previousHistory");
+    const previousChecked = localStorage.getItem("previousCheckedValues");
+
+    if (previousList) {
+      setScenariosList(JSON.parse(previousList));
+    }
+
+    if (previousHistory) {
+      setScenariosHistory(JSON.parse(previousHistory));
+    }
+
+    if (previousChecked) {
+      setCheckedValues(JSON.parse(previousChecked));
+    }
+
+    setTimeout(() => setIsUndoDisabled(true), 500);
+  }, [setScenariosList, setScenariosHistory, setCheckedValues]);
 
   // Carregar Cobrade
   useEffect(() => {
@@ -99,16 +125,6 @@ const StepFour: React.FC = () => {
     loadSuggestions();
   }, [scenariosList]);
 
-  const sortedScenarioList = useMemo(() => {
-    return _.orderBy(scenariosList, [
-      "addressId",
-      "threat.cobrade",
-      "hypothese",
-      "risk.description",
-      "measure.description",
-    ]);
-  }, [scenariosList]);
-
   const columns: any[] = useMemo(() => {
     return [
       {
@@ -131,7 +147,7 @@ const StepFour: React.FC = () => {
             onClick={() => setShowThreatModal(true)}
           />
         ),
-        accessor: "threat.description",
+        accessor: "threat",
         enableRowSpan: true,
       },
       {
@@ -151,7 +167,7 @@ const StepFour: React.FC = () => {
             onClick={() => setShowRiskModal(true)}
           />
         ),
-        accessor: "risk.description",
+        accessor: "risk",
         enableRowSpan: true,
       },
       {
@@ -161,11 +177,16 @@ const StepFour: React.FC = () => {
             onClick={() => setShowMeasureModal(true)}
           />
         ),
-        accessor: "measure.description",
+        accessor: "measure",
         enableRowSpan: true,
       },
       {
-        Header: <TableHead title={"Responsáveis"} onClick={() => {}} />,
+        Header: (
+          <TableHead
+            title={"Responsáveis"}
+            onClick={() => setShowResponsibleModal(true)}
+          />
+        ),
         accessor: (row: any) => {
           if (!row.responsibles.length) {
             return "none";
@@ -194,7 +215,7 @@ const StepFour: React.FC = () => {
   const tableInstance = useTable(
     {
       columns,
-      data: sortedScenarioList,
+      data: scenariosList,
     },
     (hooks) => {
       hooks.useInstance.push(useRowSpan);
@@ -240,6 +261,10 @@ const StepFour: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldUpdatePlanData, selectedTab]);
 
+  useEffect(() => {
+    setIsUndoDisabled(false);
+  }, [scenariosList]);
+
   return (
     <>
       <Container>
@@ -254,23 +279,69 @@ const StepFour: React.FC = () => {
         <Button onClick={handleUncheckAll} className="darkBlueButton" size="sm">
           Desmarcar todos
         </Button>
+
+        <Button
+          style={{ marginLeft: 24 }}
+          onClick={undoLastChange}
+          className="darkBlueButton"
+          size="sm"
+          disabled={isUndoDisabled}
+        >
+          Desfazer última alteração
+        </Button>
+
+        <Button
+          style={{ marginLeft: 24 }}
+          onClick={handleClearScenarios}
+          className="darkBlueButton"
+          size="sm"
+        >
+          Limpar tudo
+        </Button>
       </Container>
 
-      <div style={{ marginTop: 100 }}>
-        <code>
-          Linhas add: {scenariosList.length}
+      <Form.Check
+        label="Salvar cenários"
+        checked={scenarioSaveEnabled}
+        onChange={() => setScenarioSaveEnabled((oldValue) => !oldValue)}
+      />
+
+      <div style={{ marginTop: 48 }}>
+        <div>
+          Linhas adicionadas: {scenariosList.length}
           <br />
+          {scenariosList.map((scenario, index) => (
+            <code key={index}>
+              {JSON.stringify(scenario)}
+              <br />
+              <br />
+            </code>
+          ))}
           <br />
-          {JSON.stringify(scenariosList)}
+        </div>
+        <div>
+          Linhas prev: {scenariosHistory.length}
           <br />
+          {scenariosHistory.map((prevScenario, index) => (
+            <code key={index}>
+              {JSON.stringify(prevScenario)}
+              <br />
+              <br />
+            </code>
+          ))}
+        </div>
+        <div>
           <br />
-        </code>
-        {/* <code>
-          Linhas prev: {previousScenariosList.length}
+          Checked:
           <br />
-          <br />
-          {JSON.stringify(previousScenariosList)}
-        </code> */}
+          {checkedValues.map((checkedValue, index) => (
+            <code key={index}>
+              {JSON.stringify(checkedValue)}
+              <br />
+              <br />
+            </code>
+          ))}
+        </div>
       </div>
 
       <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
@@ -292,6 +363,11 @@ const StepFour: React.FC = () => {
         show={showMeasureModal}
         setShow={setShowMeasureModal}
         suggestionList={suggestionList}
+      />
+
+      <ResponsibleModal
+        show={showResponsibleModal}
+        setShow={setShowResponsibleModal}
       />
 
       <ResourcesModal show={showResourceModal} setShow={setShowResourceModal} />
@@ -327,6 +403,7 @@ function useInstance(instance: any) {
         ...rowSpanHeaders,
         { id, topCellValue: null, topCellIndex: 0 },
       ];
+      
     }
   });
 

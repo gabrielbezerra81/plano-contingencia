@@ -24,7 +24,9 @@ export default function mapApiPlanToLocalPlan(apiPlan: Plano): PlanData {
   );
 
   plan.resources = apiPlan.recursos.map((recurso) => ({
-    address: mapEnderecoToAddress(recurso.endereco),
+    address: recurso.endereco
+      ? mapEnderecoToAddress(recurso.endereco)
+      : undefined,
     value1: recurso.valor1,
     value2: recurso.valor2,
     value3: recurso.valor3,
@@ -42,28 +44,34 @@ export default function mapApiPlanToLocalPlan(apiPlan: Plano): PlanData {
     })),
   }));
 
-  plan.scenarios = apiPlan.cenarios.map((cenario) => ({
-    id: cenario.id,
-    title: cenario.titulo,
-    addressId: cenario.enderecoId,
-    threat: {
-      cobrade: cenario.ameaca.cobrade,
-      description: cenario.ameaca.descricao,
-    },
-    hypothese: cenario.hipotese,
-    risk: {
-      id: cenario.risco.id,
-      description: cenario.risco.descricao,
-    },
-    measure: {
-      id: cenario.medida.id,
-      description: cenario.medida.descricao,
-    },
-    responsibles: cenario.responsaveis.map((responsavel) =>
-      mapMembroToLocalMember(responsavel),
-    ),
-    resourceId: cenario.recursoId,
-  }));
+  // plan.scenarios = apiPlan.cenarios.map((cenario) => ({
+  //   id: cenario.id,
+  //   title: cenario.titulo,
+  //   addressId: cenario.enderecoId,
+  //   threat: {
+  //     cobrade: cenario.ameaca.cobrade,
+  //     description: cenario.ameaca.descricao,
+  //     mergeKey: 0,
+  //   },
+  //   hypothese: { hypothese: cenario.hipotese, mergeKey: 0 },
+  //   risk: {
+  //     id: cenario.risco.id,
+  //     description: cenario.risco.descricao,
+  //     mergeKey: 0,
+  //   },
+  //   measure: {
+  //     id: cenario.medida.id,
+  //     description: cenario.medida.descricao,
+  //     mergeKey: 0,
+  //   },
+  //   responsibles: cenario.responsaveis.map((responsavel) =>
+  //     mapMembroToLocalMember(responsavel),
+  //   ),
+  //   resourceId: {
+  //     resourceId: cenario.recursoId,
+  //     mergeKey: 0,
+  //   },
+  // }));
 
   return plan;
 }

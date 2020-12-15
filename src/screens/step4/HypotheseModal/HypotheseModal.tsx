@@ -12,15 +12,20 @@ interface Props {
 }
 
 const HypotheseModal: React.FC<Props> = ({ show, setShow }) => {
-  const { setAddedHypotheses } = useScenario();
+  const { handleAddValueToScenario, generateMergeKey } = useScenario();
 
-  const [hypothese, setHypothese] = useState("");
+  const [hypothese, setHypothese] = useState("Hipotese ");
 
   const handleAddHypothese = useCallback(() => {
-    setAddedHypotheses((oldValues) => [...oldValues, hypothese]);
+    const hypotheseValue = {
+      hypothese,
+      mergeKey: generateMergeKey(),
+    };
+
+    handleAddValueToScenario({ attr: "hypothese", value: hypotheseValue });
 
     setShow(false);
-  }, [setShow, setAddedHypotheses, hypothese]);
+  }, [setShow, hypothese, handleAddValueToScenario, generateMergeKey]);
 
   return (
     <Modal show={show} centered onHide={() => setShow(false)}>
