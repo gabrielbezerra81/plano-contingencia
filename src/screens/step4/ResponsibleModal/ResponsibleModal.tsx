@@ -15,12 +15,11 @@ import Input from "shared/components/Input/Input";
 import peopleIcon from "assets/images/pessoas.png";
 
 import { FaSortDown, FaSortUp, FaSort } from "react-icons/fa";
-import AddToGroupModal from "shared/components/AddToGroupModal/AddToGroupModal";
-import { Member } from "types/Plan";
+import { Member, Responsible } from "types/Plan";
 import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { useScenario } from "context/PlanData/scenarioContext";
-import formatResourceAddress from "shared/utils/format/formatResourceAddress";
+import PeopleResourceModal from "shared/components/PeopleResourceModal/PeopleResourceModal";
 
 type ReducedMember = Omit<Member, "group" | "permission" | "personId">;
 
@@ -42,56 +41,59 @@ interface GlobalFilterProps {
 const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
   const { planData } = usePlanData();
 
-  const { verifyIfPreviousScenariosHasValue } = useScenario();
+  const {
+    verifyIfPreviousScenariosHasValue,
+    handleAddValueToScenario,
+  } = useScenario();
 
-  const [members] = useState<ReducedMember[]>([
-    {
-      id: "1",
-      name: "Francisco da Cunha",
-      role: "Secretário do Meio Ambiente",
-      phone: "(62) 91000-3210",
-      status: 0,
-    },
-    {
-      id: "2",
-      name: "Sandro Melos",
-      role: "Secretário Administrativo",
-      phone: "(61) 81893-0293",
-      status: 1,
-    },
-  ]);
+  const formattedResponsibles = useMemo(() => {
+    const responsibles: Responsible[] = [];
 
-  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+    planData.resources.forEach((resource) => {
+      resource.responsibles.forEach((responsible) => {
+        const alreadyIncluded = responsibles.some(
+          (includedItem) =>
+            `${includedItem.name} ${includedItem.role} ${includedItem.permission}` ===
+            `${responsible.name} ${responsible.role} ${responsible.permission}`,
+        );
 
-  const formattedResources = useMemo(() => {
-    return planData.resources.map((resource) => {
+        if (!alreadyIncluded) {
+          responsibles.push(responsible);
+        }
+      });
+    });
+
+    return responsibles.map((responsible) => {
       const checked = verifyIfPreviousScenariosHasValue(
-        "resourceId",
-        resource.id,
+        "responsibles",
+        `${responsible.name} ${responsible.role} ${responsible.permission}`,
       );
 
-      const formattedAddress = formatResourceAddress(resource.address);
-
-      let value2;
-
-      if (resource.type === "dinheiro" && resource.value2) {
-        value2 = "R$ " + resource.value2;
-      }
-
-      return {
-        ...resource,
-        formattedAddress,
-        checked,
-        formattedValue2: value2 ? value2 : undefined,
-      };
+      return { ...responsible, checked };
     });
   }, [planData.resources, verifyIfPreviousScenariosHasValue]);
 
-  const handleOpenAddToGroupModal = useCallback(() => {
-    setShowAddToGroupModal(true);
-  }, []);
+  const responsibles = useMemo(() => {
+    const resp: ReducedMember[] = [];
 
-  const handleInclude = useCallback(() => {}, []);
+    formattedResponsibles.forEach((item) => {
+      resp.push({
+        id: item.id,
+        name: item.name,
+        role: item.role,
+        phone: item.phone,
+        status: item.status,
+      });
+    });
+
+    return resp;
+  }, [formattedResponsibles]);
+
+  const [showPeopleResourceModal, setShowPeopleResourceModal] = useState(false);
+
+  const handleOpenPeopleResourceModal = useCallback(() => {
+    setShowPeopleResourceModal(true);
+  }, []);
 
   const columns: TableColumn[] = useMemo(
     () => [
@@ -125,7 +127,7 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
   } = useTable(
     {
       columns,
-      data: members,
+      data: responsibles,
     },
     useGlobalFilter,
     useSortBy,
@@ -151,10 +153,24 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
   );
 
   const {
-    // selectedFlatRows,
-    state: { globalFilter }, //selectedRowIds
+    selectedFlatRows,
+    state: { globalFilter },
     setGlobalFilter,
   }: any = tableProps;
+
+  const selectedValues: any[] = useMemo(
+    () => selectedFlatRows.map((item: any) => item.original),
+    [selectedFlatRows],
+  );
+
+  const handleIncludeValuesInScenario = useCallback(() => {
+    if (!selectedValues.length) {
+      alert("Selecione um responsável da tabela!");
+    }
+
+    handleAddValueToScenario({ attr: "responsibles", value: selectedValues });
+    setShow(false);
+  }, [selectedValues, handleAddValueToScenario, setShow]);
 
   return (
     <>
@@ -162,13 +178,13 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
         <ModalCloseButton setShow={setShow} />
         <Container>
           <header>
-            <button onClick={handleOpenAddToGroupModal}>
+            <button onClick={handleOpenPeopleResourceModal}>
               <img src={peopleIcon} alt="PESSOAL" />
               <span>PESSOAL</span>
             </button>
           </header>
           <div>
-            <Button onClick={handleOpenAddToGroupModal}>
+            <Button onClick={handleOpenPeopleResourceModal}>
               ADICIONAR MEMBRO
             </Button>
             <MembersContainer>
@@ -232,15 +248,18 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
               </table>
             </MembersContainer>
           </div>
-          <Button onClick={handleInclude} className="darkBlueButton">
+          <Button
+            onClick={handleIncludeValuesInScenario}
+            className="darkBlueButton"
+          >
             Incluir
           </Button>
         </Container>
       </Modal>
 
-      <AddToGroupModal
-        show={showAddToGroupModal}
-        setShow={setShowAddToGroupModal}
+      <PeopleResourceModal
+        show={showPeopleResourceModal}
+        setShow={setShowPeopleResourceModal}
       />
     </>
   );

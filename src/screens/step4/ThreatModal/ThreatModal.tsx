@@ -116,7 +116,7 @@ const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
           Adicionar
         </Button>
 
-        {/* <img src={cobradesImg} alt="" /> */}
+        <img src={cobradesImg} alt="" />
       </Container>
     </Modal>
   );

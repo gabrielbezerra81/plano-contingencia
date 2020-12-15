@@ -465,6 +465,18 @@ const ScenarioProvider: React.FC = ({ children }) => {
         const draft = [...oldScenarioList];
 
         if (attr === "responsibles") {
+          draft.forEach((scenario) => {
+            const isMeasureChecked = verifyIfIsChecked({
+              attr: "measure",
+              rowId: scenario.id,
+              compareMode: "rowId",
+              value: scenario.measure,
+            });
+
+            if (isMeasureChecked) {
+              scenario.responsibles.push(...value);
+            }
+          });
         } //
         else {
           for (const prevScenario of scenariosHistory) {

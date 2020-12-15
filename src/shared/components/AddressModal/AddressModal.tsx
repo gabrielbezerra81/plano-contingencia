@@ -60,7 +60,7 @@ const AddressModal: React.FC<Props> = ({
     complement: "",
     neighbor: "",
     city: "",
-    state: "",
+    state: "Goiás",
     refPoint: "",
     lat: "",
     long: "",

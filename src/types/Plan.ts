@@ -68,7 +68,7 @@ export type ResourceType =
 
 export interface Resource {
   id: string;
-  address: Address;
+  address?: Address;
   responsibles: Array<Responsible>;
   value1?: string;
   value2?: string;

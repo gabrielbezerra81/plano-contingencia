@@ -72,7 +72,7 @@ interface Responsavel {
 
 export interface Recurso {
   id: string;
-  endereco: Endereco;
+  endereco?: Endereco;
   responsaveis: Array<Responsavel>;
   valor1?: string;
   valor2?: string;

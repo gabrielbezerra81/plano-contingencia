@@ -66,27 +66,31 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
   }, [planData.resources, verifyIfPreviousScenariosHasValue]);
 
   const formattedResources = useMemo(() => {
-    return planData.resources.map((resource) => {
-      const checked = verifyIfPreviousScenariosHasValue(
-        "resourceId",
-        resource.id,
-      );
+    return planData.resources
+      .filter((resource) => resource.type !== "pessoa")
+      .map((resource) => {
+        const checked = verifyIfPreviousScenariosHasValue(
+          "resourceId",
+          resource.id,
+        );
 
-      const formattedAddress = formatResourceAddress(resource.address);
+        const formattedAddress = resource.address
+          ? formatResourceAddress(resource.address)
+          : "";
 
-      let value2;
+        let value2;
 
-      if (resource.type === "dinheiro" && resource.value2) {
-        value2 = "R$ " + resource.value2;
-      }
+        if (resource.type === "dinheiro" && resource.value2) {
+          value2 = "R$ " + resource.value2;
+        }
 
-      return {
-        ...resource,
-        formattedAddress,
-        checked,
-        formattedValue2: value2 ? value2 : undefined,
-      };
-    });
+        return {
+          ...resource,
+          formattedAddress,
+          checked,
+          formattedValue2: value2 ? value2 : undefined,
+        };
+      });
   }, [planData.resources, verifyIfPreviousScenariosHasValue]);
 
   const notCheckedLocations = useMemo(
@@ -99,8 +103,6 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
   }, [notCheckedLocations]);
 
   const notCheckedArray: any[] = Array(numberOfUncheckedRows).fill(1);
-
-  console.log(numberOfUncheckedRows);
 
   return (
     <Table {...getTableProps()}>
@@ -393,6 +395,36 @@ const TableCell: React.FC<TableCellProps> = ({
     return null;
   }, [cell.column.id, cell.value, row]);
 
+  const responsiblesCellContent = useMemo(() => {
+    if (cell.column.id === "responsibles") {
+      const ids = cell.value.split(" ");
+
+      console.log(cell.value);
+
+      if (!ids || !Array.isArray(ids)) {
+        return null;
+      }
+
+      return ids.map((responsibleId: string) => {
+        const responsible = formattedResponsibles.find(
+          (responsible) => responsible.id === responsibleId,
+        );
+
+        // if (!responsibleId) {
+        //   return "null id";
+        // }
+
+        if (!responsible) {
+          return null;
+        }
+
+        return <CellCheckableItem item={responsible} attr="responsibles" />;
+      });
+    }
+
+    return null;
+  }, [cell.column.id, cell.value, formattedResponsibles]);
+
   return (
     <>
       {!!addressFilter && null}
@@ -401,11 +433,12 @@ const TableCell: React.FC<TableCellProps> = ({
       {hypotheseCellContent}
       {riskCellContent}
       {measureCellContent}
+      {responsiblesCellContent}
+
       {/*
      
      
       
-      {responsiblesCellContent}
       {resourcesCellContent} */}
     </>
   );
@@ -514,7 +547,7 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
         disabled={props.disabled}
       />
       <ItemListingText included={props.checked}>{props.text}</ItemListingText>
-      <button
+      {/* <button
         onClick={() =>
           handleRemoveItem({
             attr,
@@ -525,7 +558,7 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
         }
       >
         <FiX color="red" size={12} />
-      </button>
+      </button> */}
     </div>
   );
 };

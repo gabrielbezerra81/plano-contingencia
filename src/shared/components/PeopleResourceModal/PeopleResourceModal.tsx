@@ -9,55 +9,59 @@ import Input from "shared/components/Input/Input";
 import addMemberImg from "assets/images/addMemberImg.png";
 
 import { Modal, Container } from "./styles";
-import AddUserModal from "../AddUserModal/AddUserModal";
 import { usePlanData } from "context/PlanData/planDataContext";
-import { Person } from "types/Plan";
+import { Resource, Responsible } from "types/Plan";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
+import api from "api/config";
+import { Pessoa } from "types/ModelsAPI";
 
 interface Props {
   show: boolean;
   setShow: (...data: any) => any;
 }
 
-const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
-  const { notIncludedPersons, addUserToWorkGroup } = usePlanData();
+const PeopleResourceModal: React.FC<Props> = ({ show, setShow }) => {
+  const { getSequenceId, addResource } = usePlanData();
 
   const [searchText, setSearchText] = useState("");
   const [debounceSearchText, setDebounceSearchText] = useState("");
-
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
 
   const [currentView, setCurrentView] = useState<
     "searchFound" | "notFound" | "none"
   >("none");
 
-  const [foundPerson, setFoundPerson] = useState<Person | undefined>(undefined);
+  const [responsible, setResponsible] = useState<Responsible | undefined>(
+    undefined,
+  );
 
   const [role, setRole] = useState("");
-  const [permission, setPermission] = useState("nenhuma");
-
-  const handleOpenAddUserModal = useCallback(() => {
-    setShowAddUserModal(true);
-  }, [setShowAddUserModal]);
+  const [permission, setPermission] = useState<
+    "editor" | "visualizar" | "nenhuma"
+  >("nenhuma");
 
   const handleSearch = useCallback(() => {}, []);
 
-  const handleAddToGroup = useCallback(async () => {
-    if (foundPerson) {
-      await addUserToWorkGroup({
-        ...foundPerson,
-        permission,
-        anotherRole: role,
-      });
-      setRole("");
-      setPermission("nenhuma");
+  const handleAddPeopleResource = useCallback(async () => {
+    if (responsible) {
+      const newResponsible: Responsible = { ...responsible, permission, role };
+
+      const id = await getSequenceId("recursos");
+
+      const resource: Resource = {
+        id,
+        responsibles: [newResponsible],
+        type: "pessoa",
+      };
+
+      await addResource(resource);
+
       setShow(false);
     }
-  }, [setShow, foundPerson, addUserToWorkGroup, permission, role]);
+  }, [setShow, responsible, permission, role, getSequenceId, addResource]);
 
   const onDebounceTextChange = useAsyncDebounce((value) => {
     setDebounceSearchText(value || "");
-  }, 250);
+  }, 350);
 
   const handleSearchTextChange = useCallback(
     (e) => {
@@ -68,45 +72,68 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
     [onDebounceTextChange],
   );
 
+  // Filtrar listagem de pessoas
   useEffect(() => {
-    const isEmailValid =
-      debounceSearchText.includes("@") && debounceSearchText.includes(".");
+    async function searchPerson() {
+      const isEmailValid =
+        debounceSearchText.includes("@") && debounceSearchText.includes(".");
 
-    const isPhoneValid =
-      /^[0-9]+$/.test(debounceSearchText) && debounceSearchText.length >= 8;
+      const isPhoneValid =
+        /^[0-9]+$/.test(debounceSearchText) && debounceSearchText.length >= 8;
 
-    if (debounceSearchText && (isEmailValid || isPhoneValid)) {
-      const person = notIncludedPersons.find((personItem) => {
-        const emailCondition = personItem.emails.some((email) =>
-          email.includes(debounceSearchText),
-        );
+      if (debounceSearchText && (isEmailValid || isPhoneValid)) {
+        try {
+          const response = await api.post("pessoas/find", debounceSearchText, {
+            headers: {
+              "Content-Type": "text/plain",
+            },
+          });
 
-        const phoneCondition = personItem.phones.some((phoneItem) => {
-          const phoneString = phoneItem.phone
-            .replace("-", "")
-            .replace(" ", "")
-            .replace("(", "")
-            .replace(")", "");
+          if (response.data && response.data.length) {
+            const id = await getSequenceId("membros");
 
-          return phoneString.includes(debounceSearchText);
-        });
+            let mainPhone = "";
 
-        return emailCondition || phoneCondition;
-      });
+            const person = response.data[0] as Pessoa;
 
-      if (person) {
-        setCurrentView("searchFound");
+            if (person.telefones && person.telefones.length) {
+              const phone = person.telefones.find(
+                (item) => item.prioridade === 1,
+              );
+
+              if (phone) {
+                mainPhone = phone.ddd_numero;
+              } //
+              else {
+                mainPhone = person.telefones[0].ddd_numero;
+              }
+            }
+
+            setCurrentView("searchFound");
+            setResponsible({
+              name: person.nome,
+              personId: person.id || "",
+              permission: "nenhuma",
+              role: "",
+              status: 0,
+              id,
+              phone: mainPhone,
+            });
+          } //
+          else {
+            setCurrentView("notFound");
+          }
+        } catch (error) {
+          setCurrentView("notFound");
+        }
       } //
       else {
-        setCurrentView("notFound");
+        setCurrentView("none");
       }
-
-      setFoundPerson(person);
-    } //
-    else {
-      setCurrentView("none");
     }
-  }, [debounceSearchText, notIncludedPersons]);
+
+    searchPerson();
+  }, [debounceSearchText, getSequenceId]);
 
   return (
     <>
@@ -118,7 +145,7 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
       >
         <ModalCloseButton setShow={setShow} />
         <Container>
-          <h6>ADICIONAR MEMBRO AO GRUPO DE TRABALHO</h6>
+          <h6>ADICIONAR RECURSO PESSOAL</h6>
           <img src={addMemberImg} alt="Membros" />
 
           <Input
@@ -132,14 +159,15 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
           />
 
           {currentView === "none" && (
-            <Button
-              className="darkBlueButton"
-              onClick={handleOpenAddUserModal}
-              size="sm"
-              style={{ marginTop: 16 }}
-            >
-              Adicionar novo usuário
-            </Button>
+            <>
+              {/* <Button
+                className="darkBlueButton"
+                size="sm"
+                style={{ marginTop: 16 }}
+              >
+                Adicionar novo usuário
+              </Button> */}
+            </>
           )}
 
           {currentView === "notFound" && (
@@ -149,11 +177,7 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
                 telefone.
               </small>
               <div>
-                <Button
-                  className="darkBlueButton"
-                  onClick={handleOpenAddUserModal}
-                  size="sm"
-                >
+                <Button className="darkBlueButton" size="sm">
                   Adicionar novo usuário
                 </Button>
                 <Button
@@ -177,7 +201,7 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
                 containerClass="foundUserInput"
                 labelOnInput={"Nome: "}
                 borderBottomOnly
-                value={foundPerson ? foundPerson.name : ""}
+                value={responsible ? responsible.name : ""}
               />
               <div className="inputRowGroup">
                 <Input
@@ -192,7 +216,7 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
                   labelOnInput={"Permissão: "}
                   borderBottomOnly
                   as="select"
-                  onChange={(e) => setPermission(e.target.value)}
+                  onChange={(e) => setPermission(e.target.value as any)}
                   value={permission}
                 >
                   <option value="editor">Editor</option>
@@ -202,7 +226,7 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
               </div>
               <Button
                 className="darkBlueButton"
-                onClick={handleAddToGroup}
+                onClick={handleAddPeopleResource}
                 size="sm"
               >
                 Adicionar
@@ -211,13 +235,8 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
           )}
         </Container>
       </Modal>
-      <AddUserModal
-        show={showAddUserModal}
-        setShow={setShowAddUserModal}
-        setShowAddToGroupModal={setShow}
-      />
     </>
   );
 };
 
-export default AddToGroupModal;
+export default PeopleResourceModal;

@@ -49,7 +49,9 @@ export default function mapPlanToAPIPayload(planData: PlanData) {
 
   payload.recursos = planData.resources.map((resource) => ({
     id: resource.id,
-    endereco: mapAddressToEndereco(resource.address),
+    endereco: resource.address
+      ? mapAddressToEndereco(resource.address)
+      : undefined,
     valor1: resource.value1,
     valor2: resource.value2,
     valor3: resource.value3,

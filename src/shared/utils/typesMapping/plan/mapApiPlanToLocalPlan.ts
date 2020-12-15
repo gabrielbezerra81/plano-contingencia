@@ -24,7 +24,9 @@ export default function mapApiPlanToLocalPlan(apiPlan: Plano): PlanData {
   );
 
   plan.resources = apiPlan.recursos.map((recurso) => ({
-    address: mapEnderecoToAddress(recurso.endereco),
+    address: recurso.endereco
+      ? mapEnderecoToAddress(recurso.endereco)
+      : undefined,
     value1: recurso.valor1,
     value2: recurso.valor2,
     value3: recurso.valor3,
