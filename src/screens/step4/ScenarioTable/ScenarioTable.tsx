@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import { usePlanData } from "context/PlanData/planDataContext";
 import { useScenario } from "context/Scenario/scenarioContext";
 import React, { useMemo, useState } from "react";
@@ -576,18 +577,20 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
         disabled={props.disabled}
       />
       <ItemListingText included={props.checked}>{props.text}</ItemListingText>
-      <button
-        onClick={() =>
-          handleRemoveItem({
-            attr,
-            value: props.value,
-            rowId,
-            rowIndex: row?.index,
-          })
-        }
-      >
-        <FiX color="red" size={12} />
-      </button>
+      {location.hostname === "localhost" && (
+        <button
+          onClick={() =>
+            handleRemoveItem({
+              attr,
+              value: props.value,
+              rowId,
+              rowIndex: row?.index,
+            })
+          }
+        >
+          <FiX color="red" size={12} />
+        </button>
+      )}
     </div>
   );
 };

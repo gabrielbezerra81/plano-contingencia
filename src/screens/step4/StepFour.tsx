@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import api from "api/config";
 import produce from "immer";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -306,44 +307,46 @@ const StepFour: React.FC = () => {
         onChange={() => setScenarioSaveEnabled((oldValue) => !oldValue)}
       />
 
-      <div style={{ marginTop: 48 }}>
-        <div>
-          Linhas adicionadas: {scenariosList.length}
-          <br />
-          {scenariosList.map((scenario, index) => (
-            <code key={index}>
-              {JSON.stringify(scenario)}
-              <br />
-              <br />
-            </code>
-          ))}
-          <br />
+      {location.hostname === "localhost" && (
+        <div style={{ marginTop: 48 }}>
+          <div>
+            Linhas adicionadas: {scenariosList.length}
+            <br />
+            {scenariosList.map((scenario, index) => (
+              <code key={index}>
+                {JSON.stringify(scenario)}
+                <br />
+                <br />
+              </code>
+            ))}
+            <br />
+          </div>
+          <div>
+            Linhas prev: {scenariosHistory.length}
+            <br />
+            {scenariosHistory.map((prevScenario, index) => (
+              <code key={index}>
+                {JSON.stringify(prevScenario)}
+                <br />
+                <br />
+              </code>
+            ))}
+          </div>
+          <div>
+            <br />
+            Checked:
+            <br />
+            {checkedValues.map((checkedValue, index) => (
+              <code key={index}>
+                {JSON.stringify(checkedValue)}
+                <br />
+                <br />
+              </code>
+            ))}
+          </div>
         </div>
-        <div>
-          Linhas prev: {scenariosHistory.length}
-          <br />
-          {scenariosHistory.map((prevScenario, index) => (
-            <code key={index}>
-              {JSON.stringify(prevScenario)}
-              <br />
-              <br />
-            </code>
-          ))}
-        </div>
-        <div>
-          <br />
-          Checked:
-          <br />
-          {checkedValues.map((checkedValue, index) => (
-            <code key={index}>
-              {JSON.stringify(checkedValue)}
-              <br />
-              <br />
-            </code>
-          ))}
-        </div>
-      </div>
-
+      )}
+      
       <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
 
       <ThreatModal show={showThreatModal} setShow={setShowThreatModal} />
