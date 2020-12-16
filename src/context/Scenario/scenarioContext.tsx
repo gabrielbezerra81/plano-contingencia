@@ -13,10 +13,8 @@ import {
   AddInitialScenarioLines,
   CheckedValue,
   GetIndexesForMergedLines,
-  HandleAddValueToScenario,
   HandleRemoveItem,
   ScenarioContextData,
-  DuplicateCheckedValuesWhenAddingLine,
 } from "./types";
 
 import { Scenario } from "types/Plan";
@@ -50,6 +48,11 @@ const emptyScenario: Scenario = {
   threat: { cobrade: "", description: "", mergeKey: 0 },
   title: "",
 };
+
+interface RemoveCheckedValues {
+  attrKeys: Array<string>;
+  rowId: string;
+}
 
 const ScenarioProvider: React.FC = ({ children }) => {
   const [scenarioSaveEnabled, setScenarioSaveEnabled] = useState(false);
@@ -167,82 +170,99 @@ const ScenarioProvider: React.FC = ({ children }) => {
     [scenariosHistory],
   );
 
-  const filterScenariosList = useCallback(
-    ({ list, attr, value, rowId, responsiblesMergeKey }: any) => {
-      const compareValue = getAttrCompareValue(attr, value);
+  const removeCheckedValues = useCallback(
+    ({ attrKeys, rowId }: RemoveCheckedValues) => {
+      // console.log(rowId, attrKeys);
+      setCheckedValues((oldValues) => {
+        const filterIndexes: number[] = [];
 
-      if (attr === "responsibles") {
-        list.forEach((scenario: Scenario) => {
-          scenario.responsibles = scenario.responsibles.filter(
-            (responsible) => {
-              const isValueEqual =
-                `${responsible.name} ${responsible.role} ${responsible.permission}` ===
-                compareValue;
-
-              if (rowId) {
-                const isRowIdEqual = scenario.id === rowId;
-
-                return !(isValueEqual && isRowIdEqual);
-              }
-
-              if (responsiblesMergeKey) {
-                const isRowMergeKeysEqual =
-                  scenario.responsiblesMergeKey === responsiblesMergeKey;
-
-                return !(isValueEqual && isRowMergeKeysEqual);
-              }
-
-              return true;
-            },
-          );
-        });
-        return list;
-      } //
-      else {
-        // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
-        const filtered = list.filter((scenario: Scenario) => {
-          switch (attr) {
-            case "addressId":
-              return scenario.addressId !== compareValue;
-            case "threat":
-              return scenario.threat.cobrade !== compareValue;
-            case "hypothese":
-              return scenario.hypothese.hypothese !== compareValue;
-            case "risk":
-              return scenario.risk.description !== compareValue;
-            case "measure":
-              return scenario.measure.description !== compareValue;
-            case "resourceId":
-              return scenario.resourceId.resourceId !== compareValue;
-            default:
-              return true;
-          }
-        });
-
-        // Se a coluna tiver so 1 item selecionado, a lista não será filtrada para não  zerar a quantidade de linhas
-        // e sim o campo vai ser atribuido a "". Isto não vale para o campo de endereço que é a primeira coluna.
-        if (filtered.length === 0 && attr !== "addressId") {
-          list.forEach((scenario: Scenario) => {
+        const updatedValues = produce(oldValues, (draft) => {
+          draft.forEach((checkedItem, index) => {
             if (
-              ["threat", "hypothese", "risk", "measure", "resourceId"].includes(
-                attr,
-              )
+              attrKeys.includes(checkedItem.attr) &&
+              checkedItem.rowId === rowId
             ) {
-              const column: any = scenario[attr as keyof Scenario];
-              Object.keys(column).forEach((key: any) => {
-                Object.assign(column, { [key]: "" });
-              });
+              filterIndexes.push(index);
             }
           });
 
-          return list;
-        } //
-        else {
-          return filtered;
+          return draft.filter((_, index) => !filterIndexes.includes(index));
+        });
+
+        return updatedValues;
+      });
+    },
+    [],
+  );
+
+  const filterScenariosList = useCallback(
+    ({ list, attr, value, rowId, responsiblesMergeKey }: any): any => {
+      const compareValue = getAttrCompareValue(attr, value);
+
+      const omitions: Array<keyof Scenario> = ["id", "title", "addressId"];
+
+      let lineCopy: Scenario | null = null;
+
+      // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
+      const filtered: any[] = list.filter((scenario: Scenario) => {
+        let shouldKeepLine = true;
+
+        switch (attr) {
+          case "threat":
+            shouldKeepLine = scenario.threat.cobrade !== compareValue;
+            break;
+          case "hypothese":
+            omitions.push("threat");
+            shouldKeepLine = scenario.hypothese.hypothese !== compareValue;
+            break;
+          case "risk":
+            omitions.push("threat", "hypothese");
+            shouldKeepLine = scenario.risk.description !== compareValue;
+            break;
+          case "measure":
+            omitions.push("threat", "hypothese", "risk");
+            shouldKeepLine = scenario.measure.description !== compareValue;
+            break;
+          case "resourceId":
+            shouldKeepLine = scenario.resourceId.resourceId !== compareValue;
+            break;
+          default:
+            return shouldKeepLine;
         }
+
+        if (!shouldKeepLine && !lineCopy) {
+          lineCopy = scenario;
+        } //
+
+        if (!shouldKeepLine) {
+          const attrKeys = Object.keys(scenario).filter(
+            (key) => !omitions.includes(key as any),
+          );
+          // console.log(attrKeys);
+          removeCheckedValues({
+            attrKeys: [...attrKeys],
+            rowId: scenario.id || "",
+          });
+        }
+
+        return shouldKeepLine;
+      });
+
+      if (filtered.length === 0 && lineCopy) {
+        const replaceData = _.omit(emptyScenario, omitions);
+
+        if (_.isEqual(lineCopy[attr as keyof Scenario], value)) {
+          Object.assign(lineCopy, { ...replaceData });
+        }
+
+        list.splice(0);
+        list.push(lineCopy);
+      } //
+      else {
+        return filtered;
       }
     },
-    [getAttrCompareValue],
+    [getAttrCompareValue, removeCheckedValues],
   );
 
   const handleRemoveAddressOrResponsible = useCallback(
@@ -305,13 +325,21 @@ const ScenarioProvider: React.FC = ({ children }) => {
           }
         } //
         else {
+          const history = filterScenariosList({
+            list: historyDraft,
+            attr,
+            value,
+            rowId,
+          });
+
+          if (history) {
+            return history;
+          }
         }
       });
 
       const updatedScenariosList = produce(sortedScenarioList, (draft) => {
         if (rowIndex || rowIndex === 0) {
-          const excludedKeys = ["id", "title"];
-
           const { responsiblesMergeKey } = draft[rowIndex];
 
           if (["addressId", "responsibles"].includes(attr)) {
@@ -327,6 +355,16 @@ const ScenarioProvider: React.FC = ({ children }) => {
             }
           } //
           else {
+            const filtered = filterScenariosList({
+              list: draft,
+              attr,
+              value,
+              responsiblesMergeKey,
+            });
+
+            if (filtered) {
+              return filtered;
+            }
           }
         }
       });
@@ -339,6 +377,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
       savePreviousState,
       handleRemoveAddressOrResponsible,
       scenariosHistory,
+      filterScenariosList,
     ],
   );
 
@@ -641,3 +680,25 @@ export const useScenario = () => {
 
   return context;
 };
+
+// Se a coluna tiver so 1 item selecionado, a lista não será filtrada para não  zerar a quantidade de linhas
+// e sim o campo vai ser atribuido a "". Isto não vale para o campo de endereço que é a primeira coluna.
+// if (filtered.length === 0) {
+//   list.forEach((scenario: Scenario) => {
+//     if (
+//       ["threat", "hypothese", "risk", "measure", "resourceId"].includes(
+//         attr,
+//       )
+//     ) {
+//       const column: any = scenario[attr as keyof Scenario];
+//       Object.keys(column).forEach((key: any) => {
+//         Object.assign(column, { [key]: "" });
+//       });
+//     }
+//   });
+
+//   return list;
+// } //
+// else {
+//   return filtered;
+// }
