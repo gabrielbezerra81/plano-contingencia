@@ -75,7 +75,7 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
   }, [planData.resources, verifyIfScenariosHistoryHasValue]);
 
   const responsibles = useMemo(() => {
-    const resp: ReducedMember[] = [];
+    const resp: Member[] = [];
 
     formattedResponsibles.forEach((item) => {
       resp.push({
@@ -84,6 +84,8 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
         role: item.role,
         phone: item.phone,
         status: item.status,
+        permission: item.permission,
+        personId: item.personId,
       });
     });
 
