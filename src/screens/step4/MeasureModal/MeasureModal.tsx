@@ -1,4 +1,4 @@
-import { useScenario } from "context/Scenario/scenarioContext";
+import { useAddScenario } from "context/Scenario/addScenarioContext";
 import React, { useCallback, useMemo, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
@@ -15,7 +15,7 @@ interface Props {
 }
 
 const MeasureModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
-  const { handleAddValueToScenario, generateMergeKey } = useScenario();
+  const { handleAddValueToScenario, generateMergeKey } = useAddScenario();
 
   const [measure, setMeasure] = useState<Partial<Measure>>({
     id: "",

@@ -1,4 +1,4 @@
-import { useScenario } from "context/Scenario/scenarioContext";
+import { useAddScenario } from "context/Scenario/addScenarioContext";
 import React, { useCallback, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
@@ -12,7 +12,7 @@ interface Props {
 }
 
 const HypotheseModal: React.FC<Props> = ({ show, setShow }) => {
-  const { handleAddValueToScenario, generateMergeKey } = useScenario();
+  const { handleAddValueToScenario, generateMergeKey } = useAddScenario();
 
   const [hypothese, setHypothese] = useState("Hipotese ");
 

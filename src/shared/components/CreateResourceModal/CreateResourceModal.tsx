@@ -25,7 +25,7 @@ import formatResources from "shared/utils/format/formatResources";
 import NumberInput from "../NumberInput/NumberInput";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 import AddResponsibleModal from "../AddResponsibleModal/AddResponsibleModal";
-import { useScenario } from "context/Scenario/scenarioContext";
+import { useAddScenario } from "context/Scenario/addScenarioContext";
 
 interface Props {
   show: boolean;
@@ -60,7 +60,7 @@ const emptyResource: Resource = {
 const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
   const { planData, addResource } = usePlanData();
 
-  const { handleAddValueToScenario, generateMergeKey } = useScenario();
+  const { handleAddValueToScenario, generateMergeKey } = useAddScenario();
 
   const [activeKey, setActiveKey] = useState<string | null>("0");
 

@@ -7,7 +7,7 @@ import cobradesImg from "assets/images/cobrades3.png";
 import { Modal, Container } from "./styles";
 import Input from "shared/components/Input/Input";
 import api from "api/config";
-import { useScenario } from "context/Scenario/scenarioContext";
+import { useAddScenario } from "context/Scenario/addScenarioContext";
 
 interface Props {
   show: boolean;
@@ -27,7 +27,7 @@ interface Cobrade {
 }
 
 const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
-  const { handleAddValueToScenario, generateMergeKey } = useScenario();
+  const { handleAddValueToScenario, generateMergeKey } = useAddScenario();
 
   const [cobrades, setCobrades] = useState<Cobrade[]>([]);
 

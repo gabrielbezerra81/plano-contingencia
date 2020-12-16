@@ -20,6 +20,7 @@ import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButto
 import { usePlanData } from "context/PlanData/planDataContext";
 import { useScenario } from "context/Scenario/scenarioContext";
 import PeopleResourceModal from "shared/components/PeopleResourceModal/PeopleResourceModal";
+import { useAddScenario } from "context/Scenario/addScenarioContext";
 
 type ReducedMember = Omit<Member, "group" | "permission" | "personId">;
 
@@ -41,11 +42,9 @@ interface GlobalFilterProps {
 const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
   const { planData } = usePlanData();
 
-  const {
-    verifyIfScenariosHistoryHasValue,
-    handleAddValueToScenario,
-    generateMergeKey,
-  } = useScenario();
+  const { verifyIfScenariosHistoryHasValue } = useScenario();
+
+  const { handleAddValueToScenario, generateMergeKey } = useAddScenario();
 
   const formattedResponsibles = useMemo(() => {
     const responsibles: Responsible[] = [];

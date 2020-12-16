@@ -22,17 +22,16 @@ export interface ScenarioContextData {
     measure: boolean;
     responsible: boolean;
   };
-  handleAddValueToScenario: (data: HandleAddValueToScenario) => any;
   verifyIfIsChecked: (data: VerifyIfIsChecked) => boolean;
   scenarioSaveEnabled: boolean;
   setScenarioSaveEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-  generateMergeKey: () => number;
   handleRemoveItem: ({
     attr,
     value,
     rowId,
     rowIndex,
   }: HandleRemoveItem) => void;
+  savePreviousState: () => any;
 }
 
 export interface CheckedValue {
