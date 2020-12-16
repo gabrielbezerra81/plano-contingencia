@@ -243,6 +243,8 @@ const ScenarioProvider: React.FC = ({ children }) => {
               });
             }
           });
+
+          return list;
         } //
         else {
           return filtered;
@@ -252,11 +254,68 @@ const ScenarioProvider: React.FC = ({ children }) => {
     [getAttrCompareValue],
   );
 
+  const handleRemoveAddressOrResponsible = useCallback(
+    ({ list, attr, value, rowId, responsiblesMergeKey }: any) => {
+      const compareValue = getAttrCompareValue(attr, value);
+
+      if (attr === "responsibles") {
+        list.forEach((scenario: Scenario) => {
+          scenario.responsibles = scenario.responsibles.filter(
+            (responsible) => {
+              const isValueEqual =
+                `${responsible.name} ${responsible.role} ${responsible.permission}` ===
+                compareValue;
+
+              if (rowId) {
+                const isRowIdEqual = scenario.id === rowId;
+
+                return !(isValueEqual && isRowIdEqual);
+              }
+
+              if (responsiblesMergeKey) {
+                const isRowMergeKeysEqual =
+                  scenario.responsiblesMergeKey === responsiblesMergeKey;
+
+                return !(isValueEqual && isRowMergeKeysEqual);
+              }
+
+              return true;
+            },
+          );
+        });
+        return list;
+      } //
+      else if (attr === "addressId") {
+        // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
+        const filtered = list.filter((scenario: Scenario) => {
+          return scenario.addressId !== compareValue;
+        });
+        return filtered;
+      }
+    },
+    [getAttrCompareValue],
+  );
+
   const handleRemoveItem = useCallback(
     ({ attr, value, rowId, rowIndex }: HandleRemoveItem) => {
       savePreviousState();
 
-      console.log(rowIndex);
+      const updatedHistory = produce(scenariosHistory, (historyDraft) => {
+        if (["addressId", "responsibles"].includes(attr)) {
+          const history = handleRemoveAddressOrResponsible({
+            list: historyDraft,
+            attr,
+            value,
+            rowId,
+          });
+
+          if (history) {
+            return history;
+          }
+        } //
+        else {
+        }
+      });
 
       const updatedScenariosList = produce(sortedScenarioList, (draft) => {
         if (rowIndex || rowIndex === 0) {
@@ -264,31 +323,32 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
           const { responsiblesMergeKey } = draft[rowIndex];
 
-          setScenariosHistory((oldHistory) =>
-            filterScenariosList({
-              list: oldHistory,
+          if (["addressId", "responsibles"].includes(attr)) {
+            const filtered = handleRemoveAddressOrResponsible({
+              list: draft,
               attr,
               value,
-              rowId,
-            }),
-          );
+              responsiblesMergeKey,
+            });
 
-          const filtered = filterScenariosList({
-            list: draft,
-            attr,
-            value,
-            responsiblesMergeKey,
-          });
-
-          if (filtered) {
-            return filtered;
+            if (filtered) {
+              return filtered;
+            }
+          } //
+          else {
           }
         }
       });
 
+      setScenariosHistory(updatedHistory);
       setScenariosList(updatedScenariosList);
     },
-    [sortedScenarioList, savePreviousState, filterScenariosList],
+    [
+      sortedScenarioList,
+      savePreviousState,
+      handleRemoveAddressOrResponsible,
+      scenariosHistory,
+    ],
   );
 
   const getIndexesForMergedLines = useCallback(
@@ -521,18 +581,23 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
   const duplicateCheckedValuesWhenAddingLine = useCallback(
     ({ rowId, newRowId }: DuplicateCheckedValuesWhenAddingLine) => {
-      const updatedCheckedValues = produce(checkedValues, (draft) => {
-        draft.forEach((checkedItem) => {
-          if (checkedItem.rowId === rowId) {
-            const newItem = { ...checkedItem, rowId: newRowId };
-            draft.push(newItem);
-          }
+      setCheckedValues((oldCheckedValues) => {
+        return produce(oldCheckedValues, (draft) => {
+          const itemsToAdd: CheckedValue[] = [];
+
+          draft.forEach((checkedItem) => {
+            if (checkedItem.rowId === rowId) {
+              console.log(checkedItem.rowId, newRowId);
+              const newItem = { ...checkedItem, rowId: newRowId };
+              itemsToAdd.push(newItem);
+            }
+          });
+
+          draft.push(...itemsToAdd);
         });
       });
-
-      setCheckedValues(updatedCheckedValues);
     },
-    [checkedValues],
+    [],
   );
 
   const handleAddValueToScenario = useCallback(
@@ -668,6 +733,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
                 responsibles: newLineResponsibles,
                 responsiblesMergeKey: newLineResponsiblesMergeKey,
               });
+
               duplicateCheckedValuesWhenAddingLine({
                 rowId: prevScenario.id || "",
                 newRowId: newLineId,
