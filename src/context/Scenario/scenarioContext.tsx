@@ -509,7 +509,8 @@ const ScenarioProvider: React.FC = ({ children }) => {
             });
 
             if (isMeasureChecked) {
-              scenario.responsibles.push(...value);
+              scenario.responsiblesMergeKey = value.mergeKey;
+              scenario.responsibles.push(...value.responsibles);
             }
           });
 
@@ -573,6 +574,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
           if (shouldChangeAttrInLine && isPreviousColumnChecked) {
             let newLineId: any;
             let newLineResponsibles: any[] = [];
+            let newLineResponsiblesMergeKey = undefined;
 
             // Procurar cenário que está com o atributo atual vazio
             const scenarioItem = draft.find((scenario) => {
@@ -600,6 +602,8 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
               if (correspondentLine) {
                 newLineResponsibles = correspondentLine.responsibles;
+                newLineResponsiblesMergeKey =
+                  correspondentLine.responsiblesMergeKey;
               }
             } //
             // Se encontrar um com o atributo vazio, preenche o valor dessa linha. O atributo da linha do prev e da linha atual precisam
@@ -608,7 +612,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
               scenarioItem &&
               _.isEqual(scenarioItem[previousAttr], prevScenario[previousAttr])
             ) {
-              scenarioItem[attr] = value;
+              Object.assign(scenarioItem, { [attr]: value });
               newLineId = scenarioItem.id;
             } // Caso contrario, será criada uma nova linha com o nvo valor marcado
             else {
@@ -619,6 +623,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
                 title: scenarioTitle,
                 id: newLineId,
                 responsibles: newLineResponsibles,
+                responsiblesMergeKey: newLineResponsiblesMergeKey,
               });
             }
 

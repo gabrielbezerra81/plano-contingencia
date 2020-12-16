@@ -44,6 +44,7 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
   const {
     verifyIfScenariosHistoryHasValue,
     handleAddValueToScenario,
+    generateMergeKey,
   } = useScenario();
 
   const formattedResponsibles = useMemo(() => {
@@ -168,9 +169,17 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
       alert("Selecione um responsável da tabela!");
     }
 
-    handleAddValueToScenario({ attr: "responsibles", value: selectedValues });
+    const responsiblesValue = {
+      responsibles: selectedValues,
+      mergeKey: generateMergeKey(),
+    };
+
+    handleAddValueToScenario({
+      attr: "responsibles",
+      value: responsiblesValue,
+    });
     setShow(false);
-  }, [selectedValues, handleAddValueToScenario, setShow]);
+  }, [selectedValues, handleAddValueToScenario, setShow, generateMergeKey]);
 
   return (
     <>

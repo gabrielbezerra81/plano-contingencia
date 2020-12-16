@@ -124,18 +124,25 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
             let cell = row.allCells[j] as any;
             let column = cell.column as any;
 
-            let isValueDiff = true;
+            let isValueDiff = null;
 
-            if (typeof cell.value === "object" && column.topCellValue) {
-              if (cell.value.mergeKey && column.topCellValue.mergeKey) {
-                isValueDiff =
-                  cell.value.mergeKey !== column.topCellValue.mergeKey;
+            if (column.topCellValue) {
+              if (cell.column.id === "responsibles" && i > 0) {
+                const mergeKey = row.original.responsiblesMergeKey;
+                const topMergeKey = rows[i - 1].original.responsiblesMergeKey;
+                isValueDiff = mergeKey !== topMergeKey;
               } //
-              else {
-                isValueDiff = column.topCellValue !== cell.value;
+              else if (typeof cell.value === "object") {
+                if (cell.value.mergeKey && column.topCellValue.mergeKey) {
+                  isValueDiff =
+                    cell.value.mergeKey !== column.topCellValue.mergeKey;
+                } //
+                else {
+                  isValueDiff = column.topCellValue !== cell.value;
+                }
               }
             } //
-            else {
+            if (isValueDiff === null) {
               isValueDiff = column.topCellValue !== cell.value;
             }
             if (column.enableRowSpan) {

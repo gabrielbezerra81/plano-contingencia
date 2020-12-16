@@ -114,6 +114,7 @@ export interface Scenario {
   responsibles: Array<Responsible>;
   risk: Risk;
   threat: Threat;
+  responsiblesMergeKey?: number;
 }
 
 export interface PlanData {

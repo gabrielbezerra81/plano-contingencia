@@ -306,7 +306,7 @@ const StepFour: React.FC = () => {
         onChange={() => setScenarioSaveEnabled((oldValue) => !oldValue)}
       />
 
-      {/* <div style={{ marginTop: 48 }}>
+      <div style={{ marginTop: 48 }}>
         <div>
           Linhas adicionadas: {scenariosList.length}
           <br />
@@ -342,7 +342,7 @@ const StepFour: React.FC = () => {
             </code>
           ))}
         </div>
-      </div> */}
+      </div>
 
       <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
 
