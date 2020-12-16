@@ -364,8 +364,14 @@ const ScenarioProvider: React.FC = ({ children }) => {
         let shouldPushNextAndContinue = false;
 
         if (curr && typeof curr[attr] === "object") {
-          shouldPushNextAndContinue =
-            next && curr[attr].mergeKey === next[attr].mergeKey;
+          if (attr === "responsibles") {
+            shouldPushNextAndContinue =
+              next && curr.responsibleMergeKey === next.responsibleMergeKey;
+          } //
+          else {
+            shouldPushNextAndContinue =
+              next && curr[attr].mergeKey === next[attr].mergeKey;
+          }
 
           if (isAdding) {
             indexes.push(index);
@@ -482,16 +488,13 @@ const ScenarioProvider: React.FC = ({ children }) => {
         else if (rowIndex || rowIndex === 0) {
           let isAdding = checkedIndex === -1;
 
-          let attrToCheckMergedLines = attr;
-
           if (attr === "responsibles") {
             isAdding = true;
-            attrToCheckMergedLines = "measure";
           }
 
           // indices das linhas mescladas ou indices do CheckedValues
           const indexes = getIndexesForMergedLines({
-            attr: attrToCheckMergedLines,
+            attr,
             isAdding,
             startIndex: rowIndex,
           });
