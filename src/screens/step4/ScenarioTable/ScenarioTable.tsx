@@ -410,7 +410,7 @@ const TableCell: React.FC<TableCellProps> = ({
         return null;
       }
 
-      return ids.map((responsibleId: string) => {
+      return ids.map((responsibleId: string, index) => {
         const responsible = formattedResponsibles.find(
           (responsible) => responsible.id === responsibleId,
         );
@@ -424,7 +424,12 @@ const TableCell: React.FC<TableCellProps> = ({
         }
 
         return (
-          <CellCheckableItem row={row} item={responsible} attr="responsibles" />
+          <CellCheckableItem
+            key={index}
+            row={row}
+            item={responsible}
+            attr="responsibles"
+          />
         );
       });
     }
@@ -445,13 +450,14 @@ const TableCell: React.FC<TableCellProps> = ({
       return (
         <CellCheckableItem
           item={{ ...resource, mergeKey: cell.value.mergeKey }}
+          row={row}
           attr="resourceId"
         />
       );
     }
 
     return null;
-  }, [cell.column.id, cell.value, formattedResources]);
+  }, [cell.column.id, cell.value, formattedResources, row]);
 
   return (
     <>
@@ -533,7 +539,7 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
         break;
       case "resourceId":
         props.text = item.formattedValue2 || item.value1;
-        props.value = item.id;
+        props.value = { resourceId: item.id, mergeKey: item.mergeKey } as any;
         break;
       default:
         break;
@@ -570,7 +576,7 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
         disabled={props.disabled}
       />
       <ItemListingText included={props.checked}>{props.text}</ItemListingText>
-      {/* <button
+      <button
         onClick={() =>
           handleRemoveItem({
             attr,
@@ -581,7 +587,7 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
         }
       >
         <FiX color="red" size={12} />
-      </button> */}
+      </button>
     </div>
   );
 };

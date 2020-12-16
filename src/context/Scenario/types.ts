@@ -78,3 +78,8 @@ export interface AddInitialScenarioLines {
   value: any;
   rowId: string;
 }
+
+export interface DuplicateCheckedValuesWhenAddingLine {
+  rowId: string;
+  newRowId: string;
+}
