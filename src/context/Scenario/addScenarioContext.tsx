@@ -65,7 +65,6 @@ const AddScenarioProvider: React.FC = ({ children }) => {
 
           draft.forEach((checkedItem) => {
             if (checkedItem.rowId === rowId) {
-              console.log(checkedItem.rowId, newRowId);
               const newItem = { ...checkedItem, rowId: newRowId };
               itemsToAdd.push(newItem);
             }
@@ -147,6 +146,8 @@ const AddScenarioProvider: React.FC = ({ children }) => {
                 break;
             }
 
+            // Verificação por rowId individualiza as linhas. Celulas em linhas separadas podem ter o mesmo mergeKey se tiver ocorrido duplicação
+            // E para conseguir adicionar um valor na coluna seguinte para apenas um desses itens de mesmo mergeKey, só é possivel usando o rowId
             isPreviousColumnChecked = verifyIfIsChecked({
               attr: previousAttr as any,
               value: prevScenario[previousAttr as keyof Scenario],

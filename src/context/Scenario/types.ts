@@ -25,13 +25,9 @@ export interface ScenarioContextData {
   verifyIfIsChecked: (data: VerifyIfIsChecked) => boolean;
   scenarioSaveEnabled: boolean;
   setScenarioSaveEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-  handleRemoveItem: ({
-    attr,
-    value,
-    rowId,
-    rowIndex,
-  }: HandleRemoveItem) => void;
   savePreviousState: () => any;
+  getAttrCompareValue: (attr: keyof Scenario, value: any) => any;
+  getIndexesForMergedLines: (data: GetIndexesForMergedLines) => number[];
 }
 
 export interface CheckedValue {
@@ -53,13 +49,6 @@ export interface VerifyIfIsChecked {
 }
 
 export interface HandleCheckItem {
-  attr: keyof Scenario;
-  value: any;
-  rowId?: string;
-  rowIndex?: number;
-}
-
-export interface HandleRemoveItem {
   attr: keyof Scenario;
   value: any;
   rowId?: string;

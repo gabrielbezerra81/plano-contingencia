@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import { usePlanData } from "context/PlanData/planDataContext";
+import { useRemoveScenario } from "context/Scenario/removeScenarioContext";
 import { useScenario } from "context/Scenario/scenarioContext";
 import React, { useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
@@ -489,8 +490,9 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
     handleCheckItem,
     disabledColumnsCheckbox,
     verifyIfIsChecked,
-    handleRemoveItem,
   } = useScenario();
+
+  const { handleRemoveItem } = useRemoveScenario();
 
   const rowId = useMemo(() => {
     if (row) {
