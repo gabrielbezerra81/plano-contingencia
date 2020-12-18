@@ -1,6 +1,5 @@
 import produce from "immer";
 import React, { useCallback, useContext } from "react";
-
 import _ from "lodash";
 
 import { Scenario } from "types/Plan";
@@ -226,7 +225,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         const rowCompareValue = getAttrCompareValue(attr, scenario[attr]);
 
         let shouldKeepLine =
-          rowCompareValue !== compareValue &&
+          rowCompareValue !== compareValue ||
           (scenario[attr] as any).mergeKey !== value.mergeKey;
 
         if (!shouldKeepLine && !lineCopies.length) {
