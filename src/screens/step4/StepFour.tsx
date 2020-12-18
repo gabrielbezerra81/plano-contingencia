@@ -109,7 +109,7 @@ const StepFour: React.FC = () => {
 
         for await (const scenario of scenariosList) {
           if (scenario.threat.cobrade) {
-            const response = await api.post("medidas/cobrade", "2.4.2.0.0", {
+            const response = await api.post("medidas/cobrade", scenario.threat.cobrade, {
               headers: {
                 "Content-Type": "text/plain",
               },
