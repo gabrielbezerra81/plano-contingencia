@@ -78,6 +78,69 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
     [setCheckedValues],
   );
 
+  const findTopCellIndex = useCallback(
+    ({ startIndex, attr }: FindTopCellIndex) => {
+      let topCellIndex = startIndex;
+
+      if (startIndex > 0) {
+        const startElement = scenariosList[startIndex];
+
+        for (let index = startIndex - 1; index >= 0; index--) {
+          const areValueEquals = _.isEqual(
+            startElement[attr],
+            scenariosList[index][attr],
+          );
+
+          if (areValueEquals) {
+            topCellIndex = index;
+          } else {
+            break;
+          }
+        }
+      }
+
+      return topCellIndex;
+    },
+    [scenariosList],
+  );
+
+  const checkIfLineIsDuplicated = useCallback(
+    ({ previousAttr, attr, startIndex }: CheckIfLineIsDuplicated) => {
+      const topCellIndex = findTopCellIndex({ startIndex, attr: previousAttr });
+
+      const previousAttrIndexes = getIndexesForMergedLines({
+        attr: previousAttr,
+        isAdding: true,
+        startIndex: topCellIndex,
+      });
+
+      if (previousAttrIndexes.length === 1) {
+        return false;
+      }
+
+      // Obtém-se os indices das linhas que tem a coluna anterior mesclada. Se a quantidade de indices for 1, logo a coluna atual não está duplicada.
+      // Em seguida, é verificado se todas as linhas possuem o mesmo valor para o atributo atual. Se tiverem o mesmo valor, a linha não está duplicada.
+
+      const topElement = scenariosList[previousAttrIndexes[0]];
+
+      let isLineDuplicated = false;
+
+      for (const index of previousAttrIndexes) {
+        const areValueEquals = _.isEqual(
+          topElement[attr],
+          scenariosList[index][attr],
+        );
+
+        if (!areValueEquals) {
+          isLineDuplicated = true;
+        }
+      }
+
+      return isLineDuplicated;
+    },
+    [getIndexesForMergedLines, scenariosList, findTopCellIndex],
+  );
+
   const handleRemoveOtherAttrs = useCallback(
     ({
       list,
@@ -99,7 +162,10 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       const willEmpty = list.every((scenario: Scenario) => {
         const rowCompareValue = getAttrCompareValue(attr, scenario[attr]);
 
-        return rowCompareValue === compareValue;
+        return (
+          rowCompareValue === compareValue &&
+          (scenario[attr] as any).mergeKey === value.mergeKey
+        );
       });
 
       const removeCount = list.filter((scenario) => {
@@ -108,11 +174,14 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
           scenario[attr as keyof Scenario],
         );
 
-        return rowCompareValue === compareValue;
+        return (
+          rowCompareValue === compareValue &&
+          (scenario[attr] as any).mergeKey === value.mergeKey
+        );
       }).length;
 
-      if (!removingFromHistory) {
-        // console.log("removeCount", removeCount);
+      if (willEmpty !== (list.length === removeCount)) {
+        alert("Error");
       }
 
       switch (attr) {
@@ -144,17 +213,23 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         return !!(indexes.length && indexes.length < removeCount);
       });
 
+      const isLineDuplicated = removingFromHistory
+        ? false
+        : checkIfLineIsDuplicated({
+            previousAttr: omitions[omitions.length - 1],
+            startIndex: rowIndex,
+            attr,
+          });
+
       // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
       const filtered: any[] = list.filter((scenario: Scenario, index) => {
         const rowCompareValue = getAttrCompareValue(attr, scenario[attr]);
 
-        let shouldKeepLine = rowCompareValue !== compareValue;
+        let shouldKeepLine =
+          rowCompareValue !== compareValue &&
+          (scenario[attr] as any).mergeKey !== value.mergeKey;
 
-        console.log("hasUn", hasUnmergedInPreviousAttrs);
-
-        // So deveria executar se for zerar o array
         if (!shouldKeepLine && !lineCopies.length) {
-          // Precisa substituir willEmpty por algo
           lineCopies.push(scenario);
         } //
         // Se houver colunas anteriores não mescladas, faz a copia para manter a duplicação
@@ -179,12 +254,16 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         return shouldKeepLine;
       });
 
-      // Adicionar de volta as linhas removidas apenas com os atributos omitidos
       if (
-        !removingFromHistory &&
-        lineCopies.length &&
-        (hasUnmergedInPreviousAttrs || willEmpty)
+        removingFromHistory ||
+        (attr === "threat" && !willEmpty) ||
+        isLineDuplicated
       ) {
+        return filtered;
+      }
+
+      // Adicionar de volta as linhas removidas apenas com os atributos omitidos
+      if (lineCopies.length) {
         const replaceData = _.omit(emptyScenario, omitions);
 
         // Preserva as linhas duplicadas, sobrescrevendo apenas os atributos posteriores
@@ -195,8 +274,10 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
             );
 
             if (wasCopied) {
-              if (_.isEqual(value, scenario[attr])) {
-                console.log(scenario.id);
+              const isMergeKeyEqual =
+                (scenario[attr] as any).mergeKey === value.mergeKey;
+
+              if (_.isEqual(value, scenario[attr]) && isMergeKeyEqual) {
                 Object.assign(scenario, { ...replaceData });
               }
             }
@@ -210,7 +291,10 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
           list.push(...filtered);
 
           lineCopies.forEach((lineCopy) => {
-            if (_.isEqual(lineCopy[attr], value)) {
+            const isMergeKeyEqual =
+              (lineCopy[attr] as any).mergeKey === value.mergeKey;
+
+            if (_.isEqual(lineCopy[attr], value) && isMergeKeyEqual) {
               Object.assign(lineCopy, { ...replaceData });
 
               list.push(lineCopy);
@@ -218,11 +302,13 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
           });
         }
       } //
-      else {
-        return filtered;
-      }
     },
-    [getAttrCompareValue, removeCheckedValues, getIndexesForMergedLines],
+    [
+      getAttrCompareValue,
+      removeCheckedValues,
+      getIndexesForMergedLines,
+      checkIfLineIsDuplicated,
+    ],
   );
 
   const handleRemoveAddressOrResponsible = useCallback(
@@ -378,4 +464,15 @@ interface HandleRemoveItem {
   value: any;
   rowId?: string;
   rowIndex?: number;
+}
+
+interface CheckIfLineIsDuplicated {
+  previousAttr: keyof Scenario;
+  attr: keyof Scenario;
+  startIndex: number;
+}
+
+interface FindTopCellIndex {
+  startIndex: number;
+  attr: keyof Scenario;
 }
