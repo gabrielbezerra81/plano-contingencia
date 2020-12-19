@@ -140,6 +140,190 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
     [getIndexesForMergedLines, scenariosList, findTopCellIndex],
   );
 
+  const handleRemoveSpecialCase = useCallback(
+    ({
+      list,
+      indexesToRemove,
+      prevAttr,
+      attr,
+      value,
+    }: HandleRemoveSpecialCase) => {
+      // Detectar se o previousAttr é diferente para algum desses indices. As que devem limpar entram no remoção com splice, as duplicadas devem entrar
+      // no "return filtered"
+      // Quem tem só 1 valor do attr atual, faz splice. Quem tem mais de 1, faz o filtered
+      // prev omitions[omitions.length - 1]
+
+      let lineIdRemoveMethods: LineIdRemoveMethods = {
+        filter: [],
+        splice: [],
+        clearOnly: [],
+      };
+
+      // lines é uma lista de arrays. Supondo que os indices a serem removidos são 0 e 1 e esteja removendo uma medida. Para esse caso, prevAttr é "risk".
+      // lines então vai ter 2 arrays como elementos, o elemento o 1 são as linhas que possuem o risco igual a linha de indice 0 e o elemento 2 são as linhas que possuem
+      // o risco igual a linha de indice 1. Obtendo essas quantidades de linhas para cada valor, isso é util para identificar quando duas linhas irão
+      // ter metodos de remoção diferente. Ex: a linha 0 tendo apenas medida 1, e a linha 1 tendo medida 1 e medida 2. Ao remover a medida 1, ela está mesclada mas a ação
+      // para a linha 0 é o caso do splice, ja na linha 1 apenas filtra e remove essa linha, sobrando a linha com medida 2.
+      const lines = indexesToRemove.map((index) => {
+        const prevAttrValue = list[index][prevAttr];
+
+        const linesWithThisPrevValue = list.filter((scenario) => {
+          if (_.isEqual(scenario[prevAttr], prevAttrValue)) {
+            return true;
+          }
+
+          return false;
+        });
+
+        return linesWithThisPrevValue;
+      });
+
+      const maxLinesLength = Math.max(
+        ...lines.map((lineArray) => lineArray.length),
+      );
+
+      const everyDuplicationHasTheSameNumberOfLines = lines.every(
+        (lineArray) => lineArray.length === maxLinesLength,
+      );
+
+      const shouldHaveDifferentRemoveMethodsForEachLine =
+        indexesToRemove.length > 1 && !everyDuplicationHasTheSameNumberOfLines;
+
+      if (!shouldHaveDifferentRemoveMethodsForEachLine) {
+        return null;
+      }
+
+      console.log(
+        lines.map((lineArray) => lineArray.map((line) => ({ ...line }))),
+      );
+
+      lines.forEach((lineArray) => {
+        lineArray.forEach((line) => {
+          const scenarioItem = list.find(
+            (scenario) =>
+              line.id === scenario.id && _.isEqual(scenario[attr], value),
+          );
+
+          if (!scenarioItem) {
+            return false;
+          }
+
+          if (lineArray.length === maxLinesLength) {
+            if (!lineIdRemoveMethods.filter.includes(scenarioItem.id)) {
+              //&& !indexRemoveMethods.filter.includes(index)
+              lineIdRemoveMethods.filter.push(scenarioItem.id);
+            }
+          }
+
+          //
+          else if (lineArray.length < maxLinesLength) {
+            if (!lineIdRemoveMethods.splice.includes(scenarioItem.id)) {
+              //!indexRemoveMethods.splice.includes(lineIndex)
+              lineIdRemoveMethods.splice.push(scenarioItem.id);
+            }
+          }
+        });
+      });
+
+      console.log(lineIdRemoveMethods);
+
+      return lineIdRemoveMethods;
+    },
+    [],
+  );
+
+  const getClearOmissionsForAttr = useCallback((attr: keyof Scenario) => {
+    const omitions: Array<keyof Scenario> = ["id", "title", "addressId"];
+
+    switch (attr) {
+      case "threat":
+        break;
+      case "hypothese":
+        omitions.push("threat");
+        break;
+      case "risk":
+        omitions.push("threat", "hypothese");
+        break;
+      case "measure":
+        omitions.push("threat", "hypothese", "risk");
+        break;
+      case "resourceId":
+        omitions.push(
+          "threat",
+          "hypothese",
+          "risk",
+          "measure",
+          "responsibles",
+          "responsiblesMergeKey",
+        );
+        break;
+      default:
+        break;
+    }
+
+    return omitions;
+  }, []);
+
+  const clearLinesValues = useCallback(
+    ({
+      omitions,
+      lineCopies,
+      list,
+      hasUnmergedInPreviousAttrs,
+      indexesToRemove,
+      value,
+      attr,
+      filtered,
+    }: ClearLinesValues) => {
+      // Adicionar de volta as linhas removidas apenas com os atributos omitidos
+      if (lineCopies.length) {
+        const replaceData = _.omit(emptyScenario, omitions);
+
+        // Preserva as linhas duplicadas, sobrescrevendo apenas os atributos posteriores
+        if (hasUnmergedInPreviousAttrs) {
+          list.forEach((scenario, index) => {
+            const wasCopied = lineCopies.some(
+              (lineCopy) => lineCopy.id === scenario.id,
+            );
+
+            if (wasCopied) {
+              // const isMergeKeyEqual =
+              //   (scenario[attr] as any).mergeKey === value.mergeKey;
+
+              if (
+                _.isEqual(value, scenario[attr]) &&
+                indexesToRemove.includes(index)
+              ) {
+                Object.assign(scenario, { ...replaceData });
+              }
+            }
+          });
+        } //
+        else {
+          // Como não há linhas duplicadas, remove tudo e adiciona somente a copia que possui todos os attrs anteriores mesclados.
+          // Nesse fluxo apenas 1 copia é adicionada, pois só há mais copias quando a flag "hasUnmergedInPreviousAttrs" é true.
+          // Aqui é necessário reduzir linhas se houver duplicação posterior, o que é obtido limpando o array e adicionando apenas 1 linha.
+          list.splice(0);
+          list.push(...filtered);
+
+          lineCopies.forEach((lineCopy) => {
+            // Não tem problema comparar pelo mergeKey em vez do indice da linhia ou id da linha, por que remoção
+            // de linhas duplicadas não mescladas entra no "return filtered"
+            const isMergeKeyEqual =
+              (lineCopy[attr] as any).mergeKey === value.mergeKey;
+
+            if (_.isEqual(lineCopy[attr], value) && isMergeKeyEqual) {
+              Object.assign(lineCopy, { ...replaceData });
+
+              list.push(lineCopy);
+            }
+          });
+        }
+      } //
+    },
+    [],
+  );
+
   const handleRemoveOtherAttrs = useCallback(
     ({
       list,
@@ -154,53 +338,21 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
 
       const compareValue = getAttrCompareValue(attr, value);
 
-      const omitions: Array<keyof Scenario> = ["id", "title", "addressId"];
+      const omitions = getClearOmissionsForAttr(attr);
 
       let lineCopies: Scenario[] = [];
 
-      const willEmpty = list.every((scenario: Scenario) => {
-        const rowCompareValue = getAttrCompareValue(attr, scenario[attr]);
+      const topRowIndex = findTopCellIndex({ startIndex: rowIndex, attr });
 
-        return (
-          rowCompareValue === compareValue &&
-          (scenario[attr] as any).mergeKey === value.mergeKey
-        );
+      const indexesToRemove = getIndexesForMergedLines({
+        attr,
+        isAdding: true,
+        startIndex: topRowIndex,
       });
 
-      const removeCount = list.filter((scenario) => {
-        const rowCompareValue = getAttrCompareValue(
-          attr,
-          scenario[attr as keyof Scenario],
-        );
+      const removeCount = indexesToRemove.length;
 
-        return (
-          rowCompareValue === compareValue &&
-          (scenario[attr] as any).mergeKey === value.mergeKey
-        );
-      }).length;
-
-      if (willEmpty !== (list.length === removeCount)) {
-        alert("Error");
-      }
-
-      switch (attr) {
-        case "threat":
-          break;
-        case "hypothese":
-          omitions.push("threat");
-          break;
-        case "risk":
-          omitions.push("threat", "hypothese");
-          break;
-        case "measure":
-          omitions.push("threat", "hypothese", "risk");
-          break;
-        case "resourceId":
-          omitions.push("threat", "hypothese", "risk");
-          break;
-        default:
-          break;
-      }
+      const willEmpty = list.length === removeCount;
 
       const hasUnmergedInPreviousAttrs = omitions.some((omition) => {
         const indexes = getIndexesForMergedLines({
@@ -224,9 +376,8 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       const filtered: any[] = list.filter((scenario: Scenario, index) => {
         const rowCompareValue = getAttrCompareValue(attr, scenario[attr]);
 
-        let shouldKeepLine =
-          rowCompareValue !== compareValue ||
-          (scenario[attr] as any).mergeKey !== value.mergeKey;
+        const shouldKeepLine =
+          rowCompareValue !== compareValue || !indexesToRemove.includes(index);
 
         if (!shouldKeepLine && !lineCopies.length) {
           lineCopies.push(scenario);
@@ -253,53 +404,55 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         return shouldKeepLine;
       });
 
+      const removeMethodsForEachLine = !removingFromHistory
+        ? handleRemoveSpecialCase({
+            list,
+            indexesToRemove,
+            prevAttr: omitions[omitions.length - 1],
+            attr,
+            value,
+          })
+        : null;
+
       if (
-        removingFromHistory ||
-        (attr === "threat" && !willEmpty) ||
-        isLineDuplicated
+        !removeMethodsForEachLine &&
+        (removingFromHistory ||
+          (attr === "threat" && !willEmpty) ||
+          isLineDuplicated)
       ) {
         return filtered;
       }
 
-      // Adicionar de volta as linhas removidas apenas com os atributos omitidos
-      if (lineCopies.length) {
-        const replaceData = _.omit(emptyScenario, omitions);
+      // Limpa as linhas a partir do atributo atual em vez de remover
+      clearLinesValues({
+        omitions,
+        lineCopies,
+        list,
+        attr,
+        hasUnmergedInPreviousAttrs,
+        indexesToRemove,
+        value,
+        filtered,
+      });
 
-        // Preserva as linhas duplicadas, sobrescrevendo apenas os atributos posteriores
-        if (hasUnmergedInPreviousAttrs) {
-          list.forEach((scenario) => {
-            const wasCopied = lineCopies.some(
-              (lineCopy) => lineCopy.id === scenario.id,
-            );
+      if (removeMethodsForEachLine) {
+        removeMethodsForEachLine.filter.forEach((id) => {
+          const lineIndex = list.findIndex((scenario) => scenario.id === id);
 
-            if (wasCopied) {
-              const isMergeKeyEqual =
-                (scenario[attr] as any).mergeKey === value.mergeKey;
+          if (lineIndex !== -1) {
+            list.splice(lineIndex, 1);
+          }
+        });
 
-              if (_.isEqual(value, scenario[attr]) && isMergeKeyEqual) {
-                Object.assign(scenario, { ...replaceData });
-              }
+        removeMethodsForEachLine.splice.forEach((id, index) => {
+          if (index > 0) {
+            const lineIndex = list.findIndex((scenario) => scenario.id === id);
+
+            if (lineIndex !== -1) {
+              list.splice(lineIndex, 1);
             }
-          });
-        } //
-        else {
-          // Como não há linhas duplicadas, remove tudo e adiciona somente a copia que possui todos os attrs anteriores mesclados.
-          // Nesse fluxo apenas 1 copia é adicionada, pois só há mais copias quando a flag "hasUnmergedInPreviousAttrs" é true.
-          // Aqui é necessário reduzir linhas se houver duplicação posterior, o que é obtido limpando o array e adicionando apenas 1 linha.
-          list.splice(0);
-          list.push(...filtered);
-
-          lineCopies.forEach((lineCopy) => {
-            const isMergeKeyEqual =
-              (lineCopy[attr] as any).mergeKey === value.mergeKey;
-
-            if (_.isEqual(lineCopy[attr], value) && isMergeKeyEqual) {
-              Object.assign(lineCopy, { ...replaceData });
-
-              list.push(lineCopy);
-            }
-          });
-        }
+          }
+        });
       } //
     },
     [
@@ -307,6 +460,10 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       removeCheckedValues,
       getIndexesForMergedLines,
       checkIfLineIsDuplicated,
+      findTopCellIndex,
+      handleRemoveSpecialCase,
+      getClearOmissionsForAttr,
+      clearLinesValues,
     ],
   );
 
@@ -474,4 +631,29 @@ interface CheckIfLineIsDuplicated {
 interface FindTopCellIndex {
   startIndex: number;
   attr: keyof Scenario;
+}
+
+interface HandleRemoveSpecialCase {
+  list: any[];
+  indexesToRemove: Array<number>;
+  prevAttr: keyof Scenario;
+  attr: keyof Scenario;
+  value: any;
+}
+
+interface LineIdRemoveMethods {
+  filter: any[];
+  splice: any[];
+  clearOnly: any[];
+}
+
+interface ClearLinesValues {
+  omitions: Array<keyof Scenario>;
+  lineCopies: Array<Scenario>;
+  list: Array<Scenario>;
+  hasUnmergedInPreviousAttrs: boolean;
+  indexesToRemove: Array<number>;
+  value: any;
+  attr: keyof Scenario;
+  filtered: Array<Scenario>;
 }
