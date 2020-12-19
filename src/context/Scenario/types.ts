@@ -59,6 +59,7 @@ export interface GetIndexesForMergedLines {
   attr: keyof Scenario;
   startIndex?: number;
   isAdding: boolean;
+  list?: Array<Scenario>;
 }
 
 export interface AddInitialScenarioLines {

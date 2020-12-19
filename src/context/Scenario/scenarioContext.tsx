@@ -166,14 +166,19 @@ const ScenarioProvider: React.FC = ({ children }) => {
   );
 
   const getIndexesForMergedLines = useCallback(
-    ({ attr, isAdding, startIndex = 0 }: GetIndexesForMergedLines) => {
+    ({
+      attr,
+      isAdding,
+      startIndex = 0,
+      list = sortedScenarioList,
+    }: GetIndexesForMergedLines) => {
       const indexes: number[] = [];
       // Se estiver adicionando, os indices são dos cenários para pegar o id de cada linha
       // Se estiver removendo, os indices são os dos itens que devem ser removidos de CheckedValues
 
-      for (let index = startIndex; index < sortedScenarioList.length; index++) {
-        const curr = sortedScenarioList[index] as any;
-        const next = sortedScenarioList[index + 1] as any;
+      for (let index = startIndex; index < list.length; index++) {
+        const curr = list[index] as any;
+        const next = list[index + 1] as any;
 
         let shouldPushNextAndContinue = false;
 

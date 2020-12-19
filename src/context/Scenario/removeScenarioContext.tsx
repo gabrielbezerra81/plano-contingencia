@@ -193,9 +193,9 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         return null;
       }
 
-      console.log(
-        lines.map((lineArray) => lineArray.map((line) => ({ ...line }))),
-      );
+      // console.log(
+      //   lines.map((lineArray) => lineArray.map((line) => ({ ...line }))),
+      // );
 
       lines.forEach((lineArray) => {
         lineArray.forEach((line) => {
@@ -224,8 +224,6 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
           }
         });
       });
-
-      console.log(lineIdRemoveMethods);
 
       return lineIdRemoveMethods;
     },
@@ -274,13 +272,20 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       value,
       attr,
       filtered,
+      removingFromHistory,
     }: ClearLinesValues) => {
       // Adicionar de volta as linhas removidas apenas com os atributos omitidos
       if (lineCopies.length) {
         const replaceData = _.omit(emptyScenario, omitions);
 
+        const willEmpty = indexesToRemove.length === list.length;
+
         // Preserva as linhas duplicadas, sobrescrevendo apenas os atributos posteriores
         if (hasUnmergedInPreviousAttrs) {
+          // Precisa apagar as linhas também com base na bifurcação. Se for 1+1, não apaga nada. Se for 2+2, precisa apagar as
+          // desnessárias e ficar 1+1
+          const idsToRemove: any[] = [];
+
           list.forEach((scenario, index) => {
             const wasCopied = lineCopies.some(
               (lineCopy) => lineCopy.id === scenario.id,
@@ -292,12 +297,40 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
 
               if (
                 _.isEqual(value, scenario[attr]) &&
-                indexesToRemove.includes(index)
+                (indexesToRemove.includes(index) || removingFromHistory)
               ) {
                 Object.assign(scenario, { ...replaceData });
               }
+
+              const indexes = getIndexesForMergedLines({
+                attr: omitions[omitions.length - 1],
+                isAdding: true,
+                startIndex: index,
+                list,
+              });
+
+              if (removingFromHistory) {
+                idsToRemove.push(...indexes);
+              }
+
+              if (indexes.length > 1 && willEmpty) {
+                indexes.splice(0, 1);
+                indexes.forEach((index) => {
+                  idsToRemove.push(list[index].id);
+                });
+              }
             }
           });
+
+          idsToRemove.forEach((id) => {
+            const scenarioIndex = list.findIndex((item) => item.id === id);
+
+            if (scenarioIndex !== -1) {
+              list.splice(scenarioIndex, 1);
+            }
+          });
+
+          return list;
         } //
         else {
           // Como não há linhas duplicadas, remove tudo e adiciona somente a copia que possui todos os attrs anteriores mesclados.
@@ -321,7 +354,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         }
       } //
     },
-    [],
+    [getIndexesForMergedLines],
   );
 
   const handleRemoveOtherAttrs = useCallback(
@@ -376,8 +409,16 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       const filtered: any[] = list.filter((scenario: Scenario, index) => {
         const rowCompareValue = getAttrCompareValue(attr, scenario[attr]);
 
-        const shouldKeepLine =
-          rowCompareValue !== compareValue || !indexesToRemove.includes(index);
+        let shouldKeepLine = true;
+
+        if (removingFromHistory) {
+          shouldKeepLine = !_.isEqual(value, scenario[attr]);
+        } //
+        else {
+          shouldKeepLine =
+            rowCompareValue !== compareValue ||
+            !indexesToRemove.includes(index);
+        }
 
         if (!shouldKeepLine && !lineCopies.length) {
           lineCopies.push(scenario);
@@ -414,11 +455,24 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
           })
         : null;
 
+      if (removingFromHistory) {
+        const clearedHistory = clearLinesValues({
+          omitions,
+          lineCopies,
+          list,
+          attr,
+          hasUnmergedInPreviousAttrs: true,
+          indexesToRemove,
+          value,
+          filtered,
+          removingFromHistory,
+        });
+        return clearedHistory;
+      }
+
       if (
         !removeMethodsForEachLine &&
-        (removingFromHistory ||
-          (attr === "threat" && !willEmpty) ||
-          isLineDuplicated)
+        ((attr === "threat" && !willEmpty) || isLineDuplicated)
       ) {
         return filtered;
       }
@@ -433,6 +487,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         indexesToRemove,
         value,
         filtered,
+        removingFromHistory,
       });
 
       if (removeMethodsForEachLine) {
@@ -575,6 +630,15 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
 
       setScenariosHistory(updatedHistory);
       setScenariosList(updatedScenariosList);
+      setCheckedValues((oldValues) =>
+        oldValues.filter((checkedItem) => {
+          const hasLineWithRowId = updatedScenariosList.some(
+            (scenario: Scenario) => scenario.id === checkedItem.rowId,
+          );
+
+          return hasLineWithRowId;
+        }),
+      );
     },
     [
       scenariosList,
@@ -584,6 +648,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       handleRemoveOtherAttrs,
       setScenariosHistory,
       setScenariosList,
+      setCheckedValues,
     ],
   );
 
@@ -656,4 +721,5 @@ interface ClearLinesValues {
   value: any;
   attr: keyof Scenario;
   filtered: Array<Scenario>;
+  removingFromHistory: boolean;
 }

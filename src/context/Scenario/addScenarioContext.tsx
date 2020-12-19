@@ -158,6 +158,7 @@ const AddScenarioProvider: React.FC = ({ children }) => {
             console.log(shouldChangeAttrInLine, isPreviousColumnChecked);
 
             if (shouldChangeAttrInLine && isPreviousColumnChecked) {
+              console.log(prevScenario.id);
               let newLineId: any;
               let newLineResponsibles: any[] = [];
               let newLineResponsiblesMergeKey = undefined;
