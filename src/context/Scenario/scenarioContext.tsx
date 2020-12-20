@@ -176,7 +176,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
         if (curr && typeof curr[attr] === "object") {
           if (attr === "responsibles") {
             shouldPushNextAndContinue =
-              next && curr.responsibleMergeKey === next.responsibleMergeKey;
+              next && curr.responsiblesMergeKey === next.responsiblesMergeKey;
           } //
           else {
             shouldPushNextAndContinue =
@@ -309,6 +309,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
           isAdding = checkedIndex === -1;
 
           if (isAdding) {
+            console.log(indexes, rowIndex);
             indexes.forEach((index) => {
               checkedDraft.push({
                 attr,
