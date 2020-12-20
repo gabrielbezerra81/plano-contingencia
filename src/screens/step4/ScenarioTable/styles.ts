@@ -41,11 +41,13 @@ export const Table = styled.table`
   .itemListing {
     display: inline-flex;
     position: relative;
-    padding-right: 12px;
+    align-items: center;
 
-    > .custom-checkbox {
+    .custom-checkbox {
       margin-top: 0px;
       margin-right: -4px;
+      height: 18px;
+      min-height: unset;
 
       input {
         z-index: 1;
@@ -78,12 +80,21 @@ export const Table = styled.table`
       }
     }
 
-    > button {
-      position: absolute;
-      right: 0;
-      align-self: center;
-      top: 0;
-      bottom: 0;
+    .content {
+      display: inline-flex;
+      flex: 1;
+      /* align-items: center; */
+    }
+
+    .buttonsContainer {
+      display: flex;
+      flex-direction: column;
+
+      > button {
+        &:hover {
+          opacity: 0.7;
+        }
+      }
     }
   }
 `;

@@ -1,5 +1,6 @@
 import { useAddScenario } from "context/Scenario/addScenarioContext";
-import React, { useCallback, useMemo, useState } from "react";
+import { useEditScenario } from "context/Scenario/editScenarioContext";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
 import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
@@ -17,6 +18,8 @@ interface Props {
 const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
   const { handleAddValueToScenario, generateMergeKey } = useAddScenario();
 
+  const { editingProps, setEditingProps, handleEditItem } = useEditScenario();
+
   const [risk, setRisk] = useState<Partial<Risk>>({ id: "", description: "" });
 
   const handleChangeDescription = useCallback(
@@ -32,6 +35,16 @@ const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
 
     setShow(false);
   }, [setShow, risk, handleAddValueToScenario, generateMergeKey]);
+
+  const handleUpdateRisk = useCallback(() => {
+    handleEditItem({ newValue: { ...risk, mergeKey: generateMergeKey() } });
+    setShow(false);
+  }, [handleEditItem, risk, setShow, generateMergeKey]);
+
+  const onHide = useCallback(() => {
+    setShow(false);
+    setEditingProps(null);
+  }, [setShow, setEditingProps]);
 
   const filteredSuggestionList = useMemo(() => {
     const descriptions = suggestionList.map((suggestion) => suggestion.risco);
@@ -49,9 +62,15 @@ const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
     [filteredSuggestionList],
   );
 
+  useEffect(() => {
+    if (editingProps) {
+      setRisk(editingProps.value);
+    }
+  }, [editingProps]);
+
   return (
-    <Modal show={show} centered onHide={() => setShow(false)}>
-      <ModalCloseButton setShow={setShow} />
+    <Modal show={show} centered onHide={onHide}>
+      <ModalCloseButton setShow={onHide} />
       <Container>
         <h6>Adicionar Riscos/Vulnerabilidades</h6>
 
@@ -84,8 +103,11 @@ const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
           />
         </div>
 
-        <Button className="darkBlueButton" onClick={handleAddRisk}>
-          Adicionar
+        <Button
+          className="darkBlueButton"
+          onClick={editingProps ? handleUpdateRisk : handleAddRisk}
+        >
+          {!!editingProps ? "Confirmar" : "Adicionar"}
         </Button>
       </Container>
     </Modal>

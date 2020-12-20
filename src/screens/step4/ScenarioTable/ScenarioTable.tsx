@@ -1,10 +1,11 @@
 /* eslint-disable no-restricted-globals */
 import { usePlanData } from "context/PlanData/planDataContext";
+import { useEditScenario } from "context/Scenario/editScenarioContext";
 import { useRemoveScenario } from "context/Scenario/removeScenarioContext";
 import { useScenario } from "context/Scenario/scenarioContext";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
-import { FiPlus, FiX } from "react-icons/fi";
+import { FiPlus, FiX, FiEdit } from "react-icons/fi";
 import { GrSearch } from "react-icons/gr";
 import { TableInstance } from "react-table";
 
@@ -371,27 +372,48 @@ const TableCell: React.FC<TableCellProps> = ({
 
   const hypotheseCellContent = useMemo(() => {
     if (cell.column.id === "hypothese") {
-      return <CellCheckableItem row={row} item={cell.value} attr="hypothese" />;
+      return (
+        <CellCheckableItem
+          cell={cell}
+          row={row}
+          item={cell.value}
+          attr="hypothese"
+        />
+      );
     }
 
     return null;
-  }, [cell.column.id, cell.value, row]);
+  }, [cell, row]);
 
   const riskCellContent = useMemo(() => {
     if (cell.column.id === "risk") {
-      return <CellCheckableItem row={row} item={cell.value} attr="risk" />;
+      return (
+        <CellCheckableItem
+          cell={cell}
+          row={row}
+          item={cell.value}
+          attr="risk"
+        />
+      );
     }
 
     return null;
-  }, [cell.column.id, cell.value, row]);
+  }, [row, cell]);
 
   const measureCellContent = useMemo(() => {
     if (cell.column.id === "measure") {
-      return <CellCheckableItem row={row} item={cell.value} attr="measure" />;
+      return (
+        <CellCheckableItem
+          cell={cell}
+          row={row}
+          item={cell.value}
+          attr="measure"
+        />
+      );
     }
 
     return null;
-  }, [cell.column.id, cell.value, row]);
+  }, [cell, row]);
 
   const responsiblesCellContent = useMemo(() => {
     if (cell.column.id === "responsibles") {
@@ -468,12 +490,14 @@ interface CellCheckableItemProps {
   attr: keyof Scenario;
   item: any;
   row?: any;
+  cell?: any;
 }
 
 const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
   attr,
   item,
   row,
+  cell,
 }) => {
   const {
     handleCheckItem,
@@ -481,7 +505,10 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
     verifyIfIsChecked,
   } = useScenario();
 
+
   const { handleRemoveItem } = useRemoveScenario();
+
+  const { openModalToEdit } = useEditScenario();
 
   const rowId = useMemo(() => {
     if (row) {
@@ -547,39 +574,62 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
     return props;
   }, [attr, item, disabledColumnsCheckbox, verifyIfIsChecked, rowId]);
 
+  const handleEdit = useCallback(() => {
+    if (cell) {
+      const { onClick } = cell.column.Header.props;
+
+      openModalToEdit({
+        attr,
+        value: props.value,
+        rowIndex: row?.index,
+      });
+
+      onClick();
+    }
+  }, [cell, attr, props.value, openModalToEdit, row?.index]);
+
   if (!props.text) {
     return null;
   }
 
   return (
     <div className="itemListing">
-      <Form.Check
-        custom
-        type="checkbox"
-        onChange={() =>
-          handleCheckItem({
-            attr,
-            value: props.value,
-            rowId,
-            rowIndex: row?.index,
-          })
-        }
-        checked={props.checked}
-        disabled={props.disabled}
-      />
-      <ItemListingText included={props.checked}>{props.text}</ItemListingText>
-      <button
-        onClick={() =>
-          handleRemoveItem({
-            attr,
-            value: props.value,
-            rowId,
-            rowIndex: row?.index,
-          })
-        }
-      >
-        <FiX color="red" size={12} />
-      </button>
+      <div className="content">
+        <Form.Check
+          custom
+          type="checkbox"
+          onChange={() =>
+            handleCheckItem({
+              attr,
+              value: props.value,
+              rowId,
+              rowIndex: row?.index,
+            })
+          }
+          checked={props.checked}
+          disabled={props.disabled}
+        />
+        <ItemListingText included={props.checked}>{props.text}</ItemListingText>
+      </div>
+      <div className="buttonsContainer">
+        <button
+          onClick={() =>
+            handleRemoveItem({
+              attr,
+              value: props.value,
+              rowId,
+              rowIndex: row?.index,
+            })
+          }
+        >
+          <FiX color="red" size={12} />
+        </button>
+        {["hypothese", "risk", "measure"].includes(attr) && (
+          <button onClick={handleEdit}>
+            <FiEdit color="#3d3d3d" size={13}></FiEdit>
+          </button>
+        )}
+      </div>
     </div>
   );
 };

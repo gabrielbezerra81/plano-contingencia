@@ -20,6 +20,7 @@ import { Scenario } from "types/Plan";
 import _ from "lodash";
 import AddScenarioProvider from "./addScenarioContext";
 import RemoveScenarioProvider from "./removeScenarioContext";
+import EditScenarioProvider from "./editScenarioContext";
 
 setAutoFreeze(false);
 
@@ -434,7 +435,9 @@ const ScenarioProvider: React.FC = ({ children }) => {
       }}
     >
       <AddScenarioProvider>
-        <RemoveScenarioProvider>{children}</RemoveScenarioProvider>
+        <RemoveScenarioProvider>
+          <EditScenarioProvider>{children}</EditScenarioProvider>
+        </RemoveScenarioProvider>
       </AddScenarioProvider>
     </ScenarioContext.Provider>
   );

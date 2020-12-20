@@ -1,5 +1,6 @@
 import { useAddScenario } from "context/Scenario/addScenarioContext";
-import React, { useCallback, useMemo, useState } from "react";
+import { useEditScenario } from "context/Scenario/editScenarioContext";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
 import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
@@ -16,6 +17,8 @@ interface Props {
 
 const MeasureModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
   const { handleAddValueToScenario, generateMergeKey } = useAddScenario();
+
+  const { editingProps, setEditingProps, handleEditItem } = useEditScenario();
 
   const [measure, setMeasure] = useState<Partial<Measure>>({
     id: "",
@@ -36,6 +39,16 @@ const MeasureModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
     setShow(false);
   }, [setShow, measure, handleAddValueToScenario, generateMergeKey]);
 
+  const handleUpdateMeasure = useCallback(() => {
+    handleEditItem({ newValue: { ...measure, mergeKey: generateMergeKey() } });
+    setShow(false);
+  }, [handleEditItem, measure, setShow, generateMergeKey]);
+
+  const onHide = useCallback(() => {
+    setShow(false);
+    setEditingProps(null);
+  }, [setShow, setEditingProps]);
+
   const filteredSuggestionList = useMemo(() => {
     const descriptions = suggestionList.map((suggestion) => suggestion.medida);
 
@@ -52,9 +65,15 @@ const MeasureModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
     [filteredSuggestionList],
   );
 
+  useEffect(() => {
+    if (editingProps) {
+      setMeasure(editingProps.value);
+    }
+  }, [editingProps]);
+
   return (
-    <Modal show={show} centered onHide={() => setShow(false)}>
-      <ModalCloseButton setShow={setShow} />
+    <Modal show={show} centered onHide={onHide}>
+      <ModalCloseButton setShow={onHide} />
       <Container>
         <h6>Adicionar Medida de Enfretamento</h6>
 
@@ -67,7 +86,7 @@ const MeasureModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
             disabled={!filteredSuggestionList.length}
           >
             {!filteredSuggestionList.length && (
-              <option style={{ color: "#aaa" }} >Não há sugestões</option>
+              <option style={{ color: "#aaa" }}>Não há sugestões</option>
             )}
             <option />
             {filteredSuggestionList.map((suggestion, index) => (
@@ -87,8 +106,11 @@ const MeasureModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
           />
         </div>
 
-        <Button className="darkBlueButton" onClick={handleAddMeasure}>
-          Adicionar
+        <Button
+          className="darkBlueButton"
+          onClick={editingProps ? handleUpdateMeasure : handleAddMeasure}
+        >
+          {!!editingProps ? "Confirmar" : "Adicionar"}
         </Button>
       </Container>
     </Modal>
