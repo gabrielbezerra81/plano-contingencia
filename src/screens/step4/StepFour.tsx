@@ -30,13 +30,11 @@ const StepFour: React.FC = () => {
   const { planData, getSequenceId, updateLocalPlanData } = usePlanData();
 
   const {
-    scenariosHistory,
     scenariosList,
     setScenariosList,
     scenarioTitle,
     setScenarioTitle,
     verifyIfScenariosHistoryHasValue,
-    setScenariosHistory,
     checkedValues,
     setCheckedValues,
     setScenarioSaveEnabled,
@@ -76,22 +74,16 @@ const StepFour: React.FC = () => {
   }, [setCheckedValues]);
 
   const handleClearScenarios = useCallback(() => {
-    setScenariosHistory([]);
     setScenariosList([]);
     setCheckedValues([]);
-  }, [setScenariosHistory, setScenariosList, setCheckedValues]);
+  }, [setScenariosList, setCheckedValues]);
 
   const undoLastChange = useCallback(() => {
     const previousList = localStorage.getItem("previousScenariosList");
-    const previousHistory = localStorage.getItem("previousHistory");
     const previousChecked = localStorage.getItem("previousCheckedValues");
 
     if (previousList) {
       setScenariosList(JSON.parse(previousList));
-    }
-
-    if (previousHistory) {
-      setScenariosHistory(JSON.parse(previousHistory));
     }
 
     if (previousChecked) {
@@ -99,7 +91,7 @@ const StepFour: React.FC = () => {
     }
 
     setTimeout(() => setIsUndoDisabled(true), 500);
-  }, [setScenariosList, setScenariosHistory, setCheckedValues]);
+  }, [setScenariosList, setCheckedValues]);
 
   // Carregar Cobrade
   useEffect(() => {
@@ -109,11 +101,15 @@ const StepFour: React.FC = () => {
 
         for await (const scenario of scenariosList) {
           if (scenario.threat.cobrade) {
-            const response = await api.post("medidas/cobrade", "2.4.2.0.0", {
-              headers: {
-                "Content-Type": "text/plain",
+            const response = await api.post(
+              "medidas/cobrade",
+              scenario.threat.cobrade,
+              {
+                headers: {
+                  "Content-Type": "text/plain",
+                },
               },
-            });
+            );
 
             suggestions.push(...response.data);
           }
@@ -321,17 +317,7 @@ const StepFour: React.FC = () => {
             ))}
             <br />
           </div>
-          <div>
-            Linhas prev: {scenariosHistory.length}
-            <br />
-            {scenariosHistory.map((prevScenario, index) => (
-              <code key={index}>
-                {JSON.stringify(prevScenario)}
-                <br />
-                <br />
-              </code>
-            ))}
-          </div>
+
           <div>
             <br />
             Checked:
@@ -346,7 +332,7 @@ const StepFour: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
 
       <ThreatModal show={showThreatModal} setShow={setShowThreatModal} />

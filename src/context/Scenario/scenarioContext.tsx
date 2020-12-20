@@ -13,15 +13,13 @@ import {
   AddInitialScenarioLines,
   CheckedValue,
   GetIndexesForMergedLines,
-  HandleAddValueToScenario,
-  HandleRemoveItem,
   ScenarioContextData,
-  DuplicateCheckedValuesWhenAddingLine,
 } from "./types";
 
 import { Scenario } from "types/Plan";
 import _ from "lodash";
 import AddScenarioProvider from "./addScenarioContext";
+import RemoveScenarioProvider from "./removeScenarioContext";
 
 setAutoFreeze(false);
 
@@ -78,15 +76,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
     return [];
   });
-  const [scenariosHistory, setScenariosHistory] = useState<Scenario[]>(() => {
-    const scenarios = localStorage.getItem("scenariosHistory");
-
-    if (scenarios) {
-      return JSON.parse(scenarios);
-    }
-
-    return [];
-  });
 
   const sortedScenarioList = useMemo(() => {
     return _.orderBy(scenariosList, [
@@ -104,12 +93,11 @@ const ScenarioProvider: React.FC = ({ children }) => {
       "previousScenariosList",
       JSON.stringify(scenariosList),
     );
-    localStorage.setItem("previousHistory", JSON.stringify(scenariosHistory));
     localStorage.setItem(
       "previousCheckedValues",
       JSON.stringify(checkedValues),
     );
-  }, [scenariosList, scenariosHistory, checkedValues]);
+  }, [scenariosList, checkedValues]);
 
   const getAttrCompareValue = useCallback(
     (attr: keyof Scenario, value: any) => {
@@ -138,7 +126,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
   const verifyIfScenariosHistoryHasValue = useCallback(
     (attr: keyof Scenario, value: any): boolean => {
-      const valueExists = scenariosHistory.some((scenario) => {
+      const valueExists = sortedScenarioList.some((scenario: any) => {
         if (["addressId", "hypothese", "resourceId"].includes(attr)) {
           return scenario[attr] === value;
         }
@@ -153,7 +141,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
         if (attr === "responsibles") {
           return scenario.responsibles.some(
-            (responsible) =>
+            (responsible: any) =>
               `${responsible.name} ${responsible.role} ${responsible.permission}` ===
               value,
           );
@@ -164,193 +152,23 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
       return valueExists;
     },
-    [scenariosHistory],
-  );
-
-  const filterScenariosList = useCallback(
-    ({ list, attr, value, rowId, responsiblesMergeKey }: any) => {
-      const compareValue = getAttrCompareValue(attr, value);
-
-      if (attr === "responsibles") {
-        list.forEach((scenario: Scenario) => {
-          scenario.responsibles = scenario.responsibles.filter(
-            (responsible) => {
-              const isValueEqual =
-                `${responsible.name} ${responsible.role} ${responsible.permission}` ===
-                compareValue;
-
-              if (rowId) {
-                const isRowIdEqual = scenario.id === rowId;
-
-                return !(isValueEqual && isRowIdEqual);
-              }
-
-              if (responsiblesMergeKey) {
-                const isRowMergeKeysEqual =
-                  scenario.responsiblesMergeKey === responsiblesMergeKey;
-
-                return !(isValueEqual && isRowMergeKeysEqual);
-              }
-
-              return true;
-            },
-          );
-        });
-        return list;
-      } //
-      else {
-        // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
-        const filtered = list.filter((scenario: Scenario) => {
-          switch (attr) {
-            case "addressId":
-              return scenario.addressId !== compareValue;
-            case "threat":
-              return scenario.threat.cobrade !== compareValue;
-            case "hypothese":
-              return scenario.hypothese.hypothese !== compareValue;
-            case "risk":
-              return scenario.risk.description !== compareValue;
-            case "measure":
-              return scenario.measure.description !== compareValue;
-            case "resourceId":
-              return scenario.resourceId.resourceId !== compareValue;
-            default:
-              return true;
-          }
-        });
-
-        // Se a coluna tiver so 1 item selecionado, a lista não será filtrada para não  zerar a quantidade de linhas
-        // e sim o campo vai ser atribuido a "". Isto não vale para o campo de endereço que é a primeira coluna.
-        if (filtered.length === 0 && attr !== "addressId") {
-          list.forEach((scenario: Scenario) => {
-            if (
-              ["threat", "hypothese", "risk", "measure", "resourceId"].includes(
-                attr,
-              )
-            ) {
-              const column: any = scenario[attr as keyof Scenario];
-              Object.keys(column).forEach((key: any) => {
-                Object.assign(column, { [key]: "" });
-              });
-            }
-          });
-
-          return list;
-        } //
-        else {
-          return filtered;
-        }
-      }
-    },
-    [getAttrCompareValue],
-  );
-
-  const handleRemoveAddressOrResponsible = useCallback(
-    ({ list, attr, value, rowId, responsiblesMergeKey }: any) => {
-      const compareValue = getAttrCompareValue(attr, value);
-
-      if (attr === "responsibles") {
-        list.forEach((scenario: Scenario) => {
-          scenario.responsibles = scenario.responsibles.filter(
-            (responsible) => {
-              const isValueEqual =
-                `${responsible.name} ${responsible.role} ${responsible.permission}` ===
-                compareValue;
-
-              if (rowId) {
-                const isRowIdEqual = scenario.id === rowId;
-
-                return !(isValueEqual && isRowIdEqual);
-              }
-
-              if (responsiblesMergeKey) {
-                const isRowMergeKeysEqual =
-                  scenario.responsiblesMergeKey === responsiblesMergeKey;
-
-                return !(isValueEqual && isRowMergeKeysEqual);
-              }
-
-              return true;
-            },
-          );
-        });
-        return list;
-      } //
-      else if (attr === "addressId") {
-        // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
-        const filtered = list.filter((scenario: Scenario) => {
-          return scenario.addressId !== compareValue;
-        });
-        return filtered;
-      }
-    },
-    [getAttrCompareValue],
-  );
-
-  const handleRemoveItem = useCallback(
-    ({ attr, value, rowId, rowIndex }: HandleRemoveItem) => {
-      savePreviousState();
-
-      const updatedHistory = produce(scenariosHistory, (historyDraft) => {
-        if (["addressId", "responsibles"].includes(attr)) {
-          const history = handleRemoveAddressOrResponsible({
-            list: historyDraft,
-            attr,
-            value,
-            rowId,
-          });
-
-          if (history) {
-            return history;
-          }
-        } //
-        else {
-        }
-      });
-
-      const updatedScenariosList = produce(sortedScenarioList, (draft) => {
-        if (rowIndex || rowIndex === 0) {
-          const excludedKeys = ["id", "title"];
-
-          const { responsiblesMergeKey } = draft[rowIndex];
-
-          if (["addressId", "responsibles"].includes(attr)) {
-            const filtered = handleRemoveAddressOrResponsible({
-              list: draft,
-              attr,
-              value,
-              responsiblesMergeKey,
-            });
-
-            if (filtered) {
-              return filtered;
-            }
-          } //
-          else {
-          }
-        }
-      });
-
-      setScenariosHistory(updatedHistory);
-      setScenariosList(updatedScenariosList);
-    },
-    [
-      sortedScenarioList,
-      savePreviousState,
-      handleRemoveAddressOrResponsible,
-      scenariosHistory,
-    ],
+    [sortedScenarioList],
   );
 
   const getIndexesForMergedLines = useCallback(
-    ({ attr, isAdding, startIndex = 0 }: GetIndexesForMergedLines) => {
+    ({
+      attr,
+      isAdding,
+      startIndex = 0,
+      list = sortedScenarioList,
+    }: GetIndexesForMergedLines) => {
       const indexes: number[] = [];
       // Se estiver adicionando, os indices são dos cenários para pegar o id de cada linha
       // Se estiver removendo, os indices são os dos itens que devem ser removidos de CheckedValues
 
-      for (let index = startIndex; index < sortedScenarioList.length; index++) {
-        const curr = sortedScenarioList[index] as any;
-        const next = sortedScenarioList[index + 1] as any;
+      for (let index = startIndex; index < list.length; index++) {
+        const curr = list[index] as any;
+        const next = list[index + 1] as any;
 
         let shouldPushNextAndContinue = false;
 
@@ -408,10 +226,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
               title: scenarioTitle,
               id: rowId,
             });
-            setScenariosHistory((oldValues) => [
-              ...oldValues,
-              { ...emptyScenario, addressId: value, id: rowId },
-            ]);
           } //
 
           list = draft.map((item) => item);
@@ -582,15 +396,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     if (scenarioSaveEnabled) {
-      localStorage.setItem(
-        "scenariosHistory",
-        JSON.stringify(scenariosHistory),
-      );
-    }
-  }, [scenariosHistory, scenarioSaveEnabled]);
-
-  useEffect(() => {
-    if (scenarioSaveEnabled) {
       localStorage.setItem("scenariosList", JSON.stringify(scenariosList));
     }
   }, [scenariosList, scenarioSaveEnabled]);
@@ -615,8 +420,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
         setCheckedValues,
         scenariosList: sortedScenarioList,
         setScenariosList,
-        scenariosHistory,
-        setScenariosHistory,
         verifyIfScenariosHistoryHasValue,
         handleCheckItem,
         scenarioTitle,
@@ -625,11 +428,14 @@ const ScenarioProvider: React.FC = ({ children }) => {
         verifyIfIsChecked,
         setScenarioSaveEnabled,
         scenarioSaveEnabled,
-        handleRemoveItem,
         savePreviousState,
+        getAttrCompareValue,
+        getIndexesForMergedLines,
       }}
     >
-      <AddScenarioProvider>{children}</AddScenarioProvider>
+      <AddScenarioProvider>
+        <RemoveScenarioProvider>{children}</RemoveScenarioProvider>
+      </AddScenarioProvider>
     </ScenarioContext.Provider>
   );
 };
@@ -641,3 +447,25 @@ export const useScenario = () => {
 
   return context;
 };
+
+// Se a coluna tiver so 1 item selecionado, a lista não será filtrada para não  zerar a quantidade de linhas
+// e sim o campo vai ser atribuido a "". Isto não vale para o campo de endereço que é a primeira coluna.
+// if (filtered.length === 0) {
+//   list.forEach((scenario: Scenario) => {
+//     if (
+//       ["threat", "hypothese", "risk", "measure", "resourceId"].includes(
+//         attr,
+//       )
+//     ) {
+//       const column: any = scenario[attr as keyof Scenario];
+//       Object.keys(column).forEach((key: any) => {
+//         Object.assign(column, { [key]: "" });
+//       });
+//     }
+//   });
+
+//   return list;
+// } //
+// else {
+//   return filtered;
+// }

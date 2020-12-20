@@ -57,7 +57,15 @@ const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
 
         <div className="inputGroup">
           <h6>Sugestões de riscos</h6>
-          <Input as="select" bordered onChange={handleSelectSuggestion}>
+          <Input
+            as="select"
+            bordered
+            onChange={handleSelectSuggestion}
+            disabled={!filteredSuggestionList.length}
+          >
+            {!filteredSuggestionList.length && (
+              <option style={{ color: "#aaa" }}>Não há sugestões</option>
+            )}
             <option />
             {filteredSuggestionList.map((suggestion, index) => (
               <option key={index} value={index}>

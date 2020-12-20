@@ -21,6 +21,10 @@ export const Container = styled.div`
       margin-left: 16px;
       border-radius: 4px;
       flex: 1;
+
+      select:disabled {
+        color: #888;
+      }
     }
 
     > h6 {

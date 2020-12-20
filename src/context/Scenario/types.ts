@@ -5,8 +5,6 @@ export interface ScenarioContextData {
   setCheckedValues: React.Dispatch<React.SetStateAction<CheckedValue[]>>;
   scenariosList: Scenario[];
   setScenariosList: React.Dispatch<React.SetStateAction<Scenario[]>>;
-  scenariosHistory: Scenario[];
-  setScenariosHistory: React.Dispatch<React.SetStateAction<Scenario[]>>;
   verifyIfScenariosHistoryHasValue: (
     attr: keyof Scenario,
     value: any,
@@ -25,13 +23,9 @@ export interface ScenarioContextData {
   verifyIfIsChecked: (data: VerifyIfIsChecked) => boolean;
   scenarioSaveEnabled: boolean;
   setScenarioSaveEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-  handleRemoveItem: ({
-    attr,
-    value,
-    rowId,
-    rowIndex,
-  }: HandleRemoveItem) => void;
   savePreviousState: () => any;
+  getAttrCompareValue: (attr: keyof Scenario, value: any) => any;
+  getIndexesForMergedLines: (data: GetIndexesForMergedLines) => number[];
 }
 
 export interface CheckedValue {
@@ -59,17 +53,11 @@ export interface HandleCheckItem {
   rowIndex?: number;
 }
 
-export interface HandleRemoveItem {
-  attr: keyof Scenario;
-  value: any;
-  rowId?: string;
-  rowIndex?: number;
-}
-
 export interface GetIndexesForMergedLines {
   attr: keyof Scenario;
   startIndex?: number;
   isAdding: boolean;
+  list?: Array<Scenario>;
 }
 
 export interface AddInitialScenarioLines {
