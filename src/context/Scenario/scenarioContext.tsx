@@ -76,15 +76,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
     return [];
   });
-  const [scenariosHistory, setScenariosHistory] = useState<Scenario[]>(() => {
-    const scenarios = localStorage.getItem("scenariosHistory");
-
-    if (scenarios) {
-      return JSON.parse(scenarios);
-    }
-
-    return [];
-  });
 
   const sortedScenarioList = useMemo(() => {
     return _.orderBy(scenariosList, [
@@ -102,12 +93,11 @@ const ScenarioProvider: React.FC = ({ children }) => {
       "previousScenariosList",
       JSON.stringify(scenariosList),
     );
-    localStorage.setItem("previousHistory", JSON.stringify(scenariosHistory));
     localStorage.setItem(
       "previousCheckedValues",
       JSON.stringify(checkedValues),
     );
-  }, [scenariosList, scenariosHistory, checkedValues]);
+  }, [scenariosList, checkedValues]);
 
   const getAttrCompareValue = useCallback(
     (attr: keyof Scenario, value: any) => {
@@ -136,7 +126,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
   const verifyIfScenariosHistoryHasValue = useCallback(
     (attr: keyof Scenario, value: any): boolean => {
-      const valueExists = scenariosHistory.some((scenario) => {
+      const valueExists = sortedScenarioList.some((scenario: any) => {
         if (["addressId", "hypothese", "resourceId"].includes(attr)) {
           return scenario[attr] === value;
         }
@@ -151,7 +141,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
         if (attr === "responsibles") {
           return scenario.responsibles.some(
-            (responsible) =>
+            (responsible: any) =>
               `${responsible.name} ${responsible.role} ${responsible.permission}` ===
               value,
           );
@@ -162,7 +152,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
       return valueExists;
     },
-    [scenariosHistory],
+    [sortedScenarioList],
   );
 
   const getIndexesForMergedLines = useCallback(
@@ -236,10 +226,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
               title: scenarioTitle,
               id: rowId,
             });
-            setScenariosHistory((oldValues) => [
-              ...oldValues,
-              { ...emptyScenario, addressId: value, id: rowId },
-            ]);
           } //
 
           list = draft.map((item) => item);
@@ -410,15 +396,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     if (scenarioSaveEnabled) {
-      localStorage.setItem(
-        "scenariosHistory",
-        JSON.stringify(scenariosHistory),
-      );
-    }
-  }, [scenariosHistory, scenarioSaveEnabled]);
-
-  useEffect(() => {
-    if (scenarioSaveEnabled) {
       localStorage.setItem("scenariosList", JSON.stringify(scenariosList));
     }
   }, [scenariosList, scenarioSaveEnabled]);
@@ -443,8 +420,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
         setCheckedValues,
         scenariosList: sortedScenarioList,
         setScenariosList,
-        scenariosHistory,
-        setScenariosHistory,
         verifyIfScenariosHistoryHasValue,
         handleCheckItem,
         scenarioTitle,

@@ -58,24 +58,14 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
     });
 
     return responsibles.map((responsible) => {
-      const checked = verifyIfScenariosHistoryHasValue(
-        "responsibles",
-        `${responsible.name} ${responsible.role} ${responsible.permission}`,
-      );
-
-      return { ...responsible, checked };
+      return { ...responsible };
     });
-  }, [planData.resources, verifyIfScenariosHistoryHasValue]);
+  }, [planData.resources]);
 
   const formattedResources = useMemo(() => {
     return planData.resources
       .filter((resource) => resource.type !== "pessoa")
       .map((resource) => {
-        const checked = verifyIfScenariosHistoryHasValue(
-          "resourceId",
-          resource.id,
-        );
-
         const formattedAddress = resource.address
           ? formatResourceAddress(resource.address)
           : "";
@@ -89,11 +79,10 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
         return {
           ...resource,
           formattedAddress,
-          checked,
           formattedValue2: value2 ? value2 : undefined,
         };
       });
-  }, [planData.resources, verifyIfScenariosHistoryHasValue]);
+  }, [planData.resources]);
 
   const notCheckedLocations = useMemo(
     () => formattedRiskLocations.filter((location) => !location.checked),
@@ -579,20 +568,18 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
         disabled={props.disabled}
       />
       <ItemListingText included={props.checked}>{props.text}</ItemListingText>
-      {location.hostname === "localhost" && (
-        <button
-          onClick={() =>
-            handleRemoveItem({
-              attr,
-              value: props.value,
-              rowId,
-              rowIndex: row?.index,
-            })
-          }
-        >
-          <FiX color="red" size={12} />
-        </button>
-      )}
+      <button
+        onClick={() =>
+          handleRemoveItem({
+            attr,
+            value: props.value,
+            rowId,
+            rowIndex: row?.index,
+          })
+        }
+      >
+        <FiX color="red" size={12} />
+      </button>
     </div>
   );
 };

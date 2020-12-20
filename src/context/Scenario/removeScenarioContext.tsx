@@ -43,10 +43,8 @@ const emptyScenario: Scenario = {
 const RemoveScenarioProvider: React.FC = ({ children }) => {
   const {
     scenariosList,
-    scenariosHistory,
     savePreviousState,
     setScenariosList,
-    setScenariosHistory,
     setCheckedValues,
     getAttrCompareValue,
     getIndexesForMergedLines,
@@ -250,9 +248,9 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
           "threat",
           "hypothese",
           "risk",
-          "measure",
           "responsibles",
           "responsiblesMergeKey",
+          "measure",
         );
         break;
       default:
@@ -272,7 +270,6 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       value,
       attr,
       filtered,
-      removingFromHistory,
     }: ClearLinesValues) => {
       // Adicionar de volta as linhas removidas apenas com os atributos omitidos
       if (lineCopies.length) {
@@ -297,7 +294,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
 
               if (
                 _.isEqual(value, scenario[attr]) &&
-                (indexesToRemove.includes(index) || removingFromHistory)
+                indexesToRemove.includes(index)
               ) {
                 Object.assign(scenario, { ...replaceData });
               }
@@ -308,10 +305,6 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
                 startIndex: index,
                 list,
               });
-
-              if (removingFromHistory) {
-                idsToRemove.push(...indexes);
-              }
 
               if (indexes.length > 1 && willEmpty) {
                 indexes.splice(0, 1);
@@ -358,13 +351,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
   );
 
   const handleRemoveOtherAttrs = useCallback(
-    ({
-      list,
-      attr,
-      value,
-      rowIndex,
-      removingFromHistory,
-    }: FilterScenariosList): any => {
+    ({ list, attr, value, rowIndex }: FilterScenariosList): any => {
       if (rowIndex === undefined) {
         return list;
       }
@@ -397,13 +384,14 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         return !!(indexes.length && indexes.length < removeCount);
       });
 
-      const isLineDuplicated = removingFromHistory
-        ? false
-        : checkIfLineIsDuplicated({
-            previousAttr: omitions[omitions.length - 1],
-            startIndex: rowIndex,
-            attr,
-          });
+      const previousAttr =
+        attr === "resourceId" ? "measure" : omitions[omitions.length - 1];
+
+      const isLineDuplicated = checkIfLineIsDuplicated({
+        previousAttr,
+        startIndex: rowIndex,
+        attr,
+      });
 
       // Deve filtrar a lista de cenarios removendo as linhas que contem o valor no atributo atual
       const filtered: any[] = list.filter((scenario: Scenario, index) => {
@@ -411,14 +399,8 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
 
         let shouldKeepLine = true;
 
-        if (removingFromHistory) {
-          shouldKeepLine = !_.isEqual(value, scenario[attr]);
-        } //
-        else {
-          shouldKeepLine =
-            rowCompareValue !== compareValue ||
-            !indexesToRemove.includes(index);
-        }
+        shouldKeepLine =
+          rowCompareValue !== compareValue || !indexesToRemove.includes(index);
 
         if (!shouldKeepLine && !lineCopies.length) {
           lineCopies.push(scenario);
@@ -428,7 +410,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
           lineCopies.push(scenario);
         }
 
-        if (!shouldKeepLine && !removingFromHistory) {
+        if (!shouldKeepLine) {
           let attrKeys = Object.keys(scenario);
 
           if (lineCopies.some((lineCopy) => scenario.id === lineCopy?.id)) {
@@ -445,30 +427,13 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         return shouldKeepLine;
       });
 
-      const removeMethodsForEachLine = !removingFromHistory
-        ? handleRemoveSpecialCase({
-            list,
-            indexesToRemove,
-            prevAttr: omitions[omitions.length - 1],
-            attr,
-            value,
-          })
-        : null;
-
-      if (removingFromHistory) {
-        const clearedHistory = clearLinesValues({
-          omitions,
-          lineCopies,
-          list,
-          attr,
-          hasUnmergedInPreviousAttrs: true,
-          indexesToRemove,
-          value,
-          filtered,
-          removingFromHistory,
-        });
-        return clearedHistory;
-      }
+      const removeMethodsForEachLine = handleRemoveSpecialCase({
+        list,
+        indexesToRemove,
+        prevAttr: omitions[omitions.length - 1],
+        attr,
+        value,
+      });
 
       if (
         !removeMethodsForEachLine &&
@@ -487,7 +452,6 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         indexesToRemove,
         value,
         filtered,
-        removingFromHistory,
       });
 
       if (removeMethodsForEachLine) {
@@ -568,34 +532,6 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
     ({ attr, value, rowId, rowIndex }: HandleRemoveItem) => {
       savePreviousState();
 
-      const updatedHistory = produce(scenariosHistory, (historyDraft) => {
-        if (["addressId", "responsibles"].includes(attr)) {
-          const history = handleRemoveAddressOrResponsible({
-            list: historyDraft,
-            attr,
-            value,
-            rowId,
-          });
-
-          if (history) {
-            return history;
-          }
-        } //
-        else {
-          const history = handleRemoveOtherAttrs({
-            list: historyDraft,
-            attr,
-            value,
-            rowIndex,
-            removingFromHistory: true,
-          });
-
-          if (history) {
-            return history;
-          }
-        }
-      });
-
       const updatedScenariosList = produce(scenariosList, (draft) => {
         if (rowIndex || rowIndex === 0) {
           const { responsiblesMergeKey } = draft[rowIndex];
@@ -617,7 +553,6 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
               list: draft,
               attr,
               value,
-              removingFromHistory: false,
               rowIndex,
             });
 
@@ -628,7 +563,6 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         }
       });
 
-      setScenariosHistory(updatedHistory);
       setScenariosList(updatedScenariosList);
       setCheckedValues((oldValues) =>
         oldValues.filter((checkedItem) => {
@@ -644,9 +578,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       scenariosList,
       savePreviousState,
       handleRemoveAddressOrResponsible,
-      scenariosHistory,
       handleRemoveOtherAttrs,
-      setScenariosHistory,
       setScenariosList,
       setCheckedValues,
     ],
@@ -677,7 +609,6 @@ interface FilterScenariosList {
   attr: keyof Scenario;
   value: any;
   rowIndex?: number;
-  removingFromHistory: boolean;
 }
 
 interface HandleRemoveItem {
@@ -721,5 +652,4 @@ interface ClearLinesValues {
   value: any;
   attr: keyof Scenario;
   filtered: Array<Scenario>;
-  removingFromHistory: boolean;
 }

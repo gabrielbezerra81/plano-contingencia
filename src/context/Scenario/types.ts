@@ -5,8 +5,6 @@ export interface ScenarioContextData {
   setCheckedValues: React.Dispatch<React.SetStateAction<CheckedValue[]>>;
   scenariosList: Scenario[];
   setScenariosList: React.Dispatch<React.SetStateAction<Scenario[]>>;
-  scenariosHistory: Scenario[];
-  setScenariosHistory: React.Dispatch<React.SetStateAction<Scenario[]>>;
   verifyIfScenariosHistoryHasValue: (
     attr: keyof Scenario,
     value: any,

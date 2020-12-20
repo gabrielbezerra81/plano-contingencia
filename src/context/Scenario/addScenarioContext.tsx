@@ -20,14 +20,33 @@ const AddScenarioContext = React.createContext<AddScenarioContextData>(
   {} as AddScenarioContextData,
 );
 
+const emptyScenario: Scenario = {
+  addressId: "",
+  hypothese: {
+    hypothese: "",
+    mergeKey: 0,
+  },
+  id: "",
+  measure: {
+    description: "",
+    id: "",
+    mergeKey: 0,
+  },
+  resourceId: {
+    resourceId: "",
+    mergeKey: 0,
+  },
+  responsibles: [],
+  risk: { description: "", id: "", mergeKey: 0 },
+  threat: { cobrade: "", description: "", mergeKey: 0 },
+  title: "",
+};
+
 const AddScenarioProvider: React.FC = ({ children }) => {
   const {
     setCheckedValues,
     setScenariosList,
     verifyIfIsChecked,
-    scenariosHistory,
-    scenarioTitle,
-    setScenariosHistory,
     savePreviousState,
   } = useScenario();
 
@@ -101,46 +120,57 @@ const AddScenarioProvider: React.FC = ({ children }) => {
             return draft;
           }
 
-          for (const prevScenario of scenariosHistory) {
+          draft.forEach((scenarioItem) => {
             let shouldChangeAttrInLine: boolean = false;
-            let nestedFindValue = "";
             let isPreviousColumnChecked = false;
             let previousAttr: keyof Scenario = "" as any;
+            const pickAttrs: Array<keyof Scenario> = ["title"];
 
             switch (attr) {
               case "threat":
-                shouldChangeAttrInLine = !prevScenario.threat.cobrade;
-                nestedFindValue = "cobrade";
+                shouldChangeAttrInLine = !scenarioItem.threat.cobrade;
                 previousAttr = "addressId";
+                pickAttrs.push("addressId");
                 break;
               case "hypothese":
                 shouldChangeAttrInLine =
-                  !!prevScenario.threat.cobrade &&
-                  !prevScenario.hypothese.hypothese;
-                nestedFindValue = "hypothese";
+                  !!scenarioItem.threat.cobrade &&
+                  !scenarioItem.hypothese.hypothese;
                 previousAttr = "threat";
+                pickAttrs.push("addressId", "threat");
+
                 break;
               case "risk":
                 shouldChangeAttrInLine =
-                  !!prevScenario.hypothese.hypothese &&
-                  !prevScenario.risk.description;
-                nestedFindValue = "description";
+                  !!scenarioItem.hypothese.hypothese &&
+                  !scenarioItem.risk.description;
                 previousAttr = "hypothese";
+                pickAttrs.push("addressId", "threat", "hypothese");
+
                 break;
               case "measure":
                 shouldChangeAttrInLine =
-                  !!prevScenario.risk.description &&
-                  !prevScenario.measure.description;
-                nestedFindValue = "description";
+                  !!scenarioItem.risk.description &&
+                  !scenarioItem.measure.description;
+                pickAttrs.push("addressId", "threat", "hypothese", "risk");
+
                 previousAttr = "risk";
                 break;
 
               case "resourceId":
                 shouldChangeAttrInLine =
-                  !!prevScenario.measure.description &&
-                  !prevScenario.resourceId.resourceId;
-                nestedFindValue = "resourceId";
-                previousAttr = "measure";
+                  !!scenarioItem.measure.description &&
+                  !scenarioItem.resourceId.resourceId;
+                pickAttrs.push(
+                  "addressId",
+                  "threat",
+                  "hypothese",
+                  "risk",
+                  "measure",
+                  "responsibles",
+                  "responsiblesMergeKey",
+                );
+                previousAttr = "responsibles";
                 break;
               default:
                 break;
@@ -148,98 +178,61 @@ const AddScenarioProvider: React.FC = ({ children }) => {
 
             // Verificação por rowId individualiza as linhas. Celulas em linhas separadas podem ter o mesmo mergeKey se tiver ocorrido duplicação
             // E para conseguir adicionar um valor na coluna seguinte para apenas um desses itens de mesmo mergeKey, só é possivel usando o rowId
-            isPreviousColumnChecked = verifyIfIsChecked({
-              attr: previousAttr as any,
-              value: prevScenario[previousAttr as keyof Scenario],
-              compareMode: "rowId",
-              rowId: prevScenario.id,
-            });
 
-            console.log(shouldChangeAttrInLine, isPreviousColumnChecked);
+            if (attr === "resourceId") {
+              isPreviousColumnChecked = scenarioItem.responsibles.some(
+                (responsible) =>
+                  verifyIfIsChecked({
+                    attr: "responsibles",
+                    value: responsible,
+                    compareMode: "rowId",
+                    rowId: scenarioItem.id,
+                  }),
+              );
+            } //
+            else {
+              isPreviousColumnChecked = verifyIfIsChecked({
+                attr: previousAttr,
+                value: scenarioItem[previousAttr],
+                compareMode: "rowId",
+                rowId: scenarioItem.id,
+              });
+            }
 
-            if (shouldChangeAttrInLine && isPreviousColumnChecked) {
-              console.log(prevScenario.id);
-              let newLineId: any;
-              let newLineResponsibles: any[] = [];
-              let newLineResponsiblesMergeKey = undefined;
+            if (!isPreviousColumnChecked) {
+              return;
+            }
 
-              // Procurar cenário que está com o atributo atual vazio
-              const scenarioItem = draft.find((scenario) => {
-                let findValue: any = scenario[attr];
+            if (shouldChangeAttrInLine) {
+              Object.assign(scenarioItem, { [attr]: value });
+            } //
+            else {
+              const newLineId = (Math.random() * 100).toFixed(2);
 
-                if (nestedFindValue) {
-                  findValue = findValue[nestedFindValue];
-                }
+              const duplicateData = _.pick(scenarioItem, pickAttrs);
 
-                const isChecked = verifyIfIsChecked({
-                  attr: previousAttr,
-                  value: scenario[previousAttr],
-                  rowId: scenario.id,
-                  compareMode: "rowId",
-                });
-
-                return !findValue && isChecked;
+              draft.push({
+                ...emptyScenario,
+                ...duplicateData,
+                [attr]: value,
+                id: newLineId,
               });
 
-              // Como os responsaveis não vão para o historico, é necessário copiar diretamente da linha correspondente
-              if (attr === "resourceId") {
-                const correspondentLine = draft.find(
-                  (scenario) => scenario.id === prevScenario.id,
-                );
-
-                if (correspondentLine) {
-                  newLineResponsibles = correspondentLine.responsibles;
-                  newLineResponsiblesMergeKey =
-                    correspondentLine.responsiblesMergeKey;
-                }
-              } //
-              // Se encontrar um com o atributo vazio, preenche o valor dessa linha. O atributo da linha do prev e da linha atual precisam
-              // bater. Os dois cenários precisam ter addressId = 10 para adicionar a ameaça.
-              if (
-                scenarioItem &&
-                _.isEqual(
-                  scenarioItem[previousAttr],
-                  prevScenario[previousAttr],
-                )
-              ) {
-                Object.assign(scenarioItem, { [attr]: value });
-                newLineId = scenarioItem.id;
-              } // Caso contrario, será criada uma nova linha com o nvo valor marcado
-              else {
-                newLineId = (Math.random() * 100).toFixed(2);
-                draft.push({
-                  ...prevScenario,
-                  [attr]: value,
-                  title: scenarioTitle,
-                  id: newLineId,
-                  responsibles: newLineResponsibles,
-                  responsiblesMergeKey: newLineResponsiblesMergeKey,
-                });
-
-                duplicateCheckedValuesWhenAddingLine({
-                  rowId: prevScenario.id || "",
-                  newRowId: newLineId,
-                });
-              }
-
-              setScenariosHistory((oldValues) => [
-                ...oldValues,
-                { ...prevScenario, [attr]: value, id: newLineId },
-              ]);
+              duplicateCheckedValuesWhenAddingLine({
+                rowId: scenarioItem.id || "",
+                newRowId: newLineId,
+              });
             }
-          }
+          });
         });
 
         return updatedList;
       });
     },
     [
-      scenariosHistory,
-      scenarioTitle,
       verifyIfIsChecked,
       savePreviousState,
       duplicateCheckedValuesWhenAddingLine,
-      setScenariosHistory,
       setScenariosList,
     ],
   );
