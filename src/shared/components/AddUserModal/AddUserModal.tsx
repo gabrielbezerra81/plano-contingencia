@@ -1,10 +1,11 @@
 import { usePlanData } from "context/PlanData/planDataContext";
 import produce from "immer";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { Button, Form } from "react-bootstrap";
 
 import AttributeListing from "shared/components/AttributeListing/AttributeListing";
 import Input from "shared/components/Input/Input";
+import formatUserAddress from "shared/utils/format/formatUserAddress";
 import { Person, Address, UserDocument } from "types/Plan";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 
@@ -96,6 +97,8 @@ const AddUserModal: React.FC<Props> = ({
     emitter: "",
   });
   const [phonePriority, setPhonePriority] = useState(0);
+
+  const [validatedAddress, setValidatedAddress] = useState(false);
 
   const handleEditUser = useCallback(
     (e) => {
@@ -217,6 +220,11 @@ const AddUserModal: React.FC<Props> = ({
       if (setShowAddToGroupModal) {
         setShowAddToGroupModal(false);
       }
+    } //
+    else {
+      alert(
+        "Erro ao cadastrar pessoa, verifique seus dados e tente novamente!",
+      );
     }
   }, [
     setShow,
@@ -240,6 +248,37 @@ const AddUserModal: React.FC<Props> = ({
     setPhonePriority(0);
 
     setUser(clearedUser);
+  }, [user]);
+
+  const handlePriorityChange = useCallback(
+    (index: number) => {
+      if (user.phones.length === 1 && user.phones[index].priority === 1) {
+        return;
+      }
+
+      const updatedUser = produce(user, (draft) => {
+        const phone = draft.phones[index];
+
+        if (phone.priority === 1) {
+          phone.priority = 0;
+        } //
+        else {
+          phone.priority = 1;
+          draft.phones.forEach((phoneItem, phoneIndex) => {
+            if (phoneIndex !== index) {
+              phoneItem.priority = 0;
+            }
+          });
+        }
+      });
+
+      setUser(updatedUser);
+    },
+    [user],
+  );
+
+  const hasAnyMainNumber = useMemo(() => {
+    return user.phones.some((phone) => phone.priority === 1);
   }, [user]);
 
   return (
@@ -339,19 +378,21 @@ const AddUserModal: React.FC<Props> = ({
                 onChange={(e) => setObs(e.target.value)}
               />
 
-              <Form.Check
-                type="checkbox"
-                checked={phonePriority === 1}
-                label="Principal"
-                onChange={() => {
-                  setPhonePriority((oldValue) => {
-                    if (oldValue === 1) {
-                      return 0;
-                    }
-                    return 1;
-                  });
-                }}
-              />
+              {!hasAnyMainNumber && !user.phones.length && (
+                <Form.Check
+                  type="checkbox"
+                  checked={phonePriority === 1}
+                  label="Principal"
+                  onChange={() => {
+                    setPhonePriority((oldValue) => {
+                      if (oldValue === 1) {
+                        return 0;
+                      }
+                      return 1;
+                    });
+                  }}
+                />
+              )}
 
               <Button
                 onClick={handleEditUser}
@@ -369,6 +410,15 @@ const AddUserModal: React.FC<Props> = ({
                 onRemove={handleRemoveItemOfList}
                 renderText={(phoneItem: any) => phoneItem.phone}
                 size="small"
+                children={(index: number) => (
+                  <Form.Check
+                    type="checkbox"
+                    style={{ marginLeft: 12 }}
+                    checked={user.phones[index].priority === 1}
+                    label="Principal"
+                    onChange={() => handlePriorityChange(index)}
+                  />
+                )}
               />
             </section>
 
@@ -440,91 +490,125 @@ const AddUserModal: React.FC<Props> = ({
           <div className="borderedContainer">
             <label>Endereço</label>
 
-            <div className="separatedInputRow">
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="CEP"
-                name="cep"
-                value={currentAddress.cep}
-                onChange={handleEditCurrentAddress}
-                masked
-                maskProps={{ mask: "99999-999" }}
-              />
+            <Form
+              noValidate
+              validated={validatedAddress}
+              onSubmit={(event) => {
+                const form = event.currentTarget;
 
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="Cidade"
-                name="city"
-                value={currentAddress.city}
-                onChange={handleEditCurrentAddress}
-              />
+                event.preventDefault();
 
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="Estado"
-                name="state"
-                value={currentAddress.state}
-                onChange={handleEditCurrentAddress}
-              />
-            </div>
+                if (form.checkValidity() === false) {
+                  event.stopPropagation();
+                } //
+                else {
+                  setValidatedAddress(false);
+                  handleEditUser({
+                    target: {
+                      name: "addresses",
+                      value: "",
+                    },
+                  });
 
-            <div className="separatedInputRow">
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="Logradouro"
-                name="street"
-                value={currentAddress.street}
-                onChange={handleEditCurrentAddress}
-              />
-            </div>
+                  return;
+                }
 
-            <div className="separatedInputRow">
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="Bairro"
-                name="neighbor"
-                value={currentAddress.neighbor}
-                onChange={handleEditCurrentAddress}
-              />
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="Nº"
-                name="number"
-                value={currentAddress.number}
-                onChange={handleEditCurrentAddress}
-              />
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="Complemento"
-                name="complement"
-                value={currentAddress.complement}
-                onChange={handleEditCurrentAddress}
-              />
-              <Button
-                size="sm"
-                className="darkBlueButton"
-                name="addresses"
-                onClick={handleEditUser}
-              >
-                Incluir
-              </Button>
-            </div>
+                setValidatedAddress(true);
+              }}
+            >
+              <div className="separatedInputRow">
+                <Input
+                  size="small"
+                  borderBottomOnly
+                  placeholder="CEP"
+                  name="cep"
+                  value={currentAddress.cep}
+                  onChange={handleEditCurrentAddress}
+                  masked
+                  maskProps={{ mask: "99999-999" }}
+                  required
+                  isValidated={validatedAddress}
+                />
 
+                <Input
+                  size="small"
+                  borderBottomOnly
+                  placeholder="Cidade"
+                  name="city"
+                  value={currentAddress.city}
+                  onChange={handleEditCurrentAddress}
+                  required
+                  isValidated={validatedAddress}
+                />
+
+                <Input
+                  size="small"
+                  borderBottomOnly
+                  placeholder="Estado"
+                  name="state"
+                  value={currentAddress.state}
+                  onChange={handleEditCurrentAddress}
+                  required
+                  isValidated={validatedAddress}
+                />
+              </div>
+
+              <div className="separatedInputRow">
+                <Input
+                  size="small"
+                  borderBottomOnly
+                  placeholder="Logradouro"
+                  name="street"
+                  value={currentAddress.street}
+                  onChange={handleEditCurrentAddress}
+                  required
+                  isValidated={validatedAddress}
+                />
+              </div>
+
+              <div className="separatedInputRow">
+                <Input
+                  size="small"
+                  borderBottomOnly
+                  placeholder="Bairro"
+                  name="neighbor"
+                  value={currentAddress.neighbor}
+                  onChange={handleEditCurrentAddress}
+                />
+                <Input
+                  size="small"
+                  borderBottomOnly
+                  placeholder="Nº"
+                  name="number"
+                  value={currentAddress.number}
+                  onChange={handleEditCurrentAddress}
+                />
+                <Input
+                  size="small"
+                  borderBottomOnly
+                  placeholder="Complemento"
+                  name="complement"
+                  value={currentAddress.complement}
+                  onChange={handleEditCurrentAddress}
+                />
+                <Button
+                  size="sm"
+                  className="darkBlueButton"
+                  name="addresses"
+                  type="submit"
+                >
+                  Incluir
+                </Button>
+              </div>
+            </Form>
             <AttributeListing
               title="Endereços cadastrados"
               items={user.addresses}
               name="addresses"
               onRemove={handleRemoveItemOfList}
-              renderText={(addressItem: Address) => {
-                return `${addressItem.street}, ${addressItem.number}, ${addressItem.city}, ${addressItem.state}.`;
-              }}
+              renderText={(addressItem: Address) =>
+                formatUserAddress(addressItem)
+              }
               size="small"
             />
           </div>
