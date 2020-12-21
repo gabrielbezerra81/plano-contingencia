@@ -24,6 +24,4 @@ export default function formatUserAddress(address: Address) {
   }
 
   return formattedAddress;
-
-  return `${address.street}, ${address.number}, ${address.city}, ${address.state}.`;
 }

@@ -2,7 +2,7 @@ import colors from "assets/colors";
 import styled from "styled-components";
 import { shade } from "polished";
 
-import { Modal as BSModal } from "react-bootstrap";
+import { Form, Modal as BSModal } from "react-bootstrap";
 
 export const Modal = styled(BSModal)`
   .modal-dialog {
@@ -55,10 +55,14 @@ export const MapAndAddressListContainer = styled.div`
   }
 `;
 
-export const AddLocationContainer = styled.div`
+export const AddLocationContainer = styled(Form)`
   flex: 1;
   padding-left: 8px;
   max-width: 420px;
+
+  > .inputContainer {
+    padding-right: 56px;
+  }
 
   > main {
     padding-left: 8px;

@@ -13,7 +13,7 @@ import {
   AddLocationContainer,
 } from "./styles";
 import Input from "shared/components/Input/Input";
-import { Button } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import produce from "immer";
 import axios from "axios";
 import NumberInput from "shared/components/NumberInput/NumberInput";
@@ -70,6 +70,8 @@ const StepThree: React.FC = () => {
     lat: "",
     long: "",
   });
+
+  const [validatedAddress, setValidatedAddress] = useState(false);
 
   useEffect(() => {
     if (map) {
@@ -190,6 +192,27 @@ const StepThree: React.FC = () => {
     [handleEditCurrentAddress],
   );
 
+  const handleSubmitForm = useCallback(
+    (event) => {
+      const form = event.currentTarget;
+
+      event.preventDefault();
+
+      if (form.checkValidity() === false) {
+        event.stopPropagation();
+      } //
+      else {
+        handleAddAddress();
+        setValidatedAddress(false);
+
+        return;
+      }
+
+      setValidatedAddress(true);
+    },
+    [handleAddAddress],
+  );
+
   useEffect(() => {
     if (selectedTabIndex !== 3) {
       setLoadMap(true);
@@ -244,7 +267,11 @@ const StepThree: React.FC = () => {
           />
         </MapAndAddressListContainer>
 
-        <AddLocationContainer>
+        <AddLocationContainer
+          noValidate
+          onSubmit={handleSubmitForm}
+          validated={validatedAddress}
+        >
           <Input
             rightIcon={<GrSearch />}
             value={address.cep}
@@ -260,6 +287,8 @@ const StepThree: React.FC = () => {
             masked
             maskProps={{ mask: "99999-999" }}
             onRightIconClick={handleSearchFromCEP}
+            required
+            isValidated={validatedAddress}
           />
 
           <main>
@@ -271,6 +300,8 @@ const StepThree: React.FC = () => {
               name="identification"
               value={address.identification}
               onChange={handleEditCurrentAddress}
+              required
+              isValidated={validatedAddress}
             />
             <Input
               labelOnInput="Endereço:"
@@ -278,6 +309,8 @@ const StepThree: React.FC = () => {
               name="street"
               value={address.street}
               onChange={handleEditCurrentAddress}
+              required
+              isValidated={validatedAddress}
             />
             <Input
               labelOnInput="Bairro:"
@@ -292,6 +325,8 @@ const StepThree: React.FC = () => {
               name="city"
               value={address.city}
               onChange={handleEditCurrentAddress}
+              required
+              isValidated={validatedAddress}
             />
             <Input
               labelOnInput="Estado:"
@@ -299,6 +334,8 @@ const StepThree: React.FC = () => {
               name="state"
               value={address.state}
               onChange={handleEditCurrentAddress}
+              required
+              isValidated={validatedAddress}
             />
             <Input
               labelOnInput="Complemento:"
@@ -348,7 +385,7 @@ const StepThree: React.FC = () => {
             </div>
 
             <div className="buttonsContainer">
-              <Button onClick={handleAddAddress}>Adicionar</Button>
+              <Button type="submit">Adicionar</Button>
 
               <Button onClick={handleChooseFile} size="sm" variant="secondary">
                 Escolher arquivo
