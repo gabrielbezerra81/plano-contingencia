@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Modal as BSModal } from "react-bootstrap";
+import { Form, Modal as BSModal } from "react-bootstrap";
 import colors from "assets/colors";
 import { shade } from "polished";
 
@@ -66,9 +66,13 @@ export const MapAndAddressListContainer = styled.div`
   }
 `;
 
-export const AddLocationContainer = styled.div`
+export const AddLocationContainer = styled(Form)`
   flex: 1;
   padding-left: 8px;
+
+  > .inputContainer {
+    padding-right: 56px;
+  }
 
   .inputContainer {
     border-bottom-color: #929292;

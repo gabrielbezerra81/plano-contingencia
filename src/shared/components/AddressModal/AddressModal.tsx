@@ -69,6 +69,8 @@ const AddressModal: React.FC<Props> = ({
 
   const [position, setPosition] = useState<LatLngLiteral | null>(null);
 
+  const [validatedAddress, setValidatedAddress] = useState(false);
+
   const handleSearchFromCEP = useCallback(async () => {
     try {
       const parsedCep = address.cep.replace("-", "");
@@ -135,6 +137,27 @@ const AddressModal: React.FC<Props> = ({
       } as any);
     },
     [handleEditCurrentAddress],
+  );
+
+  const handleSubmitForm = useCallback(
+    (event) => {
+      const form = event.currentTarget;
+
+      event.preventDefault();
+
+      if (form.checkValidity() === false) {
+        event.stopPropagation();
+      } //
+      else {
+        handleAddAddress();
+        setValidatedAddress(false);
+
+        return;
+      }
+
+      setValidatedAddress(true);
+    },
+    [handleAddAddress],
   );
 
   const handleChangeLong = useCallback(
@@ -239,7 +262,11 @@ const AddressModal: React.FC<Props> = ({
             /> */}
           </MapAndAddressListContainer>
 
-          <AddLocationContainer>
+          <AddLocationContainer
+            noValidate
+            onSubmit={handleSubmitForm}
+            validated={validatedAddress}
+          >
             <Input
               rightIcon={<GrSearch />}
               value={address.cep}
@@ -256,6 +283,8 @@ const AddressModal: React.FC<Props> = ({
               maskProps={{ mask: "99999-999" }}
               onRightIconClick={handleSearchFromCEP}
               size="small"
+              required
+              isValidated={validatedAddress}
             />
 
             <main>
@@ -267,6 +296,8 @@ const AddressModal: React.FC<Props> = ({
                 name="identification"
                 value={address.identification}
                 onChange={handleEditCurrentAddress}
+                required
+                isValidated={validatedAddress}
               />
               <Input
                 labelOnInput="Endereço:"
@@ -274,6 +305,8 @@ const AddressModal: React.FC<Props> = ({
                 name="street"
                 value={address.street}
                 onChange={handleEditCurrentAddress}
+                required
+                isValidated={validatedAddress}
               />
               <Input
                 labelOnInput="Bairro:"
@@ -288,6 +321,8 @@ const AddressModal: React.FC<Props> = ({
                 name="city"
                 value={address.city}
                 onChange={handleEditCurrentAddress}
+                required
+                isValidated={validatedAddress}
               />
               <Input
                 labelOnInput="Estado:"
@@ -295,6 +330,8 @@ const AddressModal: React.FC<Props> = ({
                 name="state"
                 value={address.state}
                 onChange={handleEditCurrentAddress}
+                required
+                isValidated={validatedAddress}
               />
               <Input
                 labelOnInput="Complemento:"
@@ -344,7 +381,7 @@ const AddressModal: React.FC<Props> = ({
               </div>
 
               <div className="buttonsContainer">
-                <Button onClick={handleAddAddress}>Adicionar</Button>
+                <Button type="submit">Adicionar</Button>
               </div>
             </main>
           </AddLocationContainer>
