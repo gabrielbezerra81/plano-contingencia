@@ -466,24 +466,30 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                         onChange={(e) => setAddressFilterText(e.target.value)}
                       />
 
-                      {filteredByAddressResources.map((resourceItem, index) => (
-                        <Form.Check
-                          key={index}
-                          type="radio"
-                          label={resourceItem.formattedAddress}
-                          name="resourceAddressRadio"
-                          checked={selectedAddressIndex === index}
-                          onChange={() => {
-                            setSelectedAddressIndex(index);
-                            handleEditCurrentResource({
-                              target: {
-                                name: "address",
-                                value: resourceItem.address,
-                              },
-                            });
-                          }}
-                        />
-                      ))}
+                      {filteredByAddressResources.map((resourceItem, index) => {
+                        if (!resourceItem.formattedAddress) {
+                          return null;
+                        }
+
+                        return (
+                          <Form.Check
+                            key={index}
+                            type="radio"
+                            label={resourceItem.formattedAddress}
+                            name="resourceAddressRadio"
+                            checked={selectedAddressIndex === index}
+                            onChange={() => {
+                              setSelectedAddressIndex(index);
+                              handleEditCurrentResource({
+                                target: {
+                                  name: "address",
+                                  value: resourceItem.address,
+                                },
+                              });
+                            }}
+                          />
+                        );
+                      })}
                       {!!currentAddedAddress && !!formattedCurrentAddedAddress && (
                         <Form.Check
                           type="radio"

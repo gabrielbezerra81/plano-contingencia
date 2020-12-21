@@ -1,11 +1,33 @@
 import { Address } from "types/Plan";
 
 export default function formatResourceAddress(address: Address): string {
-  const number = address.number ? `${address.number}, ` : "";
+  let formattedAddress = "";
 
-  const complement = address.complement ? `${address.complement}, ` : "";
+  if (address.street) {
+    formattedAddress += `${address.street}, `;
+  }
 
-  const formattedAddress = `${address.street}, ${number}${address.neighbor}, ${complement}${address.city} - ${address.state}`;
+  if (address.number) {
+    formattedAddress += `${address.number}, `;
+  }
+
+  if (address.neighbor) {
+    formattedAddress += `${address.neighbor}, `;
+  }
+
+  if (address.complement) {
+    formattedAddress += `${address.complement}, `;
+  }
+
+  if (address.city) {
+    formattedAddress += `${address.city}, `;
+
+    if (address.state) {
+      formattedAddress = formattedAddress.trimEnd();
+      formattedAddress += `- ${address.state}`;
+      formattedAddress = formattedAddress.replace(",-", " -");
+    }
+  }
 
   return formattedAddress;
 }

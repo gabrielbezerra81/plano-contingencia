@@ -9,7 +9,6 @@ interface Props {
   onRemove: (...data: any[]) => any;
   name: string;
   renderText?: (data: any) => string;
-  textComponent?: React.ReactNode;
   containerClass?: string;
   size?: "small" | "normal";
   showCloseButton?: boolean;
@@ -21,10 +20,10 @@ const AttributeListing: React.FC<Props> = ({
   onRemove,
   name,
   renderText,
-  textComponent,
   containerClass,
   size = "normal",
   showCloseButton = true,
+  children,
 }) => {
   return (
     <Container
@@ -42,7 +41,7 @@ const AttributeListing: React.FC<Props> = ({
           )}
 
           {!!renderText && <span>{renderText(item)}</span>}
-          {!!textComponent && textComponent}
+          {!!children && typeof children === "function" && children(index)}
         </div>
       ))}
     </Container>

@@ -134,7 +134,7 @@ const RightSideMenu: React.FC = () => {
                     <h6>{resource.value1}</h6>
                     <h6>
                       {resource.responsibles.length
-                        ? `${resource.responsibles[0].name} ${resource.responsibles[0].phone}`
+                        ? `${resource.responsibles[0].name} - ${resource.responsibles[0].phone}`
                         : ""}
                     </h6>
                   </div>

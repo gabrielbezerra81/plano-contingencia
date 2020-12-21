@@ -240,6 +240,8 @@ const ScenarioProvider: React.FC = ({ children }) => {
     [verifyIfScenariosHistoryHasValue, savePreviousState, scenarioTitle],
   );
 
+  const checkPreviousAttrs = useCallback(() => {}, []);
+
   const handleCheckItem = useCallback(
     ({ attr, value, rowId, rowIndex }: HandleCheckItem) => {
       const id = (Math.random() * 100).toFixed(2);

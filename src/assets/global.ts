@@ -94,6 +94,11 @@ const GlobalStyle = createGlobalStyle`
     .form-control[readonly] {
       background-color: transparent;
     }
+
+    .form-control.is-valid,
+    .was-validated .form-control:valid {
+      background-image: none;
+    }
   `}
 
 
