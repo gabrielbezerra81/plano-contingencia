@@ -90,7 +90,7 @@ export const Container = styled.div`
         &:last-child {
           padding-left: 8px;
 
-          > .darkBlueButton {
+          .darkBlueButton {
             margin-top: 40px;
           }
         }
@@ -103,53 +103,60 @@ export const Container = styled.div`
           margin-bottom: 12px;
         }
 
-        > .inputContainer {
-          & + .inputContainer {
-            margin-top: 4px;
+        form {
+          .phoneInput {
+            padding-right: 56px;
           }
 
-          input {
-            padding-left: 0;
-          }
-        }
-
-        > .darkBlueButton {
-          margin-top: 12px;
-          margin-left: auto;
-        }
-
-        .phoneTypeRadio {
-          position: absolute;
-          z-index: 1;
-          right: 8px;
-          top: 32px;
-
-          .form-check {
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-
-            & + .form-check {
+          > .inputContainer {
+            & + .inputContainer {
               margin-top: 4px;
             }
 
             input {
-              height: 12px;
-              position: relative;
-              margin: 0;
-              margin-left: 4px;
-            }
-
-            label {
-              font-size: 12px;
-              line-height: 12px;
+              padding-left: 0;
             }
           }
-        }
 
-        > .form-check {
-          margin-top: 4px;
+          .darkBlueButton {
+            display: block;
+            margin-top: 12px;
+            margin-left: auto;
+          }
+
+          .phoneTypeRadio {
+            position: absolute;
+            z-index: 1;
+            right: 8px;
+            top: 32px;
+
+            .form-check {
+              padding: 0;
+              display: flex;
+              align-items: center;
+              justify-content: flex-end;
+
+              & + .form-check {
+                margin-top: 4px;
+              }
+
+              input {
+                height: 12px;
+                position: relative;
+                margin: 0;
+                margin-left: 4px;
+              }
+
+              label {
+                font-size: 12px;
+                line-height: 12px;
+              }
+            }
+          }
+
+          > .form-check {
+            margin-top: 4px;
+          }
         }
       }
     }

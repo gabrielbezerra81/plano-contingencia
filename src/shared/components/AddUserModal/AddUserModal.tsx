@@ -99,6 +99,8 @@ const AddUserModal: React.FC<Props> = ({
   const [phonePriority, setPhonePriority] = useState(0);
 
   const [validatedAddress, setValidatedAddress] = useState(false);
+  const [validatedPhone, setValidatedPhone] = useState(false);
+  const [validatedEmail, setValidatedEmail] = useState(false);
 
   const handleEditUser = useCallback(
     (e) => {
@@ -250,6 +252,13 @@ const AddUserModal: React.FC<Props> = ({
     setUser(clearedUser);
   }, [user]);
 
+  const onExit = useCallback(() => {
+    setShow(false);
+    setValidatedAddress(false);
+    setValidatedPhone(false);
+    setValidatedEmail(false);
+  }, [setShow]);
+
   const handlePriorityChange = useCallback(
     (index: number) => {
       if (user.phones.length === 1 && user.phones[index].priority === 1) {
@@ -277,6 +286,33 @@ const AddUserModal: React.FC<Props> = ({
     [user],
   );
 
+  const handleSubmitForm = useCallback(
+    (event, setValidated) => {
+      const form = event.currentTarget;
+      const { name } = form;
+
+      event.preventDefault();
+
+      if (form.checkValidity() === false) {
+        event.stopPropagation();
+      } //
+      else {
+        setValidated(false);
+        handleEditUser({
+          target: {
+            name,
+            value: "",
+          },
+        });
+
+        return;
+      }
+
+      setValidated(true);
+    },
+    [handleEditUser],
+  );
+
   const hasAnyMainNumber = useMemo(() => {
     return user.phones.some((phone) => phone.priority === 1);
   }, [user]);
@@ -286,10 +322,10 @@ const AddUserModal: React.FC<Props> = ({
       backdropClassName="addUserModalWrapper"
       show={show}
       centered
-      onHide={() => setShow(false)}
+      onHide={onExit}
       onExit={handleCleanOnExit}
     >
-      <ModalCloseButton setShow={setShow} />
+      <ModalCloseButton setShow={onExit} />
       <Container>
         <div className="borderedContainer userDataContainer">
           <label>Dados</label>
@@ -341,68 +377,75 @@ const AddUserModal: React.FC<Props> = ({
             <section>
               <h5>Telefone(s)</h5>
 
-              <div className="phoneTypeRadio">
-                <Form.Check type="radio">
-                  <Form.Check.Label>Celular</Form.Check.Label>
-                  <Form.Check.Input
-                    onChange={() => setPhoneType("celular")}
-                    name="phoneTypeRadio"
-                    type="radio"
-                  />
-                </Form.Check>
-
-                <Form.Check type="radio">
-                  <Form.Check.Label>Fixo</Form.Check.Label>
-                  <Form.Check.Input
-                    onChange={() => setPhoneType("fixo")}
-                    name="phoneTypeRadio"
-                    type="radio"
-                  />
-                </Form.Check>
-              </div>
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="(xx) xxxxx-xxxx"
-                value={currentPhone}
-                onChange={(e) => setCurrentPhone(e.target.value)}
-                masked
-                maskProps={{ mask: "(99) 99999-9999" }}
-              />
-
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="Observação"
-                value={obs}
-                onChange={(e) => setObs(e.target.value)}
-              />
-
-              {!hasAnyMainNumber && !user.phones.length && (
-                <Form.Check
-                  type="checkbox"
-                  checked={phonePriority === 1}
-                  label="Principal"
-                  onChange={() => {
-                    setPhonePriority((oldValue) => {
-                      if (oldValue === 1) {
-                        return 0;
-                      }
-                      return 1;
-                    });
-                  }}
-                />
-              )}
-
-              <Button
-                onClick={handleEditUser}
+              <Form
                 name="phones"
-                size="sm"
-                className="darkBlueButton"
+                noValidate
+                validated={validatedPhone}
+                onSubmit={(e) => handleSubmitForm(e, setValidatedPhone)}
               >
-                Incluir
-              </Button>
+                <div className="phoneTypeRadio">
+                  <Form.Check type="radio">
+                    <Form.Check.Label>Celular</Form.Check.Label>
+                    <Form.Check.Input
+                      onChange={() => setPhoneType("celular")}
+                      name="phoneTypeRadio"
+                      type="radio"
+                      checked={phoneType === "celular"}
+                    />
+                  </Form.Check>
 
+                  <Form.Check type="radio">
+                    <Form.Check.Label>Fixo</Form.Check.Label>
+                    <Form.Check.Input
+                      onChange={() => setPhoneType("fixo")}
+                      name="phoneTypeRadio"
+                      type="radio"
+                      checked={phoneType === "fixo"}
+                    />
+                  </Form.Check>
+                </div>
+                <Input
+                  containerClass="phoneInput"
+                  size="small"
+                  borderBottomOnly
+                  placeholder="(xx) xxxxx-xxxx"
+                  value={currentPhone}
+                  onChange={(e) => setCurrentPhone(e.target.value)}
+                  masked
+                  maskProps={{ mask: "(99) 99999-9999" }}
+                  required
+                  isValidated={validatedPhone}
+                />
+
+                <Input
+                  size="small"
+                  borderBottomOnly
+                  placeholder="Observação"
+                  value={obs}
+                  onChange={(e) => setObs(e.target.value)}
+                />
+
+                {!hasAnyMainNumber && !user.phones.length && (
+                  <Form.Check
+                    required
+                    type="checkbox"
+                    checked={phonePriority === 1}
+                    label="Principal"
+                    onChange={() => {
+                      setPhonePriority((oldValue) => {
+                        if (oldValue === 1) {
+                          return 0;
+                        }
+                        return 1;
+                      });
+                    }}
+                  />
+                )}
+
+                <Button type="submit" size="sm" className="darkBlueButton">
+                  Incluir
+                </Button>
+              </Form>
               <AttributeListing
                 title="Telefones cadastrados"
                 items={user.phones}
@@ -424,21 +467,25 @@ const AddUserModal: React.FC<Props> = ({
 
             <section>
               <h5>E-mail</h5>
-              <Input
-                size="small"
-                borderBottomOnly
-                placeholder="Digite e-mail para contato"
-                value={currentEmail}
-                onChange={(e) => setCurrentEmail(e.target.value)}
-              />
-              <Button
-                onClick={handleEditUser}
+              <Form
                 name="emails"
-                size="sm"
-                className="darkBlueButton"
+                noValidate
+                validated={validatedEmail}
+                onSubmit={(e) => handleSubmitForm(e, setValidatedEmail)}
               >
-                Incluir
-              </Button>
+                <Input
+                  size="small"
+                  borderBottomOnly
+                  placeholder="Digite e-mail para contato"
+                  value={currentEmail}
+                  onChange={(e) => setCurrentEmail(e.target.value)}
+                  required
+                  isValidated={validatedEmail}
+                />
+                <Button type="submit" size="sm" className="darkBlueButton">
+                  Incluir
+                </Button>
+              </Form>
 
               <AttributeListing
                 title="E-mails cadastrados"
@@ -493,28 +540,8 @@ const AddUserModal: React.FC<Props> = ({
             <Form
               noValidate
               validated={validatedAddress}
-              onSubmit={(event) => {
-                const form = event.currentTarget;
-
-                event.preventDefault();
-
-                if (form.checkValidity() === false) {
-                  event.stopPropagation();
-                } //
-                else {
-                  setValidatedAddress(false);
-                  handleEditUser({
-                    target: {
-                      name: "addresses",
-                      value: "",
-                    },
-                  });
-
-                  return;
-                }
-
-                setValidatedAddress(true);
-              }}
+              onSubmit={(e) => handleSubmitForm(e, setValidatedAddress)}
+              name="addresses"
             >
               <div className="separatedInputRow">
                 <Input
