@@ -42,6 +42,8 @@ const Input: React.FC<InputProps> = ({
   maskProps,
   onRightIconClick = () => {},
   isValidated,
+  children,
+  as,
   ...rest
 }) => {
   const inputRef = useRef<any>(null);
@@ -92,8 +94,15 @@ const Input: React.FC<InputProps> = ({
         }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valid, isValidated, maskProps, maskProps, masked]);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      // inputRef.current.blur();
+      inputRef.current.focus();
+    }
+  }, []);
 
   const borderClass = useMemo(() => {
     if (bordered) {
@@ -133,10 +142,18 @@ const Input: React.FC<InputProps> = ({
           {...maskProps}
         />
       ) : (
-        <FormControl ref={inputRef} rows={2} className={inputClass} {...rest} />
+        <FormControl
+          as={as}
+          ref={inputRef}
+          rows={2}
+          className={inputClass}
+          {...rest}
+        />
       )}
 
       {!!RightIcon && <button onClick={onRightIconClick}>{RightIcon}</button>}
+
+      {as !== "select" && children}
     </Container>
   );
 };

@@ -20,6 +20,19 @@ export const Container = styled.div`
   padding: 24px 16px;
   height: 436px;
 
+  .invalidSearchText {
+    display: block;
+    margin-top: 12px;
+    color: #dc3545;
+    font-size: 14px;
+  }
+
+  form {
+    .inputContainer {
+      padding-right: 56px;
+    }
+  }
+
   > h6 {
     text-align: center;
     color: #3d3d3d;

@@ -59,12 +59,12 @@ export const Container = styled.div<ContainerProps>`
     &:focus-within {
       &.borderBottomOnly {
         border-color: transparent;
-        box-shadow: 0px 4px 2px -2px ${isValid ? "#80bdff" : "red"};
+        box-shadow: 0px 4px 2px -2px ${isValid ? "#80bdff" : "#dc3545"};
       }
 
       &.bordered {
         border-color: transparent;
-        box-shadow: 0px 0px 2px 2px ${isValid ? "#80bdff" : "red"};
+        box-shadow: 0px 0px 2px 2px ${isValid ? "#80bdff" : "#dc3545"};
       }
     }
   `}
