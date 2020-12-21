@@ -6,13 +6,14 @@ interface ContainerProps {
   labelOnInput: boolean;
   borderBottomOnly: boolean;
   size: "small" | "normal";
+  isValid: boolean;
 }
 
 export const Container = styled.div<ContainerProps>`
   position: relative;
   display: flex;
   align-items: center;
-  height:32px;
+  height: 32px;
 
   ${({ size }) =>
     size === "small" &&
@@ -54,6 +55,20 @@ export const Container = styled.div<ContainerProps>`
       border-radius: 0;
     `}
 
+    ${({ isValid }) => css`
+    &:focus-within {
+      &.borderBottomOnly {
+        border-color: transparent;
+        box-shadow: 0px 4px 2px -2px ${isValid ? "#80bdff" : "red"};
+      }
+
+      &.bordered {
+        border-color: transparent;
+        box-shadow: 0px 0px 2px 2px ${isValid ? "#80bdff" : "red"};
+      }
+    }
+  `}
+
   ${({ labelOnInput }) =>
     labelOnInput &&
     css`
@@ -71,7 +86,7 @@ export const Container = styled.div<ContainerProps>`
       }
     `}
 
-    > select {
+  > select {
     background-color: transparent;
     border: none;
     color: #3d3d3d;
@@ -90,6 +105,7 @@ export const Container = styled.div<ContainerProps>`
     color: #3d3d3d;
     box-shadow: none !important;
     flex: 1;
+    /* #80bdff */
 
     &.form-control::-webkit-input-placeholder {
       color: #8c8c8c;

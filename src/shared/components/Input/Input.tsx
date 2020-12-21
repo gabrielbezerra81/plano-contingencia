@@ -1,5 +1,11 @@
-import React, { InputHTMLAttributes } from "react";
-import { FormControl, FormControlProps } from "react-bootstrap";
+import React, {
+  InputHTMLAttributes,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Form, FormControl, FormControlProps } from "react-bootstrap";
 import InputMask, { Props as MaskedProps } from "react-input-mask";
 import { Container } from "./styles";
 
@@ -7,7 +13,7 @@ interface InputProps
   extends Omit<FormControlProps, "size">,
     Pick<
       InputHTMLAttributes<HTMLInputElement>,
-      "name" | "placeholder" | "onBlur" | "onKeyPress"
+      "name" | "placeholder" | "onBlur" | "onKeyPress" | "required"
     > {
   rightIcon?: React.ReactNode;
   bordered?: boolean;
@@ -20,6 +26,7 @@ interface InputProps
   masked?: boolean;
   maskProps?: MaskedProps;
   onRightIconClick?: (...data: any) => any;
+  isValidated?: boolean;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -34,25 +41,99 @@ const Input: React.FC<InputProps> = ({
   masked = false,
   maskProps,
   onRightIconClick = () => {},
+  isValidated,
   ...rest
 }) => {
+  const inputRef = useRef<any>(null);
+
+  const [isValid, setIsValid] = useState(true);
+
+  const valid = inputRef.current ? inputRef.current.validity.valid : true;
+
+  useEffect(() => {
+    if (inputRef.current) {
+      const { valid } = inputRef.current.validity;
+
+      setIsValid(valid);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (inputRef.current && isValidated) {
+      const { value } = inputRef.current;
+
+      if (masked && maskProps) {
+        const placeholder = (maskProps.mask as string).split("9").join("_");
+        const isEmpty = value === placeholder;
+
+        if (isValid && isEmpty) {
+          setIsValid(false);
+        }
+      }
+
+      if (isValid !== valid) {
+        if (masked && maskProps) {
+          const placeholder = (maskProps.mask as string).split("9").join("_");
+          const isEmpty = value === placeholder;
+
+          if (!isValid && isEmpty) {
+          } //
+
+          if (isValid && !isEmpty) {
+          } //
+          else if (!isEmpty) {
+            setIsValid(true);
+          }
+
+          // console.log(inputRef.current);
+        } //
+        else {
+          setIsValid(valid);
+        }
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valid, isValidated, maskProps, maskProps, masked]);
+
+  const borderClass = useMemo(() => {
+    if (bordered) {
+      return "bordered";
+    }
+
+    if (borderBottomOnly) {
+      return "borderBottomOnly";
+    }
+
+    return "";
+  }, [bordered, borderBottomOnly]);
+
   return (
     <Container
       rightIcon={!!RightIcon}
-      className={`inputContainer ${containerClass}`}
+      className={`inputContainer ${containerClass} ${borderClass}`}
       bordered={bordered}
       borderBottomOnly={borderBottomOnly}
       labelOnInput={!!labelOnInput}
       size={size}
+      isValid={isValidated ? isValid : true}
     >
       {!!labelOnInput && <span>{labelOnInput}</span>}
 
       {customInput ? (
         customInput
       ) : masked ? (
-        <InputMask className={inputClass} mask="" {...rest} {...maskProps} />
+        <InputMask
+          formNoValidate={true}
+          className={`form-control ${inputClass}`}
+          mask=""
+          inputRef={(ref) => {
+            inputRef.current = ref;
+          }}
+          {...rest}
+          {...maskProps}
+        />
       ) : (
-        <FormControl rows={2} className={inputClass} {...rest} />
+        <FormControl ref={inputRef} rows={2} className={inputClass} {...rest} />
       )}
 
       {!!RightIcon && <button onClick={onRightIconClick}>{RightIcon}</button>}
