@@ -22,6 +22,7 @@ import AttributeListing from "shared/components/AttributeListing/AttributeListin
 import { RiskLocation } from "types/Plan";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { useSystem } from "context/System/systemContext";
+import formatRiskLocation from "shared/utils/format/formatRiskLocation";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -236,14 +237,10 @@ const StepThree: React.FC = () => {
             title="Endereços cadastrados"
             items={planData.riskLocations}
             name="addressItem"
-            onRemove={(e, index) => removeRiskLocation(index)}
-            renderText={(addressItem: RiskLocation) => {
-              const complement = addressItem.complement
-                ? `${addressItem.complement},`
-                : "";
-
-              return `${addressItem.identification}, ${addressItem.street}, ${addressItem.neighbor}, ${complement} ${addressItem.city}, ${addressItem.state}`;
-            }}
+            onRemove={(_, index) => removeRiskLocation(index)}
+            renderText={(addressItem: RiskLocation) =>
+              formatRiskLocation(addressItem)
+            }
           />
         </MapAndAddressListContainer>
 
