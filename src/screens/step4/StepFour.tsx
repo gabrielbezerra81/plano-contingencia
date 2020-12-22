@@ -42,7 +42,7 @@ const StepFour: React.FC = () => {
   } = useScenario();
 
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [showThreatModal, setShowThreatModal] = useState(true);
+  const [showThreatModal, setShowThreatModal] = useState(false);
   const [showHypotheseModal, setShowHypotheseModal] = useState(false);
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [showMeasureModal, setShowMeasureModal] = useState(false);

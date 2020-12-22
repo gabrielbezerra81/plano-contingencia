@@ -3,6 +3,7 @@ import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 
 import Select from "react-select";
+import * as yup from "yup";
 
 import { Button, Accordion, Form } from "react-bootstrap";
 import { GrSearch } from "react-icons/gr";
@@ -94,6 +95,22 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
     setSelectedResponsibleToAdd,
   ] = useState<Responsible | null>(null);
 
+  const [validatedResource, setValidatedResource] = useState(false);
+
+  const validationSchema = useMemo(
+    () =>
+      yup.object().shape({
+        value1: yup.string().required(),
+        value2: yup.string().required(),
+        value3: yup.string().when({
+          is: () => type === "veiculo",
+          then: yup.string().required(),
+          otherwise: yup.string().optional(),
+        }),
+      }),
+    [type],
+  );
+
   const handleEditCurrentResource = useCallback(
     (e) => {
       const { name, value } = e.target;
@@ -160,6 +177,11 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
   const handleIncludeResourceInPlan = useCallback(async () => {
     let address = resource.address;
 
+    if (!resource.responsibles.length) {
+      alert("Por favor, selecione um contato para incluir um novo recurso.");
+      return;
+    }
+
     if (!!currentAddedAddress && selectedAddressIndex === -2) {
       address = currentAddedAddress;
     } //
@@ -184,6 +206,42 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
     clearInputs,
     planData,
   ]);
+
+  const handleSubmit = useCallback(
+    async (event) => {
+      const form = event.currentTarget;
+
+      event.preventDefault();
+
+      let isValid = false;
+
+      try {
+        const validation = await validationSchema.validate({
+          value1: resource.value1,
+          value2: resource.value2,
+          value3: resource.value3,
+        });
+        isValid = !!validation;
+      } catch (error) {}
+
+      if (form.checkValidity() === false || !isValid) {
+        event.stopPropagation();
+      } //
+      else {
+        setValidatedResource(false);
+        handleIncludeResourceInPlan();
+        return;
+      }
+
+      setValidatedResource(true);
+    },
+    [validationSchema, handleIncludeResourceInPlan, resource],
+  );
+
+  const onExit = useCallback(() => {
+    setShow(false);
+    setValidatedResource(false);
+  }, [setShow, setValidatedResource]);
 
   const formattedResources = useMemo(() => {
     const formatted = formatResources(planData.resources);
@@ -356,24 +414,31 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
         backdropClassName="createResourceModalWrapper"
         centered
         show={show}
-        onHide={() => setShow(false)}
+        onHide={onExit}
         styled={{
           isBehindModal: showAddToGroupModal || showAddResponsibleModal,
         }}
         onExit={clearInputs}
       >
-        <ModalCloseButton setShow={setShow} />
+        <ModalCloseButton setShow={onExit} />
         <Container>
           <div className="borderedContainer">
             <label>{titles.modalTitle}</label>
 
-            <div>
+            <Form
+              noValidate
+              validated={validatedResource}
+              onSubmit={handleSubmit}
+              id="resourceForm"
+            >
               <Input
                 name="value1"
                 labelOnInput={inputLabels.label1}
                 borderBottomOnly
                 value={resource.value1}
                 onChange={handleEditCurrentResource}
+                isValidated={validatedResource}
+                required
               />
 
               <Input
@@ -382,6 +447,8 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                 borderBottomOnly
                 value={resource.value2}
                 onChange={handleEditCurrentResource}
+                isValidated={validatedResource}
+                required
                 customInput={
                   type === "dinheiro" ? (
                     <NumberInput
@@ -391,6 +458,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                       value={resource.value2}
                       onChange={(_, event) => handleEditCurrentResource(event)}
                       type="negativeDecimal"
+                      required
                     />
                   ) : null
                 }
@@ -402,9 +470,11 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                   borderBottomOnly
                   value={resource.value3}
                   onChange={handleEditCurrentResource}
+                  isValidated={validatedResource}
+                  required
                 />
               )}
-            </div>
+            </Form>
             <div>
               <Accordion
                 onSelect={setActiveKey}
@@ -522,7 +592,8 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
             </div>
 
             <Button
-              onClick={handleIncludeResourceInPlan}
+              form="resourceForm"
+              type="submit"
               className="darkBlueButton"
             >
               Incluir Novo Recurso

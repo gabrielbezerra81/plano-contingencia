@@ -17,6 +17,7 @@ interface Props {
   onKeyPress?: (...data: any) => any;
   allowNegative?: boolean;
   name?: string;
+  required?: boolean;
 }
 
 const NumberInput: React.FC<Props> = ({
@@ -33,6 +34,7 @@ const NumberInput: React.FC<Props> = ({
   onKeyPress = () => {},
   allowNegative = false,
   name,
+  required = false,
 }) => {
   const handleChange = useMemo(() => {
     return readOnly ? () => {} : onChange;
@@ -102,6 +104,7 @@ const NumberInput: React.FC<Props> = ({
 
   return (
     <NumberFormat
+      required={required}
       placeholder={placeholder}
       className={`form-control ${className}`}
       name={name}

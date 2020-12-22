@@ -65,7 +65,7 @@ export const Container = styled.div`
     }
 
     /* lado esquerdo, container dos 3 inputs */
-    > div:nth-child(2) {
+    > form {
       flex: 3;
       padding-right: 16px;
 
