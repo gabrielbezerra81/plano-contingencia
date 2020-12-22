@@ -18,6 +18,7 @@ import { usePlanData } from "context/PlanData/planDataContext";
 import { ResourceType } from "types/Plan";
 import CreateResourceModal from "shared/components/CreateResourceModal/CreateResourceModal";
 import AddToGroupModal from "shared/components/AddToGroupModal/AddToGroupModal";
+import PeopleResourceModal from "shared/components/PeopleResourceModal/PeopleResourceModal";
 
 const RightSideMenu: React.FC = () => {
   const { planData } = usePlanData();
@@ -30,6 +31,7 @@ const RightSideMenu: React.FC = () => {
 
   const [showCreateResourceModal, setShowCreateResourceModal] = useState(false);
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+  const [showPeopleResourceModal, setShowPeopleResourceModal] = useState(false);
 
   const handleClickPeople = useCallback(() => {
     setActiveItem("pessoa");
@@ -64,8 +66,13 @@ const RightSideMenu: React.FC = () => {
   }, [activeItem]);
 
   const handleCreateResource = useCallback(() => {
-    setShowCreateResourceModal(true);
-  }, []);
+    if (activeItem === "pessoa") {
+      setShowPeopleResourceModal(true);
+    } //
+    else if (activeItem) {
+      setShowCreateResourceModal(true);
+    }
+  }, [activeItem]);
 
   const handleListResource = useCallback(() => {}, []);
 
@@ -145,13 +152,21 @@ const RightSideMenu: React.FC = () => {
           </div>
         </div>
       </Container>
-      {!!activeItem && (
+      {!!activeItem && activeItem !== "pessoa" && (
         <CreateResourceModal
           show={showCreateResourceModal}
           setShow={setShowCreateResourceModal}
           type={activeItem}
         />
       )}
+
+      {activeItem === "pessoa" && (
+        <PeopleResourceModal
+          show={showPeopleResourceModal}
+          setShow={setShowPeopleResourceModal}
+        />
+      )}
+
       <AddToGroupModal
         show={showAddToGroupModal}
         setShow={setShowAddToGroupModal}

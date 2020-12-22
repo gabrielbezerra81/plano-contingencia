@@ -15,6 +15,7 @@ interface Props {
   show: boolean;
   setShow: (...data: any) => any;
   setShowAddToGroupModal?: (...data: any) => any;
+  addPersonOnly?: boolean;
 }
 
 const emptyPerson: Person = {
@@ -54,6 +55,7 @@ const AddUserModal: React.FC<Props> = ({
   show,
   setShow,
   setShowAddToGroupModal,
+  addPersonOnly = false,
 }) => {
   const { addNewUser, addUserToWorkGroup } = usePlanData();
 
@@ -217,7 +219,9 @@ const AddUserModal: React.FC<Props> = ({
     const person = await addNewUser(user);
 
     if (person) {
-      await addUserToWorkGroup({ ...person, permission });
+      if (!addPersonOnly) {
+        await addUserToWorkGroup({ ...person, permission });
+      }
       setShow(false);
       if (setShowAddToGroupModal) {
         setShowAddToGroupModal(false);
@@ -235,6 +239,7 @@ const AddUserModal: React.FC<Props> = ({
     addUserToWorkGroup,
     permission,
     setShowAddToGroupModal,
+    addPersonOnly,
   ]);
 
   const handleCleanOnExit = useCallback(() => {

@@ -18,6 +18,7 @@ import {
   numberStringToPhoneNumber,
   phoneNumberToNumberString,
 } from "shared/utils/format/formatPhoneNumber";
+import AddUserModal from "../AddUserModal/AddUserModal";
 
 interface Props {
   show: boolean;
@@ -53,6 +54,8 @@ const PeopleResourceModal: React.FC<Props> = ({ show, setShow }) => {
   >("nenhuma");
 
   const [validatedSearch, setValidatedSearch] = useState(false);
+
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
 
   const inputType = useMemo(() => {
     const text = phoneNumberToNumberString(searchText);
@@ -247,13 +250,14 @@ const PeopleResourceModal: React.FC<Props> = ({ show, setShow }) => {
 
           {currentView === "none" && (
             <>
-              {/* <Button
+              <Button
                 className="darkBlueButton"
                 size="sm"
                 style={{ marginTop: 16 }}
+                onClick={() => setShowAddUserModal(true)}
               >
                 Adicionar novo usuário
-              </Button> */}
+              </Button>
             </>
           )}
 
@@ -322,6 +326,12 @@ const PeopleResourceModal: React.FC<Props> = ({ show, setShow }) => {
           )}
         </Container>
       </Modal>
+
+      <AddUserModal
+        show={showAddUserModal}
+        setShow={setShowAddUserModal}
+        addPersonOnly
+      />
     </>
   );
 };
