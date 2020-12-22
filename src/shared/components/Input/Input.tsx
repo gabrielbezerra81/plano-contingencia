@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Form, FormControl, FormControlProps } from "react-bootstrap";
+import { FormControl, FormControlProps } from "react-bootstrap";
 import InputMask, { Props as MaskedProps } from "react-input-mask";
 import { Container } from "./styles";
 
@@ -42,7 +42,6 @@ const Input: React.FC<InputProps> = ({
   maskProps,
   onRightIconClick = () => {},
   isValidated,
-  children,
   as,
   ...rest
 }) => {
@@ -152,8 +151,6 @@ const Input: React.FC<InputProps> = ({
       )}
 
       {!!RightIcon && <button onClick={onRightIconClick}>{RightIcon}</button>}
-
-      {as !== "select" && children}
     </Container>
   );
 };
