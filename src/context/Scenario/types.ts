@@ -27,6 +27,7 @@ export interface ScenarioContextData {
   getAttrCompareValue: (attr: keyof Scenario, value: any) => any;
   getIndexesForMergedLines: (data: GetIndexesForMergedLines) => number[];
   addInitialScenarioLines: (data: AddInitialScenarioLines) => void;
+  alertIfPreviousIsNotChecked: (attr: keyof Scenario) => boolean;
 }
 
 export interface CheckedValue {
@@ -42,9 +43,9 @@ export interface HandleAddValueToScenario {
 
 export interface VerifyIfIsChecked {
   attr: keyof Scenario;
-  value: any;
+  value?: any;
   rowId?: string;
-  compareMode: "rowId" | "mergeKey";
+  compareMode: "rowId" | "mergeKey" | "attrOnly";
 }
 
 export interface HandleCheckItem {

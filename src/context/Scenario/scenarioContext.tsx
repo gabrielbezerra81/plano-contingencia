@@ -239,7 +239,97 @@ const ScenarioProvider: React.FC = ({ children }) => {
     ],
   );
 
+  const verifyIfIsChecked = useCallback(
+    ({ attr, value, rowId, compareMode }: VerifyIfIsChecked) => {
+      if (!attr) {
+        return false;
+      }
+
+      return checkedValues.some((checkedItem) => {
+        if (checkedItem.attr !== attr) {
+          return false;
+        }
+
+        if (compareMode === "attrOnly") {
+          return checkedItem.attr === attr;
+        }
+
+        const compareValue = getAttrCompareValue(attr, value);
+
+        const alreadyCheckedValue = getAttrCompareValue(
+          attr,
+          checkedItem.value,
+        );
+
+        const isValueEqual = alreadyCheckedValue === compareValue;
+
+        if (compareMode === "rowId") {
+          const isRowIdEqual = rowId === checkedItem.rowId;
+
+          return isValueEqual && isRowIdEqual;
+        }
+
+        const isMergeKeyEqual = checkedItem.value.mergeKey === value.mergeKey;
+
+        return isValueEqual && isMergeKeyEqual;
+      });
+    },
+    [checkedValues, getAttrCompareValue],
+  );
+
   const checkPreviousAttrs = useCallback(() => {}, []);
+
+  const alertIfPreviousIsNotChecked = useCallback(
+    (attr: keyof Scenario, shouldCheck?: boolean) => {
+      let message = "Por favor, selecione ao menos ";
+
+      let previousAttr: keyof Scenario = "" as any;
+
+      switch (attr) {
+        case "threat":
+          previousAttr = "addressId";
+          message += "um local de risco.";
+          break;
+        case "hypothese":
+          previousAttr = "threat";
+          message += "uma ameaça.";
+          break;
+        case "risk":
+          previousAttr = "hypothese";
+          message += "uma situação hipotética.";
+          break;
+        case "measure":
+          previousAttr = "risk";
+          message += "um risco/vulnerabilidade.";
+          break;
+        case "responsibles":
+          previousAttr = "measure";
+          message += "uma medida de enfretamento.";
+          break;
+        case "resourceId":
+          previousAttr = "responsibles";
+          message += "um responsável.";
+          break;
+        default:
+          break;
+      }
+
+      const isPreviousChecked = verifyIfIsChecked({
+        attr: previousAttr,
+        compareMode: "attrOnly",
+      });
+
+      console.log(isPreviousChecked);
+
+      if (!isPreviousChecked) {
+        alert(message);
+        return false;
+      }
+
+      return true;
+    },
+    [verifyIfIsChecked],
+  );
 
   const handleCheckItem = useCallback(
     ({ attr, value, rowId, rowIndex }: HandleCheckItem) => {
@@ -346,40 +436,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
     ],
   );
 
-  const verifyIfIsChecked = useCallback(
-    ({ attr, value, rowId, compareMode }: VerifyIfIsChecked) => {
-      if (!attr) {
-        return false;
-      }
-
-      const compareValue = getAttrCompareValue(attr, value);
-
-      return checkedValues.some((checkedItem) => {
-        if (checkedItem.attr !== attr) {
-          return false;
-        }
-
-        const alreadyCheckedValue = getAttrCompareValue(
-          attr,
-          checkedItem.value,
-        );
-
-        const isValueEqual = alreadyCheckedValue === compareValue;
-
-        if (compareMode === "rowId") {
-          const isRowIdEqual = rowId === checkedItem.rowId;
-
-          return isValueEqual && isRowIdEqual;
-        }
-
-        const isMergeKeyEqual = checkedItem.value.mergeKey === value.mergeKey;
-
-        return isValueEqual && isMergeKeyEqual;
-      });
-    },
-    [checkedValues, getAttrCompareValue],
-  );
-
   // Salvar cobrades - A.L.
   useEffect(() => {
     if (scenarioSaveEnabled) {
@@ -425,6 +481,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
         getAttrCompareValue,
         getIndexesForMergedLines,
         addInitialScenarioLines,
+        alertIfPreviousIsNotChecked,
       }}
     >
       <AddScenarioProvider>

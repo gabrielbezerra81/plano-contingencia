@@ -39,6 +39,7 @@ const StepFour: React.FC = () => {
     setCheckedValues,
     setScenarioSaveEnabled,
     scenarioSaveEnabled,
+    alertIfPreviousIsNotChecked,
   } = useScenario();
 
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -138,7 +139,15 @@ const StepFour: React.FC = () => {
         Header: (
           <TableHead
             title={"Ameaças:\n(COBRADE)"}
-            onClick={() => setShowThreatModal(true)}
+            onClick={(shouldVerify) => {
+              const isChecked = shouldVerify
+                ? alertIfPreviousIsNotChecked("threat")
+                : true;
+
+              if (isChecked) {
+                setShowThreatModal(true);
+              }
+            }}
           />
         ),
         accessor: "threat",
@@ -148,7 +157,15 @@ const StepFour: React.FC = () => {
         Header: (
           <TableHead
             title={"Situação\nhipotética"}
-            onClick={() => setShowHypotheseModal(true)}
+            onClick={(shouldVerify) => {
+              const isChecked = shouldVerify
+                ? alertIfPreviousIsNotChecked("hypothese")
+                : true;
+
+              if (isChecked) {
+                setShowHypotheseModal(true);
+              }
+            }}
           />
         ),
         accessor: "hypothese",
@@ -158,7 +175,15 @@ const StepFour: React.FC = () => {
         Header: (
           <TableHead
             title={"Riscos/\nVulnerabilidades"}
-            onClick={() => setShowRiskModal(true)}
+            onClick={(shouldVerify) => {
+              const isChecked = shouldVerify
+                ? alertIfPreviousIsNotChecked("risk")
+                : true;
+
+              if (isChecked) {
+                setShowRiskModal(true);
+              }
+            }}
           />
         ),
         accessor: "risk",
@@ -168,7 +193,15 @@ const StepFour: React.FC = () => {
         Header: (
           <TableHead
             title={"Medidas de\nenfretamento"}
-            onClick={() => setShowMeasureModal(true)}
+            onClick={(shouldVerify) => {
+              const isChecked = shouldVerify
+                ? alertIfPreviousIsNotChecked("measure")
+                : true;
+
+              if (isChecked) {
+                setShowMeasureModal(true);
+              }
+            }}
           />
         ),
         accessor: "measure",
@@ -178,7 +211,15 @@ const StepFour: React.FC = () => {
         Header: (
           <TableHead
             title={"Responsáveis"}
-            onClick={() => setShowResponsibleModal(true)}
+            onClick={(shouldVerify) => {
+              const isChecked = shouldVerify
+                ? alertIfPreviousIsNotChecked("responsibles")
+                : true;
+
+              if (isChecked) {
+                setShowResponsibleModal(true);
+              }
+            }}
           />
         ),
         accessor: (row: any) => {
@@ -197,14 +238,22 @@ const StepFour: React.FC = () => {
         Header: (
           <TableHead
             title={"Recursos"}
-            onClick={() => setShowResourceModal(true)}
+            onClick={(shouldVerify) => {
+              const isChecked = shouldVerify
+                ? alertIfPreviousIsNotChecked("resourceId")
+                : true;
+
+              if (isChecked) {
+                setShowResourceModal(true);
+              }
+            }}
           />
         ),
         accessor: "resourceId",
         enableRowSpan: true,
       },
     ];
-  }, []);
+  }, [alertIfPreviousIsNotChecked]);
 
   const tableInstance = useTable(
     {
