@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "react-bootstrap";
 
 import {
@@ -12,10 +12,12 @@ import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 
 import Input from "shared/components/Input/Input";
 
-import { Container, MembersContainer } from "./styles";
+import { Container, MembersContainer, RoleCell } from "./styles";
 import AddToGroupModal from "../../shared/components/AddToGroupModal/AddToGroupModal";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { Member } from "types/Plan";
+import { FiEdit, FiX } from "react-icons/fi";
+import produce from "immer";
 
 type ReducedMember = Omit<Member, "group" | "permission" | "personId"> & {
   index: number;
@@ -32,7 +34,7 @@ interface GlobalFilterProps {
 }
 
 const StepTwo = () => {
-  const { planData } = usePlanData();
+  const { planData, updateLocalPlanData } = usePlanData();
 
   const reducedMembers: ReducedMember[] = useMemo(() => {
     return planData.workGroup.map((memberItem, index) => {
@@ -73,6 +75,32 @@ const StepTwo = () => {
     [],
   );
 
+  const defaultColumn = {
+    Cell: EditableCell,
+  };
+
+  const updateMyData = useCallback(
+    (rowIndex: any, columnId: any, value: any) => {
+      const updatedPlanData = produce(planData, (draft) => {
+        draft.workGroup[rowIndex].role = value;
+      });
+
+      updateLocalPlanData(updatedPlanData);
+    },
+    [updateLocalPlanData, planData],
+  );
+
+  const handleRemoveRow = useCallback(
+    (index: number) => {
+      const updatedPlanData = produce(planData, (draft) => {
+        draft.workGroup.splice(index, 1);
+      });
+
+      updateLocalPlanData(updatedPlanData);
+    },
+    [updateLocalPlanData, planData],
+  );
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -84,7 +112,9 @@ const StepTwo = () => {
     {
       columns,
       data: reducedMembers,
-    },
+      defaultColumn,
+      updateMyData,
+    } as any,
     useGlobalFilter,
     useSortBy,
   );
@@ -143,14 +173,24 @@ const StepTwo = () => {
                   return (
                     <tr {...row.getRowProps()}>
                       {row.cells.map((cell) => {
+                        const originalRow = cell.row.original as any;
+
                         return (
                           <td {...cell.getCellProps()}>
+                            {cell.column.id === "index" && (
+                              <button
+                                className="removeRowButton"
+                                onClick={() => handleRemoveRow(row.index)}
+                              >
+                                <FiX color="red" />
+                              </button>
+                            )}
                             {cell.render("Cell")}
                             {cell.column.id === "name" && (
                               <span
                                 style={{
                                   backgroundColor:
-                                    cell.row.original.status === 1
+                                    originalRow.status === 1
                                       ? "#1059C4"
                                       : "#ff0000",
                                 }}
@@ -199,5 +239,51 @@ const GlobalFilter: React.FC<GlobalFilterProps> = ({
       }}
       containerClass="memberFilter"
     />
+  );
+};
+
+const EditableCell = ({
+  value: initialValue,
+  row: { index },
+  column: { id },
+  updateMyData, // This is a custom function that we supplied to our table instance
+}: any) => {
+  // We need to keep and update the state of the cell normally
+  const [value, setValue] = React.useState(initialValue);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const onChange = useCallback((e: any) => {
+    setValue(e.target.value);
+  }, []);
+
+  const handleClickEdit = useCallback(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  // We'll only update the external data when the input is blurred
+  const onBlur = useCallback(() => {
+    updateMyData(index, id, value);
+  }, [updateMyData, index, id, value]);
+
+  // If the initialValue is changed external, sync it up with our state
+  React.useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  if (id !== "role") {
+    return value;
+  }
+
+  return (
+    <RoleCell>
+      <input ref={inputRef} value={value} onChange={onChange} onBlur={onBlur} />
+
+      <button onClick={handleClickEdit}>
+        <FiEdit size={13} color="#3d3d3d" />
+      </button>
+    </RoleCell>
   );
 };

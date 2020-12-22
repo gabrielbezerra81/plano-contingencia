@@ -78,6 +78,12 @@ export const MembersContainer = styled.div`
         padding: 4px;
       }
 
+      &:nth-child(3) {
+        max-width: 300px;
+        min-width: 100px;
+        width: 300px;
+      }
+
       > svg {
         position: absolute;
         right: 10px;
@@ -110,6 +116,28 @@ export const MembersContainer = styled.div`
         right: 10px;
         top: 10px;
       }
+
+      button.removeRowButton {
+        position: absolute;
+        left: -26px;
+      }
     }
+  }
+`;
+
+export const RoleCell = styled.div`
+  display: flex;
+
+  input {
+    border: none;
+    flex: 1;
+
+    &:focus {
+      outline-color: #80bdff;
+    }
+  }
+
+  svg {
+    margin-left: 8px;
   }
 `;
