@@ -113,6 +113,7 @@ export const Container = styled.div<ContainerProps>`
       opacity: 0;
       transition: opacity 0.2s;
       width: 0;
+      overflow: hidden;
 
       ${({ isOpen }) =>
         isOpen &&
