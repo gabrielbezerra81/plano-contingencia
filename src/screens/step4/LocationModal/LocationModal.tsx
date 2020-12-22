@@ -24,6 +24,7 @@ import { RiskLocation } from "types/Plan";
 import { usePlanData } from "context/PlanData/planDataContext";
 import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
 import formatRiskLocation from "shared/utils/format/formatRiskLocation";
+import { useScenario } from "context/Scenario/scenarioContext";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -53,6 +54,8 @@ interface Props {
 
 const LocationModal: React.FC<Props> = ({ show, setShow }) => {
   const { planData, addRiskLocation, removeRiskLocation } = usePlanData();
+
+  const { addInitialScenarioLines } = useScenario();
 
   const [mapKey] = useState(Math.random());
 
@@ -195,6 +198,18 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
     [handleEditCurrentAddress],
   );
 
+  const handleAddLocationToScenario = useCallback(
+    (location: RiskLocation) => {
+      addInitialScenarioLines({
+        attr: "addressId",
+        value: location.id,
+      });
+
+      setShow(false);
+    },
+    [addInitialScenarioLines, setShow],
+  );
+
   const handleSubmitForm = useCallback(
     (event) => {
       const form = event.currentTarget;
@@ -250,9 +265,21 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
               items={planData.riskLocations}
               name="addressItem"
               onRemove={(_, index) => removeRiskLocation(index)}
-              renderText={(addressItem: RiskLocation) =>
-                formatRiskLocation(addressItem)
-              }
+              children={(index: number, addressItem: RiskLocation) => {
+                return (
+                  <>
+                    <span>{formatRiskLocation(addressItem)}</span>
+                    <Button
+                      style={{ marginLeft: 16, height: 24, fontSize: 11 }}
+                      className="darkBlueButton"
+                      size="sm"
+                      onClick={() => handleAddLocationToScenario(addressItem)}
+                    >
+                      Selecionar este endereço
+                    </Button>
+                  </>
+                );
+              }}
             />
           </MapAndAddressListContainer>
 

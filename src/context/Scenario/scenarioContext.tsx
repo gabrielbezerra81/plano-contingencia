@@ -209,14 +209,12 @@ const ScenarioProvider: React.FC = ({ children }) => {
   );
 
   const addInitialScenarioLines = useCallback(
-    ({ attr, value, rowId }: AddInitialScenarioLines) => {
-      let list: Scenario[] = [];
+    ({ attr, value }: AddInitialScenarioLines) => {
+      const id = (Math.random() * 100).toFixed(2);
 
       if (attr === "addressId") {
-        setScenariosList((oldScenarioList) => {
+        const updatedScenariosList = produce(sortedScenarioList, (draft) => {
           savePreviousState();
-
-          const draft = [...oldScenarioList];
 
           const alreadyAdded = verifyIfScenariosHistoryHasValue(attr, value);
 
@@ -225,34 +223,26 @@ const ScenarioProvider: React.FC = ({ children }) => {
               ...emptyScenario,
               addressId: value,
               title: scenarioTitle,
-              id: rowId,
+              id,
             });
           } //
-
-          list = draft.map((item) => item);
-
-          return draft;
         });
-      }
 
-      return list;
+        setScenariosList(updatedScenariosList);
+      }
     },
-    [verifyIfScenariosHistoryHasValue, savePreviousState, scenarioTitle],
+    [
+      verifyIfScenariosHistoryHasValue,
+      savePreviousState,
+      scenarioTitle,
+      sortedScenarioList,
+    ],
   );
 
   const checkPreviousAttrs = useCallback(() => {}, []);
 
   const handleCheckItem = useCallback(
     ({ attr, value, rowId, rowIndex }: HandleCheckItem) => {
-      const id = (Math.random() * 100).toFixed(2);
-
-      // push inicial das linhas de cenário se o attr for "addressId"
-      let list: Scenario[] = addInitialScenarioLines({
-        attr,
-        value,
-        rowId: id,
-      });
-
       const updatedCheckedValues = produce(checkedValues, (checkedDraft) => {
         const compareValue = getAttrCompareValue(attr, value);
 
@@ -271,9 +261,9 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
         if (attr === "addressId") {
           const filterIndexes: number[] = [];
-          list.forEach((scenario) => {
+          sortedScenarioList.forEach((scenario) => {
             if (checkedIndex === -1 && scenario.addressId === value) {
-              checkedDraft.push({ attr, value, rowId: scenario.id || id });
+              checkedDraft.push({ attr, value, rowId: scenario.id || "" });
             } //
             else {
               const removeIndex = checkedDraft.findIndex(
@@ -353,7 +343,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
       checkedValues,
       sortedScenarioList,
       getIndexesForMergedLines,
-      addInitialScenarioLines,
     ],
   );
 
@@ -435,6 +424,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
         savePreviousState,
         getAttrCompareValue,
         getIndexesForMergedLines,
+        addInitialScenarioLines,
       }}
     >
       <AddScenarioProvider>

@@ -41,7 +41,9 @@ const AttributeListing: React.FC<Props> = ({
           )}
 
           {!!renderText && <span>{renderText(item)}</span>}
-          {!!children && typeof children === "function" && children(index)}
+          {!!children &&
+            typeof children === "function" &&
+            children(index, item)}
         </div>
       ))}
     </Container>

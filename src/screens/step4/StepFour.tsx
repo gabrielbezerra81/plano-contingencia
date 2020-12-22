@@ -294,11 +294,13 @@ const StepFour: React.FC = () => {
         </Button>
       </Container>
 
-      <Form.Check
-        label="Salvar cenários"
-        checked={scenarioSaveEnabled}
-        onChange={() => setScenarioSaveEnabled((oldValue) => !oldValue)}
-      />
+      {location.hostname === "localhost" && (
+        <Form.Check
+          label="Salvar cenários"
+          checked={scenarioSaveEnabled}
+          onChange={() => setScenarioSaveEnabled((oldValue) => !oldValue)}
+        />
+      )}
 
       {location.hostname === "localhost" && (
         <div style={{ marginTop: 48 }}>

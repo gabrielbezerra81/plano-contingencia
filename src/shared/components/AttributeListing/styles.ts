@@ -25,6 +25,7 @@ export const Container = styled.div<ContainerProps>`
   .attributeListItem {
     display: flex;
     margin-top: 4px;
+    align-items: center;
 
     button {
       svg {

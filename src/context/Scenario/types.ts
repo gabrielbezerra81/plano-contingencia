@@ -26,6 +26,7 @@ export interface ScenarioContextData {
   savePreviousState: () => any;
   getAttrCompareValue: (attr: keyof Scenario, value: any) => any;
   getIndexesForMergedLines: (data: GetIndexesForMergedLines) => number[];
+  addInitialScenarioLines: (data: AddInitialScenarioLines) => void;
 }
 
 export interface CheckedValue {
@@ -63,7 +64,6 @@ export interface GetIndexesForMergedLines {
 export interface AddInitialScenarioLines {
   attr: keyof Scenario;
   value: any;
-  rowId: string;
 }
 
 export interface DuplicateCheckedValuesWhenAddingLine {

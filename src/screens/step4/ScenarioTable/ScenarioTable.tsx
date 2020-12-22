@@ -85,17 +85,6 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
       });
   }, [planData.resources]);
 
-  const notCheckedLocations = useMemo(
-    () => formattedRiskLocations.filter((location) => !location.checked),
-    [formattedRiskLocations],
-  );
-
-  const numberOfUncheckedRows = useMemo(() => {
-    return Math.max(notCheckedLocations.length);
-  }, [notCheckedLocations]);
-
-  const notCheckedArray: any[] = Array(numberOfUncheckedRows).fill(1);
-
   return (
     <Table {...getTableProps()}>
       <thead>
@@ -169,41 +158,6 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
               formattedResponsibles={formattedResponsibles}
               formattedResources={formattedResources}
             />
-          );
-        })}
-
-        {notCheckedArray.map((_, index) => {
-          return (
-            <tr key={index}>
-              <td>
-                <div>
-                  {!!notCheckedLocations[index] && (
-                    <CellCheckableItem
-                      item={notCheckedLocations[index]}
-                      attr="addressId"
-                    />
-                  )}
-                </div>
-              </td>
-              <td>
-                <div></div>
-              </td>
-              <td>
-                <div></div>
-              </td>
-              <td>
-                <div></div>
-              </td>
-              <td>
-                <div></div>
-              </td>
-              <td>
-                <div></div>
-              </td>
-              <td>
-                <div></div>
-              </td>
-            </tr>
           );
         })}
       </tbody>
@@ -504,7 +458,6 @@ const CellCheckableItem: React.FC<CellCheckableItemProps> = ({
     disabledColumnsCheckbox,
     verifyIfIsChecked,
   } = useScenario();
-
 
   const { handleRemoveItem } = useRemoveScenario();
 
