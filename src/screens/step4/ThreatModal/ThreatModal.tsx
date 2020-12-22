@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "react-bootstrap";
+
+import Select from "react-select";
+
 import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
 
 import cobradesImg from "assets/images/cobrades3.png";
@@ -35,8 +38,8 @@ const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
   const [description, setDescription] = useState("");
 
   const handleChangeCobradeNumber = useCallback(
-    (e: any) => {
-      const cobradeNumber = e.target.value;
+    (value) => {
+      const cobradeNumber = value;
 
       const cobradeItem = cobrades.find(
         (cobradeItem) => cobradeItem.cobrade === cobradeNumber,
@@ -78,17 +81,28 @@ const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
 
           if (response.data.length) {
             setDescription(response.data[0].descricao);
-            handleChangeCobradeNumber({
-              target: {
-                value: response.data[0].cobrade,
-              },
-            });
+            handleChangeCobradeNumber(response.data[0].cobrade);
           }
         }
       })
       .catch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const options = useMemo(() => {
+    return cobrades.map((cobradeItem) => ({
+      value: cobradeItem.cobrade,
+      label: `${cobradeItem.cobrade} - ${cobradeItem.descricao}`,
+    }));
+  }, [cobrades]);
+
+  const value = useMemo(
+    () => ({
+      value: selectedCobradeNumber,
+      label: `${selectedCobradeNumber} - ${description}`,
+    }),
+    [selectedCobradeNumber, description],
+  );
 
   return (
     <Modal show={show} centered onHide={() => setShow(false)}>
@@ -98,18 +112,25 @@ const ThreatModal: React.FC<Props> = ({ show, setShow }) => {
 
         <div className="inputGroup">
           <h6>Selecionar COBRADE</h6>
-          <Input
-            as="select"
-            bordered
-            onChange={handleChangeCobradeNumber}
-            value={selectedCobradeNumber}
-          >
-            {cobrades.map((cobradeItem) => (
-              <option key={cobradeItem.cobrade} value={cobradeItem.cobrade}>
-                {cobradeItem.cobrade} - {cobradeItem.descricao}
-              </option>
-            ))}
-          </Input>
+
+          <Select
+            options={options}
+            value={value}
+            onChange={(option) => {
+              if (option) {
+                handleChangeCobradeNumber(option.value);
+              }
+            }}
+            placeholder="Selecione um COBRADE"
+            noOptionsMessage={() => "Nenhum item encontrado"}
+            styles={{
+              container: (base) => ({
+                ...base,
+                width: 450,
+                marginLeft: 24,
+              }),
+            }}
+          />
         </div>
 
         <Button onClick={handleAddThreat} className="darkBlueButton">
