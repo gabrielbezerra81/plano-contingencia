@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useMemo, useState, useRef } from "react";
 
-import { useAsyncDebounce } from "react-table";
+import * as yup from "yup";
 
-import { Button } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { GrSearch } from "react-icons/gr";
 import Input from "shared/components/Input/Input";
 
@@ -13,17 +13,30 @@ import AddUserModal from "../AddUserModal/AddUserModal";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { Person } from "types/Plan";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
+import {
+  numberStringToPhoneNumber,
+  phoneNumberToNumberString,
+} from "shared/utils/format/formatPhoneNumber";
 
 interface Props {
   show: boolean;
   setShow: (...data: any) => any;
 }
 
+const emailSchema = yup.object().shape({
+  searchText: yup.string().required().email(),
+});
+
+const phoneSchema = yup.object().shape({
+  searchText: yup.string().required().matches(new RegExp("[0-9]{10}")),
+});
+
 const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
   const { notIncludedPersons, addUserToWorkGroup } = usePlanData();
 
+  const formRef = useRef<HTMLFormElement>(null);
+
   const [searchText, setSearchText] = useState("");
-  const [debounceSearchText, setDebounceSearchText] = useState("");
 
   const [showAddUserModal, setShowAddUserModal] = useState(false);
 
@@ -36,11 +49,23 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
   const [role, setRole] = useState("");
   const [permission, setPermission] = useState("nenhuma");
 
+  const [validatedSearch, setValidatedSearch] = useState(false);
+
+  const inputType = useMemo(() => {
+    const text = phoneNumberToNumberString(searchText);
+
+    if (/[0-9]{4}/.test(text)) {
+      return "phoneInput";
+    }
+
+    setSearchText(text.split("_").join(""));
+
+    return "emailInput";
+  }, [searchText]);
+
   const handleOpenAddUserModal = useCallback(() => {
     setShowAddUserModal(true);
   }, [setShowAddUserModal]);
-
-  const handleSearch = useCallback(() => {}, []);
 
   const handleAddToGroup = useCallback(async () => {
     if (foundPerson) {
@@ -55,58 +80,86 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
     }
   }, [setShow, foundPerson, addUserToWorkGroup, permission, role]);
 
-  const onDebounceTextChange = useAsyncDebounce((value) => {
-    setDebounceSearchText(value || "");
-  }, 250);
+  const handleSearchTextChange = useCallback((e) => {
+    const { value } = e.target;
+    setSearchText(value);
+  }, []);
 
-  const handleSearchTextChange = useCallback(
-    (e) => {
-      const { value } = e.target;
-      setSearchText(value);
-      onDebounceTextChange(value);
-    },
-    [onDebounceTextChange],
-  );
+  const handleSearchPerson = useCallback(() => {
+    const person = notIncludedPersons.find((personItem) => {
+      const emailCondition = personItem.emails.some((email) =>
+        email.includes(searchText),
+      );
 
-  useEffect(() => {
-    const isEmailValid =
-      debounceSearchText.includes("@") && debounceSearchText.includes(".");
+      const phoneCondition = personItem.phones.some(
+        (phoneItem) => phoneItem.phone === searchText,
+      );
 
-    const isPhoneValid =
-      /^[0-9]+$/.test(debounceSearchText) && debounceSearchText.length >= 8;
+      return emailCondition || phoneCondition;
+    });
 
-    if (debounceSearchText && (isEmailValid || isPhoneValid)) {
-      const person = notIncludedPersons.find((personItem) => {
-        const emailCondition = personItem.emails.some((email) =>
-          email.includes(debounceSearchText),
-        );
-
-        const phoneCondition = personItem.phones.some((phoneItem) => {
-          const phoneString = phoneItem.phone
-            .replace("-", "")
-            .replace(" ", "")
-            .replace("(", "")
-            .replace(")", "");
-
-          return phoneString.includes(debounceSearchText);
-        });
-
-        return emailCondition || phoneCondition;
-      });
-
-      if (person) {
-        setCurrentView("searchFound");
-      } //
-      else {
-        setCurrentView("notFound");
-      }
-
-      setFoundPerson(person);
+    if (person) {
+      setCurrentView("searchFound");
     } //
     else {
-      setCurrentView("none");
+      setCurrentView("notFound");
     }
-  }, [debounceSearchText, notIncludedPersons]);
+
+    setFoundPerson(person);
+  }, [searchText, notIncludedPersons]);
+
+  const handleSubmit = useCallback(
+    async (event) => {
+      const form = event.currentTarget;
+
+      event.preventDefault();
+
+      let isEmailValid = false;
+      let isPhoneValid = false;
+
+      try {
+        const emailValidation = await emailSchema.validate({ searchText });
+        isEmailValid = !!emailValidation;
+      } catch (error) {}
+
+      try {
+        if (!isEmailValid) {
+          const phoneValidation = await phoneSchema.validate({
+            searchText: phoneNumberToNumberString(searchText),
+          });
+          isPhoneValid = !!phoneValidation;
+
+          if (isPhoneValid) {
+            const numberString = phoneNumberToNumberString(searchText);
+            setSearchText(numberStringToPhoneNumber(numberString));
+          }
+        }
+      } catch (error) {}
+
+      if (form.checkValidity() === false || (!isEmailValid && !isPhoneValid)) {
+        event.stopPropagation();
+      } //
+      else {
+        setValidatedSearch(false);
+        await handleSearchPerson();
+
+        return;
+      }
+
+      setCurrentView("none");
+      setValidatedSearch(true);
+    },
+    [handleSearchPerson, searchText],
+  );
+
+  const triggerSubmit = useCallback(() => {
+    formRef.current?.dispatchEvent(new Event("submit"));
+  }, []);
+
+  const onExit = useCallback(() => {
+    setShow(false);
+    setValidatedSearch(false);
+  }, [setShow, setValidatedSearch]);
 
   return (
     <>
@@ -114,22 +167,50 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
         backdropClassName="addToGroupModalWrapper"
         centered
         show={show}
-        onHide={() => setShow(false)}
+        onHide={onExit}
       >
-        <ModalCloseButton setShow={setShow} />
+        <ModalCloseButton setShow={onExit} />
         <Container>
           <h6>ADICIONAR MEMBRO AO GRUPO DE TRABALHO</h6>
           <img src={addMemberImg} alt="Membros" />
 
-          <Input
-            labelOnInput={"Pesquisar: "}
-            placeholder="Digite o Email ou o número do telefone"
-            borderBottomOnly
-            rightIcon={<GrSearch />}
-            value={searchText}
-            onChange={handleSearchTextChange}
-            onRightIconClick={handleSearch}
-          />
+          <Form noValidate onSubmit={handleSubmit} validated={validatedSearch}>
+            {inputType === "emailInput" ? (
+              <Input
+                labelOnInput={"Pesquisar: "}
+                placeholder="Digite o Email ou o número do telefone"
+                borderBottomOnly
+                rightIcon={<GrSearch />}
+                value={searchText}
+                onChange={handleSearchTextChange}
+                onRightIconClick={triggerSubmit}
+                required
+                isValidated={validatedSearch}
+                key={1}
+              />
+            ) : (
+              <Input
+                labelOnInput={"Pesquisar: "}
+                placeholder="Digite o Email ou o número do telefone"
+                borderBottomOnly
+                rightIcon={<GrSearch />}
+                value={searchText}
+                onChange={handleSearchTextChange}
+                onRightIconClick={triggerSubmit}
+                required
+                isValidated={validatedSearch}
+                key={2}
+                masked
+                maskProps={{ mask: "(99) 99999-9999" }}
+              />
+            )}
+
+            {validatedSearch && (
+              <span className="invalidSearchText">
+                Por favor, insira um e-mail ou telefone válido.
+              </span>
+            )}
+          </Form>
 
           {currentView === "none" && (
             <Button
@@ -158,7 +239,7 @@ const AddToGroupModal: React.FC<Props> = ({ show, setShow }) => {
                 </Button>
                 <Button
                   className="darkBlueButton"
-                  onClick={handleSearch}
+                  onClick={triggerSubmit}
                   size="sm"
                 >
                   Pesquisar novamente
