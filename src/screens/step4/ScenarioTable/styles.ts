@@ -8,8 +8,14 @@ export const Table = styled.table`
 
   th {
     height: 64px;
-    width: 190px;
-    min-width: 190px;
+    width: 195px;
+    min-width: 195px;
+
+    &:first-child {
+      width: 220px;
+      min-width: 220px;
+      max-width: 220px;
+    }
   }
 
   td {
@@ -34,6 +40,12 @@ export const Table = styled.table`
             stroke: #b7b6b6;
           }
         }
+      }
+    }
+
+    &:first-child {
+      > div {
+        /* max-width: 210px; */
       }
     }
   }

@@ -42,7 +42,7 @@ const StepFour: React.FC = () => {
   } = useScenario();
 
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [showThreatModal, setShowThreatModal] = useState(false);
+  const [showThreatModal, setShowThreatModal] = useState(true);
   const [showHypotheseModal, setShowHypotheseModal] = useState(false);
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [showMeasureModal, setShowMeasureModal] = useState(false);
@@ -127,15 +127,12 @@ const StepFour: React.FC = () => {
       {
         Header: (
           <TableHead
-            style={{ width: 220 }}
             title="Escolha o local de risco:"
             onClick={() => setShowLocationModal(true)}
           />
         ),
         accessor: "addressId",
         enableRowSpan: true,
-        width: 230,
-        minWidth: 230,
       },
       {
         Header: (

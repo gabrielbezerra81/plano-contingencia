@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Container } from "./styles";
 
 import defesaCivilImg from "assets/images/defesaCivil.png";
@@ -8,8 +8,8 @@ import { useSystem } from "context/System/systemContext";
 
 const LeftPanel: React.FC = () => {
   const {
-    activeAppTab,
-    setActiveAppTab,
+    // activeAppTab,
+    // setActiveAppTab,
     selectedTab,
     isOpenLeftSideMenu,
     changeLeftSideMenuVisibility,
@@ -22,14 +22,6 @@ const LeftPanel: React.FC = () => {
   const handleSearchPlan = useCallback(() => {}, []);
 
   const handleCreatePlan = useCallback(() => {}, []);
-
-  const hideMenuClass = useMemo(() => {
-    if (["tab3", "tab4"].includes(selectedTab)) {
-      return "hideLeftMenu";
-    }
-
-    return "";
-  }, [selectedTab]);
 
   useEffect(() => {
     if (["tab3", "tab4"].includes(selectedTab)) {
