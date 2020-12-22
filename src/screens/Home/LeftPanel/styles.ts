@@ -1,9 +1,14 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
-export const Container = styled.div`
+interface ContainerProps {
+  isOpen: boolean;
+}
+
+export const Container = styled.div<ContainerProps>`
   background-color: #212121;
   min-height: calc(100vh - 24px);
   width: 300px;
+  transition: width 0.2s;
 
   header {
     background-color: #fff;
@@ -62,4 +67,30 @@ export const Container = styled.div`
       }
     }
   }
+
+  ${({ isOpen }) =>
+    !isOpen &&
+    css`
+      width: 0;
+      overflow: hidden;
+
+      header {
+        width: 296px;
+        position: fixed;
+      }
+
+      > div {
+        position: fixed;
+        width: 296px;
+        margin-top: 72px;
+        border-top: 1px solid #919191;
+        z-index: 1;
+
+        .menuItem {
+          h6 {
+            color: #555656;
+          }
+        }
+      }
+    `}
 `;

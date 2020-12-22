@@ -2,7 +2,9 @@ import React, { useCallback, useContext, useMemo, useState } from "react";
 
 interface SystemContextData {
   isOpenRightSideMenu: boolean;
+  isOpenLeftSideMenu: boolean;
   changeRightSideMenuVisibility: (visibility?: boolean) => void;
+  changeLeftSideMenuVisibility: (visibility?: boolean) => void;
   activeAppTab: ActiveAppTab;
   setActiveAppTab: React.Dispatch<React.SetStateAction<ActiveAppTab>>;
   handleTabChange: (key: string | null) => void;
@@ -19,6 +21,8 @@ type ActiveAppTab = "plans" | "searchPlan" | "createPlan";
 
 const SystemProvider: React.FC = ({ children }) => {
   const [isOpenRightSideMenu, setIsOpenRightSideMenu] = useState(false);
+  const [isOpenLeftSideMenu, setIsOpenLeftSideMenu] = useState(true);
+
   const [activeAppTab, setActiveAppTab] = useState<ActiveAppTab>("plans");
 
   const [selectedTab, setSelectedTab] = useState<string>(() => {
@@ -47,6 +51,15 @@ const SystemProvider: React.FC = ({ children }) => {
     }
   }, []);
 
+  const changeLeftSideMenuVisibility = useCallback((visibility?: boolean) => {
+    if (visibility === true || visibility === false) {
+      setIsOpenLeftSideMenu(visibility);
+    } //
+    else {
+      setIsOpenLeftSideMenu((oldValue) => !oldValue);
+    }
+  }, []);
+
   const selectedTabIndex = useMemo(() => {
     return Number(selectedTab.replace("tab", ""));
   }, [selectedTab]);
@@ -56,6 +69,8 @@ const SystemProvider: React.FC = ({ children }) => {
       value={{
         isOpenRightSideMenu,
         changeRightSideMenuVisibility,
+        isOpenLeftSideMenu,
+        changeLeftSideMenuVisibility,
         activeAppTab,
         setActiveAppTab,
         handleTabChange,
