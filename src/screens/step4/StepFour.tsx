@@ -368,7 +368,7 @@ const StepFour: React.FC = () => {
 
           <div>
             <br />
-            Checked:
+            Checked: {checkedValues.length}
             <br />
             {checkedValues.map((checkedValue, index) => (
               <code key={index}>

@@ -49,11 +49,11 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
     getAttrCompareValue,
     getIndexesForMergedLines,
     findTopCellIndex,
+    checkedValues,
   } = useScenario();
 
   const removeCheckedValues = useCallback(
     ({ attrKeys, rowId }: RemoveCheckedValues) => {
-      // console.log(rowId, attrKeys);
       setCheckedValues((oldValues) => {
         const filterIndexes: number[] = [];
 
@@ -466,7 +466,9 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       const compareValue = getAttrCompareValue(attr, value);
 
       if (attr === "responsibles") {
-        list.forEach((scenario: Scenario) => {
+        const checkedIndexesToRemove: number[] = [];
+
+        list.forEach((scenario: Scenario, lineIndex: number) => {
           scenario.responsibles = scenario.responsibles.filter(
             (responsible) => {
               const isValueEqual =
@@ -483,13 +485,36 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
                 const isRowMergeKeysEqual =
                   scenario.responsiblesMergeKey === responsiblesMergeKey;
 
-                return !(isValueEqual && isRowMergeKeysEqual);
+                const shouldKeep = !(isValueEqual && isRowMergeKeysEqual);
+
+                if (!shouldKeep) {
+                  const removeIndex = checkedValues.findIndex(
+                    (checkedItem) =>
+                      _.isEqual(checkedItem.value, responsible) &&
+                      checkedItem.rowId === scenario.id,
+                  );
+
+                  console.log("removeIndex", removeIndex);
+
+                  if (removeIndex !== -1) {
+                    checkedIndexesToRemove.push(removeIndex);
+                  }
+                }
+
+                return shouldKeep;
               }
 
               return true;
             },
           );
         });
+
+        setCheckedValues((oldValues) =>
+          produce(oldValues, (draft) =>
+            draft.filter((_, index) => !checkedIndexesToRemove.includes(index)),
+          ),
+        );
+
         return list;
       } //
       else if (attr === "addressId") {
@@ -500,7 +525,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
         return filtered;
       }
     },
-    [getAttrCompareValue],
+    [getAttrCompareValue, setCheckedValues, checkedValues],
   );
 
   const handleRemoveItem = useCallback(

@@ -184,7 +184,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
               next && curr.addressId === next.addressId;
           } //
           else if (typeof curr[attr] === "object") {
-            console.log(attr);
             shouldPushNextAndContinue =
               next && curr[attr].mergeKey === next[attr].mergeKey;
           }
