@@ -28,6 +28,7 @@ export interface ScenarioContextData {
   getIndexesForMergedLines: (data: GetIndexesForMergedLines) => number[];
   addInitialScenarioLines: (data: AddInitialScenarioLines) => void;
   alertIfPreviousIsNotChecked: (attr: keyof Scenario) => boolean;
+  findTopCellIndex: (data: FindTopCellIndex) => number;
 }
 
 export interface CheckedValue {
@@ -70,4 +71,9 @@ export interface AddInitialScenarioLines {
 export interface DuplicateCheckedValuesWhenAddingLine {
   rowId: string;
   newRowId: string;
+}
+
+export interface FindTopCellIndex {
+  startIndex: number;
+  attr: keyof Scenario;
 }

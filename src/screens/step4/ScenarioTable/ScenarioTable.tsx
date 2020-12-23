@@ -310,14 +310,6 @@ const TableCell: React.FC<TableCellProps> = ({
 
   const threatCellContent = useMemo(() => {
     if (cell.column.id === "threat") {
-      // const cobradeItem = addedCobrades.find(
-      //   (cobradeItem) => cobradeItem.description === cell.value,
-      // );
-
-      // if (!cobradeItem) {
-      //   return null;
-      // }
-
       return <CellCheckableItem row={row} item={cell.value} attr="threat" />;
     }
 
@@ -389,6 +381,8 @@ const TableCell: React.FC<TableCellProps> = ({
         if (!responsible) {
           return null;
         }
+
+        delete responsible.group;
 
         return (
           <CellCheckableItem

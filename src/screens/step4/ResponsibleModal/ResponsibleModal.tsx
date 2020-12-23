@@ -170,6 +170,8 @@ const ResponsibleModal: React.FC<Props> = ({ show, setShow }) => {
       alert("Selecione um responsável da tabela!");
     }
 
+    console.log(selectedValues);
+
     const responsiblesValue = {
       responsibles: selectedValues,
       mergeKey: generateMergeKey(),

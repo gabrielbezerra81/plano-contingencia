@@ -48,6 +48,7 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
     setCheckedValues,
     getAttrCompareValue,
     getIndexesForMergedLines,
+    findTopCellIndex,
   } = useScenario();
 
   const removeCheckedValues = useCallback(
@@ -73,32 +74,6 @@ const RemoveScenarioProvider: React.FC = ({ children }) => {
       });
     },
     [setCheckedValues],
-  );
-
-  const findTopCellIndex = useCallback(
-    ({ startIndex, attr }: FindTopCellIndex) => {
-      let topCellIndex = startIndex;
-
-      if (startIndex > 0) {
-        const startElement = scenariosList[startIndex];
-
-        for (let index = startIndex - 1; index >= 0; index--) {
-          const areValueEquals = _.isEqual(
-            startElement[attr],
-            scenariosList[index][attr],
-          );
-
-          if (areValueEquals) {
-            topCellIndex = index;
-          } else {
-            break;
-          }
-        }
-      }
-
-      return topCellIndex;
-    },
-    [scenariosList],
   );
 
   const checkIfLineIsDuplicated = useCallback(
@@ -622,11 +597,6 @@ interface CheckIfLineIsDuplicated {
   previousAttr: keyof Scenario;
   attr: keyof Scenario;
   startIndex: number;
-}
-
-interface FindTopCellIndex {
-  startIndex: number;
-  attr: keyof Scenario;
 }
 
 interface HandleRemoveSpecialCase {

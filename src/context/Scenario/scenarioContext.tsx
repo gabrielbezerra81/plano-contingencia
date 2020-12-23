@@ -14,6 +14,7 @@ import {
   CheckedValue,
   GetIndexesForMergedLines,
   ScenarioContextData,
+  FindTopCellIndex,
 } from "./types";
 
 import { Scenario } from "types/Plan";
@@ -173,12 +174,17 @@ const ScenarioProvider: React.FC = ({ children }) => {
 
         let shouldPushNextAndContinue = false;
 
-        if (curr && typeof curr[attr] === "object") {
+        if (curr) {
           if (attr === "responsibles") {
             shouldPushNextAndContinue =
               next && curr.responsiblesMergeKey === next.responsiblesMergeKey;
           } //
-          else {
+          else if (attr === "addressId") {
+            shouldPushNextAndContinue =
+              next && curr.addressId === next.addressId;
+          } //
+          else if (typeof curr[attr] === "object") {
+            console.log(attr);
             shouldPushNextAndContinue =
               next && curr[attr].mergeKey === next[attr].mergeKey;
           }
@@ -186,7 +192,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
           if (isAdding) {
             indexes.push(index);
           } //
-          else {
+          else if (attr !== "addressId") {
             const removeIndex = checkedValues.findIndex(
               (checkedItem) =>
                 checkedItem.rowId === curr.id &&
@@ -277,7 +283,127 @@ const ScenarioProvider: React.FC = ({ children }) => {
     [checkedValues, getAttrCompareValue],
   );
 
-  const checkPreviousAttrs = useCallback(() => {}, []);
+  const findTopCellIndex = useCallback(
+    ({ startIndex, attr }: FindTopCellIndex) => {
+      let topCellIndex = startIndex;
+
+      if (startIndex > 0) {
+        const startElement = sortedScenarioList[startIndex];
+
+        for (let index = startIndex - 1; index >= 0; index--) {
+          const areValueEquals = _.isEqual(
+            startElement[attr],
+            sortedScenarioList[index][attr],
+          );
+
+          if (areValueEquals) {
+            topCellIndex = index;
+          } else {
+            break;
+          }
+        }
+      }
+
+      return topCellIndex;
+    },
+    [sortedScenarioList],
+  );
+
+  const checkPreviousAttrs = useCallback(
+    ({ attr, indexes, checkedDraft }: any) => {
+      const pickAttrs: Array<keyof Scenario> = ["addressId"];
+
+      switch (attr) {
+        case "threat":
+          break;
+        case "hypothese":
+          pickAttrs.push("threat");
+          break;
+        case "risk":
+          pickAttrs.push("threat", "hypothese");
+          break;
+        case "measure":
+          pickAttrs.push("threat", "hypothese", "risk");
+          break;
+        case "responsibles":
+          pickAttrs.push("threat", "hypothese", "risk", "measure");
+          break;
+        case "resourceId":
+          pickAttrs.push(
+            "threat",
+            "hypothese",
+            "risk",
+            "measure",
+            "responsibles",
+          );
+          break;
+        default:
+          break;
+      }
+
+      indexes.forEach((index: number) => {
+        const scenario = sortedScenarioList[index];
+        Object.keys(scenario).forEach((key) => {
+          const previousAttr = key as keyof Scenario;
+
+          if (pickAttrs.includes(previousAttr)) {
+            const topRowIndex = findTopCellIndex({
+              attr: previousAttr,
+              startIndex: index,
+            });
+
+            const attrMergedIndexes = getIndexesForMergedLines({
+              attr: previousAttr,
+              isAdding: true,
+              startIndex: topRowIndex,
+            });
+
+            if (previousAttr === "responsibles") {
+              console.log("responsibles", attrMergedIndexes);
+            }
+
+            attrMergedIndexes.forEach((attrIndex) => {
+              const line = sortedScenarioList[attrIndex];
+
+              if (previousAttr === "responsibles") {
+                line.responsibles.forEach((responsible) => {
+                  const alreadyAdded = checkedDraft.some(
+                    (checkedItem: any) =>
+                      _.isEqual(checkedItem.value, responsible) &&
+                      line.id === checkedItem.rowId,
+                  );
+
+                  if (!alreadyAdded) {
+                    checkedDraft.push({
+                      attr: previousAttr,
+                      value: responsible,
+                      rowId: line.id,
+                    });
+                  }
+                });
+              } //
+              else {
+                const alreadyAdded = checkedDraft.some(
+                  (checkedItem: any) =>
+                    _.isEqual(checkedItem.value, line[previousAttr]) &&
+                    line.id === checkedItem.rowId,
+                );
+
+                if (!alreadyAdded) {
+                  checkedDraft.push({
+                    attr: previousAttr,
+                    value: line[previousAttr],
+                    rowId: line.id,
+                  });
+                }
+              }
+            });
+          }
+        });
+      });
+    },
+    [sortedScenarioList, getIndexesForMergedLines, findTopCellIndex],
+  );
 
   const alertIfPreviousIsNotChecked = useCallback(
     (attr: keyof Scenario, shouldCheck?: boolean) => {
@@ -391,7 +517,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
           isAdding = checkedIndex === -1;
 
           if (isAdding) {
-            console.log(indexes, rowIndex);
+            console.log(indexes);
             indexes.forEach((index) => {
               checkedDraft.push({
                 attr,
@@ -399,18 +525,25 @@ const ScenarioProvider: React.FC = ({ children }) => {
                 rowId: sortedScenarioList[index].id || rowId || "",
               });
             });
+            checkPreviousAttrs({ attr, indexes, checkedDraft });
           } //
           else {
             if (attr === "responsibles") {
               // No caso dos responsaveis, é obtido o indice das linhas de cenarios que tem medidas de enfretamento mescladas
+
               indexes.forEach((index) => {
                 const lineId = sortedScenarioList[index].id;
 
-                const indexToRemove = checkedDraft.findIndex(
-                  (checkedItem) =>
+                const indexToRemove = checkedDraft.findIndex((checkedItem) => {
+                  console.log({ ...checkedItem.value });
+                  console.log(value);
+                  console.log(_.isEqual(checkedItem.value, value));
+
+                  return (
                     _.isEqual(checkedItem.value, value) &&
-                    checkedItem.rowId === lineId,
-                );
+                    checkedItem.rowId === lineId
+                  );
+                });
 
                 if (indexToRemove !== -1) {
                   checkedDraft.splice(indexToRemove, 1);
@@ -433,6 +566,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
       checkedValues,
       sortedScenarioList,
       getIndexesForMergedLines,
+      checkPreviousAttrs,
     ],
   );
 
@@ -482,6 +616,7 @@ const ScenarioProvider: React.FC = ({ children }) => {
         getIndexesForMergedLines,
         addInitialScenarioLines,
         alertIfPreviousIsNotChecked,
+        findTopCellIndex,
       }}
     >
       <AddScenarioProvider>
