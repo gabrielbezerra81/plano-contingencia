@@ -1,5 +1,5 @@
 import { LatLngLiteral } from "leaflet";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import L from "leaflet";
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -231,6 +231,28 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
     [handleAddAddress],
   );
 
+  const markerEventHandlers = useMemo(() => {
+    return {
+      dragend: (event: L.DragEndEvent) => {
+        const { _latlng } = event.target;
+        setPosition(_latlng);
+
+        const latLong = {
+          lat: numberFormatter({
+            value: _latlng.lat,
+            precision: 7,
+          }),
+          long: numberFormatter({
+            value: _latlng.lng,
+            precision: 7,
+          }),
+        };
+
+        setAddress((oldValue) => ({ ...oldValue, ...latLong }));
+      },
+    };
+  }, []);
+
   return (
     <Modal show={show} centered onHide={() => setShow(false)}>
       <Container>
@@ -254,9 +276,11 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
               />
 
               {position === null ? null : (
-                <Marker position={position}>
-                  <Popup>You are here</Popup>
-                </Marker>
+                <Marker
+                  position={position}
+                  draggable
+                  eventHandlers={markerEventHandlers}
+                />
               )}
             </MapContainer>
 
