@@ -2,8 +2,17 @@ import { LatLngLiteral } from "leaflet";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import L from "leaflet";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polygon,
+  Polyline,
+} from "react-leaflet";
+import ReactLeafletKml from "react-leaflet-kml";
+
 import { GrSearch } from "react-icons/gr";
+import { kml as KMLP } from "@tmcw/togeojson";
 
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
@@ -12,8 +21,9 @@ import {
   MapAndAddressListContainer,
   AddLocationContainer,
 } from "./styles";
+
 import Input from "shared/components/Input/Input";
-import { Button, Form } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import produce from "immer";
 import axios from "axios";
 import NumberInput from "shared/components/NumberInput/NumberInput";
@@ -72,6 +82,10 @@ const StepThree: React.FC = () => {
   });
 
   const [validatedAddress, setValidatedAddress] = useState(false);
+
+  const [kmlFiles, setKmlFiles] = useState<Document[]>([]);
+
+  const [geojson, setGeojson] = useState<any[]>([]);
 
   useEffect(() => {
     if (map) {
@@ -213,6 +227,87 @@ const StepThree: React.FC = () => {
     [handleAddAddress],
   );
 
+  const handleUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length && map) {
+        const file = e.target.files[0];
+
+        const text = await file.text();
+
+        const parser = new DOMParser();
+
+        const kml = parser.parseFromString(text, "text/xml");
+
+        const convertedWithStyles = KMLP(kml, { styles: true });
+
+        console.log(convertedWithStyles);
+
+        const polygons = convertedWithStyles.features.filter(
+          (item: any) => !!item.geometry && item.geometry.type !== "Point",
+        );
+
+        const points = convertedWithStyles.features.filter(
+          (item: any) => !!item.geometry && item.geometry.type === "Point",
+        );
+
+        const styleKeys = [
+          "fill",
+          "fill-opacity",
+          "stroke",
+          "stroke-opacity",
+          "color",
+          "stroke-width",
+        ];
+
+        polygons.forEach((polygon: any) => {
+          const style = Object.keys(polygon.properties)
+            .filter((key) => styleKeys.includes(key))
+            .reduce((obj: any, key: any) => {
+              obj[key] = polygon.properties[key];
+              return obj;
+            }, {});
+
+          if (style.fill) {
+            style.color = style.fill;
+          }
+
+          L.geoJSON(polygon, { style }).addTo(map);
+        });
+
+        // setGeojson(polygons);
+        // setKmlFiles((oldValues) => [...oldValues, kml]);
+
+        // const track = new L.KML(kml);
+
+        // map.addLayer(track);
+
+        // Instantiate KMZ layer (async)
+        // var kmz = KMZLayer().addTo(map);
+
+        // kmz.on("load", function (e: any) {
+        //   control.addOverlay(e.layer, e.name);
+        //   // e.layer.addTo(map);
+        // });
+
+        // // Add remote KMZ files as layers (NB if they are 3rd-party servers, they MUST have CORS enabled)
+        // kmz.load("https://raruto.github.io/leaflet-kmz/examples/regions.kmz");
+        // kmz.load("https://raruto.github.io/leaflet-kmz/examples/capitals.kmz");
+        // kmz.load("https://raruto.github.io/leaflet-kmz/examples/globe.kmz");
+
+        // var control = L.control
+        //   .layers(undefined, undefined, { collapsed: false })
+        //   .addTo(map);
+
+        // var control = L.control
+        //   .layers(undefined, undefined, { collapsed: false })
+        //   .addTo(map);
+
+        // setMapKey(Math.random())
+      }
+    },
+    [map],
+  );
+
   const markerEventHandlers = useMemo(() => {
     return {
       dragend: (event: L.DragEndEvent) => {
@@ -278,6 +373,36 @@ const StepThree: React.FC = () => {
                 eventHandlers={markerEventHandlers}
               />
             )}
+
+            {/* {geojson.map((item, index) => {
+              if (item.geometry.type === "Point") {
+                console.log(item);
+              }
+              switch (item.geometry.type) {
+                case "Polygon":
+                  return (
+                    <Polygon
+                      pathOptions={{ color: "purple" }}
+                      positions={item.geometry.coordinates}
+                      key={index}
+                    />
+                  );
+                case "Polyline":
+                  return (
+                    <Polyline
+                      pathOptions={{ color: "purple" }}
+                      positions={item.geometry.coordinates}
+                      key={index}
+                    />
+                  );
+
+                default:
+                  return null;
+              }
+            })} */}
+            {/* {kmlFiles.map((kml, index) => (
+              <ReactLeafletKml key={index} kml={kml} />
+            ))} */}
           </MapContainer>
 
           <AttributeListing
@@ -411,9 +536,13 @@ const StepThree: React.FC = () => {
             <div className="buttonsContainer">
               <Button type="submit">Adicionar</Button>
 
-              <Button onClick={handleChooseFile} size="sm" variant="secondary">
-                Escolher arquivo
-              </Button>
+              <label htmlFor="myInput">Escolher arquivo</label>
+              <input
+                style={{ display: "none" }}
+                id="myInput"
+                type="file"
+                onChange={handleUpload}
+              />
             </div>
           </main>
         </AddLocationContainer>

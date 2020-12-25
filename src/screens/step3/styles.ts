@@ -110,6 +110,40 @@ export const AddLocationContainer = styled(Form)`
           background-color: ${shade(0.3, colors.darkBlue)};
         }
       }
+
+      label {
+        height: 38px;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: #fff;
+        border-radius: 0.2rem;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #5a6268;
+          border-color: #545b62;
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 0.2rem rgba(130, 138, 145, 0.5);
+        }
+
+        &:active {
+          background-color: #545b62;
+          border-color: #4e555b;
+        }
+      }
+
+      input {
+        display: none;
+      }
     }
   }
 `;
