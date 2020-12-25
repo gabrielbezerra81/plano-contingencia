@@ -1,20 +1,38 @@
 import React from "react";
 import { RiskLocation } from "types/Plan";
 
-export default function formatScenarioAddress(location: RiskLocation) {
+interface Options {
+  identification: boolean;
+}
+
+export default function formatScenarioAddress(
+  location: RiskLocation,
+  options?: Options,
+) {
+  const hasIdentification =
+    !options || (options && options.identification) ? true : false;
+
   const address = {
-    fullAddress: `${location.identification},\n`,
+    fullAddress: "",
     jsxElement: (
       <>
-        {location.identification},
-        <br />
+        {hasIdentification && (
+          <>
+            {`${location.identification},`}
+            <br />
+          </>
+        )}
         {location.street}, {location.neighbor}
         <br />
         {location.complement ? `${location.complement}, ` : ""}
-        {location.city}, {location.state}
+        {location.city} - {location.state}
       </>
     ),
   };
+
+  address.fullAddress += hasIdentification
+    ? `${location.identification},\n`
+    : "";
 
   address.fullAddress += `${location.street}, ${location.neighbor}\n`;
 
@@ -22,7 +40,7 @@ export default function formatScenarioAddress(location: RiskLocation) {
     address.fullAddress += `${location.complement}, `;
   }
 
-  address.fullAddress += `${location.city}, ${location.state}`;
+  address.fullAddress += `${location.city} - ${location.state}`;
 
   return address;
 }

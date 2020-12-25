@@ -7,6 +7,7 @@ import StepOne from "screens/step1/StepOne";
 import StepTwo from "screens/step2/StepTwo";
 import StepThree from "screens/step3/StepThree";
 import StepFour from "screens/step4/StepFour";
+import StepFive from "screens/step5/StepFive";
 import usePrevious from "shared/utils/usePrevious";
 
 import { TabHeader, TabItem, Content } from "./styles";
@@ -118,6 +119,16 @@ const MainTabs = () => {
         <Tab.Pane eventKey="tab4">
           <h3>4: CONSTRUÇÃO DE CENÁRIO</h3>
           <StepFour />
+          <Button
+            onClick={handleClickNext}
+            className="darkBlueButton nextButton"
+          >
+            Próximo
+          </Button>
+        </Tab.Pane>
+
+        <Tab.Pane eventKey="tab5">
+          <StepFive />
           <Button
             onClick={handleClickNext}
             className="darkBlueButton nextButton"

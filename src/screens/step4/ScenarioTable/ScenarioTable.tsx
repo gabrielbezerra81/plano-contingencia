@@ -31,15 +31,12 @@ const ScenarioTable: React.FC<Props> = ({ tableInstance }) => {
 
   const { planData } = usePlanData();
 
-  const { verifyIfScenariosHistoryHasValue } = useScenario();
-
   const formattedRiskLocations = useMemo(() => {
     return planData.riskLocations.map((locationItem) => ({
       ...locationItem,
       formattedAddress: formatScenarioAddress(locationItem),
-      checked: verifyIfScenariosHistoryHasValue("addressId", locationItem.id),
     }));
-  }, [planData.riskLocations, verifyIfScenariosHistoryHasValue]);
+  }, [planData.riskLocations]);
 
   const formattedResponsibles = useMemo(() => {
     const responsibles: Responsible[] = [];
