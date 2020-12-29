@@ -18,6 +18,7 @@ const MainTabs = () => {
     selectedTab,
     selectedTabIndex,
     setSelectedTab,
+    isOpenLeftSideMenu,
   } = useSystem();
 
   const { updateAPIPlanData, planData, updateLocalPlanFromAPI } = usePlanData();
@@ -52,7 +53,7 @@ const MainTabs = () => {
 
   return (
     <Tab.Container activeKey={selectedTab} onSelect={handleTabChange}>
-      <TabHeader>
+      <TabHeader isLeftMenuOpen={isOpenLeftSideMenu}>
         <TabItem styled={{ stepHasPassed: 1 < selectedTabIndex }}>
           <Nav.Link eventKey="tab1"></Nav.Link>
         </TabItem>
@@ -82,7 +83,7 @@ const MainTabs = () => {
         </TabItem>
       </TabHeader>
 
-      <Content className="tab-content">
+      <Content className="tab-content" isLeftMenuOpen={isOpenLeftSideMenu}>
         <Tab.Pane eventKey="tab1">
           <h3>1: DESCRIÇÃO GERAL DO PLANO DE CONTINGÊNCIA</h3>
           <StepOne />

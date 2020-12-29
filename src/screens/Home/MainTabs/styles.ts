@@ -3,10 +3,20 @@ import styled, { css } from "styled-components";
 import { Nav } from "react-bootstrap";
 import colors from "assets/colors";
 
-export const TabHeader = styled(Nav)`
+interface TabHeaderProps {
+  isLeftMenuOpen: boolean;
+}
+
+export const TabHeader = styled(Nav)<TabHeaderProps>`
   max-width: 720px;
   width: 100%;
   margin: 0 auto;
+
+  ${({ isLeftMenuOpen }) =>
+    !isLeftMenuOpen &&
+    css`
+      margin-left: 288px;
+    `}
 `;
 
 interface TabItemProps {
@@ -51,7 +61,11 @@ export const TabItem = styled(Nav.Item)<TabItemProps>`
   }
 `;
 
-export const Content = styled.main`
+interface ContentProps {
+  isLeftMenuOpen: boolean;
+}
+
+export const Content = styled.main<ContentProps>`
   flex: 1;
   /* height: 600px; */
 
@@ -68,7 +82,13 @@ export const Content = styled.main`
 
   .nextButton {
     position: absolute;
-    bottom: 40px;
+    bottom: 120px;
     right: 0px;
   }
+
+  ${({ isLeftMenuOpen }) =>
+    !isLeftMenuOpen &&
+    css`
+      margin-top: 88px;
+    `}
 `;
