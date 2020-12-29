@@ -3,6 +3,8 @@ import api from "api/config";
 import produce from "immer";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
+import { confirmAlert } from "react-confirm-alert"; // Import
+
 import Input from "shared/components/Input/Input";
 import ResourcesModal from "shared/components/ResourcesModal/ResourcesModal";
 
@@ -23,6 +25,7 @@ import { usePlanData } from "context/PlanData/planDataContext";
 import { Button, Form } from "react-bootstrap";
 import { useSystem } from "context/System/systemContext";
 import ResponsibleModal from "./ResponsibleModal/ResponsibleModal";
+import Alert from "shared/components/Alert/Alert";
 
 const StepFour: React.FC = () => {
   const { selectedTab } = useSystem();
@@ -75,8 +78,14 @@ const StepFour: React.FC = () => {
   }, [setCheckedValues]);
 
   const handleClearScenarios = useCallback(() => {
-    setScenariosList([]);
-    setCheckedValues([]);
+    Alert({
+      title: "Apagar cenário",
+      message: "Deseja mesmo apagar todas as informações deste cenário?",
+      onPositiveClick: () => {
+        setScenariosList([]);
+        setCheckedValues([]);
+      },
+    });
   }, [setScenariosList, setCheckedValues]);
 
   const undoLastChange = useCallback(() => {
@@ -351,7 +360,7 @@ const StepFour: React.FC = () => {
         />
       )}
 
-      {location.hostname === "localhost" && (
+      {/* {location.hostname === "localhost" && (
         <div style={{ marginTop: 48 }}>
           <div>
             Linhas adicionadas: {scenariosList.length}
@@ -379,7 +388,7 @@ const StepFour: React.FC = () => {
             ))}
           </div>
         </div>
-      )}
+      )} */}
 
       <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
 

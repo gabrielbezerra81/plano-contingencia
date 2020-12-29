@@ -3,8 +3,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
 import colors from "./colors";
 import { shade } from "polished";
+import "react-confirm-alert/src/react-confirm-alert.css"; // Import css
 
 const GlobalStyle = createGlobalStyle`
+  
   ${css`
     body {
       margin: 0;
@@ -99,7 +101,35 @@ const GlobalStyle = createGlobalStyle`
     .was-validated .form-control:valid {
       background-image: none;
     }
+
+    .react-confirm-alert-overlay {
+      background-color: transparent;
+    }
+
+    .react-confirm-alert-body {
+      h1 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .react-confirm-alert-button-group {
+        button {
+          font-weight: 600;
+          border-radius: 4px;
+        }
+
+        button:first-child {
+          background-color: red;
+        }
+
+        button:last-child {
+          background-color: ${colors.darkBlue};
+        }
+      }
+    }
   `}
+
 
 
 
