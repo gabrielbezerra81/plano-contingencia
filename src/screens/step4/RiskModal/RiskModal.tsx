@@ -1,5 +1,6 @@
 import { useAddScenario } from "context/Scenario/addScenarioContext";
 import { useEditScenario } from "context/Scenario/editScenarioContext";
+import { useScenario } from "context/Scenario/scenarioContext";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Input from "shared/components/Input/Input";
@@ -16,6 +17,8 @@ interface Props {
 }
 
 const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
+  const { checkedValues } = useScenario();
+
   const { handleAddValueToScenario, generateMergeKey } = useAddScenario();
 
   const { editingProps, setEditingProps, handleEditItem } = useEditScenario();
@@ -47,13 +50,23 @@ const RiskModal: React.FC<Props> = ({ show, setShow, suggestionList }) => {
   }, [setShow, setEditingProps]);
 
   const filteredSuggestionList = useMemo(() => {
-    const descriptions = suggestionList.map((suggestion) => suggestion.risco);
+    const descriptions = suggestionList
+      .filter((suggestion) => {
+        const isCobradeChecked = checkedValues.some(
+          (checkedItem) =>
+            checkedItem.attr === "threat" &&
+            checkedItem.value.cobrade === suggestion.cobrade,
+        );
+
+        return isCobradeChecked;
+      })
+      .map((suggestion) => suggestion.risco);
 
     return [...new Set(descriptions)].map((description) => ({
       id: "",
       description,
     }));
-  }, [suggestionList]);
+  }, [suggestionList, checkedValues]);
 
   const handleSelectSuggestion = useCallback(
     (e) => {

@@ -108,9 +108,14 @@ const StepFour: React.FC = () => {
     async function loadSuggestions() {
       try {
         const suggestions = [];
+        const usedCobrades: string[] = [];
 
         for await (const scenario of scenariosList) {
-          if (scenario.threat.cobrade) {
+          if (
+            scenario.threat.cobrade &&
+            !usedCobrades.includes(scenario.threat.cobrade)
+          ) {
+            usedCobrades.push(scenario.threat.cobrade);
             const response = await api.post(
               "medidas/cobrade",
               scenario.threat.cobrade,
