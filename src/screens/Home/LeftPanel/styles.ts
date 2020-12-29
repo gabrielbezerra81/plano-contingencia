@@ -77,7 +77,7 @@ export const Container = styled.div<ContainerProps>`
       header {
         width: 296px;
         position: fixed;
-        z-index: 99999;
+        z-index: 1030;
       }
 
       > div {
@@ -85,7 +85,7 @@ export const Container = styled.div<ContainerProps>`
         width: 296px;
         margin-top: 72px;
         border-top: 1px solid #919191;
-        z-index: 99999;
+        z-index: 1030;
 
         .menuItem {
           background-color: #fff;
