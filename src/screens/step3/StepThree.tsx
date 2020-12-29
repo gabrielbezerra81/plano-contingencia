@@ -2,14 +2,7 @@ import { LatLngLiteral } from "leaflet";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import L from "leaflet";
 
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Polygon,
-  Polyline,
-} from "react-leaflet";
-import ReactLeafletKml from "react-leaflet-kml";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 
 import { GrSearch } from "react-icons/gr";
 import { kml as KMLP } from "@tmcw/togeojson";
@@ -83,7 +76,8 @@ const StepThree: React.FC = () => {
 
   const [validatedAddress, setValidatedAddress] = useState(false);
 
-  const [kmlFiles, setKmlFiles] = useState<Document[]>([]);
+  const [kmlFiles, setKmlFiles] = useState<File[]>([]);
+  const [addedKMLs, setAddedKMLs] = useState<string[]>([]);
 
   const [geojson, setGeojson] = useState<any[]>([]);
 
@@ -180,8 +174,6 @@ const StepThree: React.FC = () => {
     });
   }, [address, addRiskLocation]);
 
-  const handleChooseFile = useCallback(() => {}, []);
-
   const handleChangeLat = useCallback(
     (value: any) => {
       handleEditCurrentAddress({
@@ -240,8 +232,6 @@ const StepThree: React.FC = () => {
 
         const convertedWithStyles = KMLP(kml, { styles: true });
 
-        console.log(convertedWithStyles);
-
         const polygons = convertedWithStyles.features.filter(
           (item: any) => !!item.geometry && item.geometry.type !== "Point",
         );
@@ -274,8 +264,10 @@ const StepThree: React.FC = () => {
           L.geoJSON(polygon, { style }).addTo(map);
         });
 
+        setKmlFiles((oldValues) => [...oldValues, file]);
+        setAddedKMLs((oldValues) => [...oldValues, text]);
+
         // setGeojson(polygons);
-        // setKmlFiles((oldValues) => [...oldValues, kml]);
 
         // const track = new L.KML(kml);
 

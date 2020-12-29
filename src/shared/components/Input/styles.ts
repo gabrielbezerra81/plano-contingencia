@@ -78,6 +78,7 @@ export const Container = styled.div<ContainerProps>`
 
       span {
         color: #3d3d3d;
+        font-weight: 600;
       }
 
       input {
