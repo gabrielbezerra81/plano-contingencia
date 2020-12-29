@@ -11,6 +11,8 @@ export const TabHeader = styled(Nav)<TabHeaderProps>`
   max-width: 720px;
   width: 100%;
   margin: 0 auto;
+  position: sticky;
+  left: 288px;
 
   ${({ isLeftMenuOpen }) =>
     !isLeftMenuOpen &&
@@ -80,6 +82,9 @@ export const Content = styled.main<ContentProps>`
     > h3 {
       text-align: center;
       color: #212121;
+      position: sticky;
+      left: 288px;
+      max-width: 720px;
       /* margin-left: 288px; */
     }
   }
@@ -94,7 +99,7 @@ export const Content = styled.main<ContentProps>`
     !isLeftMenuOpen &&
     selectedTab === "tab4" &&
     css`
-      margin-top: 72px;
+      /* margin-top: 72px; */
     `}
 
   ${({ isLeftMenuOpen, selectedTab }) =>
@@ -104,7 +109,6 @@ export const Content = styled.main<ContentProps>`
       .tab-pane {
         > h3 {
           @media (max-width: 1400px) {
-            max-width: 720px;
             margin: 0 auto;
             margin-left: 288px;
           }

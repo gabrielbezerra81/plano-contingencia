@@ -333,28 +333,34 @@ const StepFour: React.FC = () => {
         />
 
         <ScenarioTable tableInstance={tableInstance} />
-        <Button onClick={handleUncheckAll} className="darkBlueButton" size="sm">
-          Desmarcar todos
-        </Button>
+        <div className="buttonsContainer">
+          <Button
+            onClick={handleUncheckAll}
+            className="darkBlueButton"
+            size="sm"
+          >
+            Desmarcar todos
+          </Button>
 
-        <Button
-          style={{ marginLeft: 24 }}
-          onClick={undoLastChange}
-          className="darkBlueButton"
-          size="sm"
-          disabled={isUndoDisabled}
-        >
-          Desfazer última alteração
-        </Button>
+          <Button
+            style={{ marginLeft: 24 }}
+            onClick={undoLastChange}
+            className="darkBlueButton"
+            size="sm"
+            disabled={isUndoDisabled}
+          >
+            Desfazer última alteração
+          </Button>
 
-        <Button
-          style={{ marginLeft: 24 }}
-          onClick={handleClearScenarios}
-          className="darkBlueButton"
-          size="sm"
-        >
-          Limpar tudo
-        </Button>
+          <Button
+            style={{ marginLeft: 24 }}
+            onClick={handleClearScenarios}
+            className="darkBlueButton"
+            size="sm"
+          >
+            Limpar tudo
+          </Button>
+        </div>
       </Container>
 
       {location.hostname === "localhost" && (

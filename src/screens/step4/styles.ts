@@ -92,9 +92,11 @@ export const Container = styled.div`
   > .inputContainer {
     width: 350px;
     margin: 40px auto 24px;
+    position: sticky;
+    left: 288px;
   }
 
-  > .darkBlueButton {
+  > .buttonsContainer {
     margin-top: 32px;
   }
 `;
