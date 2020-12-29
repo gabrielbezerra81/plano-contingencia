@@ -79,6 +79,8 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
 
   const [validatedAddress, setValidatedAddress] = useState(false);
 
+  const [showSearchError, setShowSearchError] = useState(false);
+
   useEffect(() => {
     if (map) {
       map.locate();
@@ -148,7 +150,12 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
         city: city || "",
         state: state || "",
       }));
-    } catch (error) {}
+    } catch (error) {
+      setShowSearchError(true);
+      setTimeout(() => {
+        setShowSearchError(false);
+      }, 5000);
+    }
   }, [address.cep]);
 
   const handleEditCurrentAddress = useCallback(
@@ -329,6 +336,8 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
               onRightIconClick={handleSearchFromCEP}
               required
               isValidated={validatedAddress}
+              errorMessage="Falha ao pesquisar CEP"
+              hasError={showSearchError}
             />
 
             <main>

@@ -71,6 +71,8 @@ const AddressModal: React.FC<Props> = ({
 
   const [validatedAddress, setValidatedAddress] = useState(false);
 
+  const [showSearchError, setShowSearchError] = useState(false);
+
   const handleSearchFromCEP = useCallback(async () => {
     try {
       const parsedCep = address.cep.replace("-", "");
@@ -95,7 +97,12 @@ const AddressModal: React.FC<Props> = ({
         city: city || "",
         state: state || "",
       }));
-    } catch (error) {}
+    } catch (error) {
+      setShowSearchError(true);
+      setTimeout(() => {
+        setShowSearchError(false);
+      }, 5000);
+    }
   }, [address.cep]);
 
   const handleEditCurrentAddress = useCallback(
@@ -285,6 +292,8 @@ const AddressModal: React.FC<Props> = ({
               size="small"
               required
               isValidated={validatedAddress}
+              errorMessage="Falha ao pesquisar CEP"
+              hasError={showSearchError}
             />
 
             <main>

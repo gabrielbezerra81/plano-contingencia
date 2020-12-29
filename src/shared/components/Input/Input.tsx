@@ -27,6 +27,8 @@ interface InputProps
   maskProps?: MaskedProps;
   onRightIconClick?: (...data: any) => any;
   isValidated?: boolean;
+  errorMessage?: string;
+  hasError?: boolean;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -43,6 +45,8 @@ const Input: React.FC<InputProps> = ({
   onRightIconClick = () => {},
   isValidated,
   as,
+  errorMessage = "",
+  hasError = false,
   ...rest
 }) => {
   const inputRef = useRef<any>(null);
@@ -115,6 +119,12 @@ const Input: React.FC<InputProps> = ({
     return "";
   }, [bordered, borderBottomOnly]);
 
+  const errorStyle = useMemo(() => {
+    return {
+      opacity: hasError && errorMessage ? 1 : 0,
+    };
+  }, [hasError, errorMessage]);
+
   return (
     <Container
       rightIcon={!!RightIcon}
@@ -151,6 +161,12 @@ const Input: React.FC<InputProps> = ({
       )}
 
       {!!RightIcon && <button onClick={onRightIconClick}>{RightIcon}</button>}
+
+      {!!errorMessage && (
+        <span style={errorStyle} className="inputErrorMessage">
+          {errorMessage}
+        </span>
+      )}
     </Container>
   );
 };

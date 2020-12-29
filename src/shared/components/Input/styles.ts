@@ -135,4 +135,14 @@ export const Container = styled.div<ContainerProps>`
         padding-right: 40px;
       `}
   }
+
+  span.inputErrorMessage {
+    color: red;
+    position: absolute;
+    bottom: -24px;
+    margin-left: 8px;
+    font-size: 13px;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
 `;

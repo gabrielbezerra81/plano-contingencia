@@ -79,7 +79,7 @@ const StepThree: React.FC = () => {
   const [kmlFiles, setKmlFiles] = useState<File[]>([]);
   const [addedKMLs, setAddedKMLs] = useState<string[]>([]);
 
-  const [geojson, setGeojson] = useState<any[]>([]);
+  const [showSearchError, setShowSearchError] = useState(false);
 
   useEffect(() => {
     if (map) {
@@ -150,7 +150,12 @@ const StepThree: React.FC = () => {
         city: city || "",
         state: state || "",
       }));
-    } catch (error) {}
+    } catch (error) {
+      setShowSearchError(true);
+      setTimeout(() => {
+        setShowSearchError(false);
+      }, 5000);
+    }
   }, [address.cep]);
 
   const handleEditCurrentAddress = useCallback(
@@ -434,6 +439,8 @@ const StepThree: React.FC = () => {
             onRightIconClick={handleSearchFromCEP}
             required
             isValidated={validatedAddress}
+            errorMessage="Falha ao pesquisar CEP"
+            hasError={showSearchError}
           />
 
           <main>
