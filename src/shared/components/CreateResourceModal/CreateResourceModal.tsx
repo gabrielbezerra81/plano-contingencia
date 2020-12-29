@@ -178,7 +178,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
     let address = resource.address;
 
     if (!resource.responsibles.length) {
-      alert("Por favor, selecione um contato para incluir um novo recurso.");
+      alert("Por favor, indique um contato para incluir um novo recurso.");
       return;
     }
 
@@ -190,6 +190,10 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
       selectedAddressIndex >= 0
     ) {
       address = planData.resources[selectedAddressIndex].address;
+    }
+
+    if (!address?.city) {
+      alert("Por favor, indique o endereço do recurso para incluir um novo recurso.");
     }
 
     await addResource({ ...resource, address, type });
@@ -483,7 +487,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                 <ResourceAccordionItem selected={activeKey === "0"}>
                   <Accordion.Toggle as="div" eventKey="0">
                     <header>
-                      <h5>Contato</h5>
+                      <h5>Indique um Contato</h5>
                     </header>
                   </Accordion.Toggle>
 
@@ -492,6 +496,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                       <Select
                         value={"" as any}
                         name="responsibles"
+                        noOptionsMessage={() => "Nenhum responsável encontrado"}
                         placeholder="Adicionar um responsavel"
                         options={contactSelectOptions}
                         onChange={({ value }: any) => {
@@ -523,7 +528,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                 <ResourceAccordionItem selected={activeKey === "1"}>
                   <Accordion.Toggle as="div" eventKey="1">
                     <header>
-                      <h5>Endereço do Recurso</h5>
+                      <h5>Indique o Endereço do Recurso</h5>
                     </header>
                   </Accordion.Toggle>
 
