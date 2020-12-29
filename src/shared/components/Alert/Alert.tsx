@@ -1,5 +1,4 @@
 import React from "react";
-import { Modal, Button } from "react-bootstrap";
 import { confirmAlert } from "react-confirm-alert";
 
 interface AlertProps {

@@ -240,5 +240,15 @@ export const ResourceAccordionItem = styled.div<Props>`
       display: block;
       margin-top: 8px;
     }
+
+    .addressListingItem {
+      display: flex;
+
+      > button {
+        padding: 0;
+        margin-right: 4px;
+        height: 20px;
+      }
+    }
   }
 `;

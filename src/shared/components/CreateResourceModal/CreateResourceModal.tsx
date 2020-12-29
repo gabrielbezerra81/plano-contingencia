@@ -27,6 +27,8 @@ import NumberInput from "../NumberInput/NumberInput";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 import AddResponsibleModal from "../AddResponsibleModal/AddResponsibleModal";
 import { useAddScenario } from "context/Scenario/addScenarioContext";
+import { FiX } from "react-icons/fi";
+import Alert from "../Alert/Alert";
 
 interface Props {
   show: boolean;
@@ -193,7 +195,9 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
     }
 
     if (!address?.city) {
-      alert("Por favor, indique o endereço do recurso para incluir um novo recurso.");
+      alert(
+        "Por favor, indique o endereço do recurso para incluir um novo recurso.",
+      );
     }
 
     await addResource({ ...resource, address, type });
@@ -412,6 +416,17 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
     return titles;
   }, [type]);
 
+  const handleRemoveResourceAddress = useCallback(
+    (index: number) => {
+      Alert({
+        title: "Deseja remover este endereço?",
+        message: filteredByAddressResources[index].formattedAddress,
+        onPositiveClick: () => {},
+      });
+    },
+    [filteredByAddressResources],
+  );
+
   return (
     <>
       <Modal
@@ -546,23 +561,32 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                           return null;
                         }
 
+                        console.log(resourceItem.id);
+
                         return (
-                          <Form.Check
-                            key={index}
-                            type="radio"
-                            label={resourceItem.formattedAddress}
-                            name="resourceAddressRadio"
-                            checked={selectedAddressIndex === index}
-                            onChange={() => {
-                              setSelectedAddressIndex(index);
-                              handleEditCurrentResource({
-                                target: {
-                                  name: "address",
-                                  value: resourceItem.address,
-                                },
-                              });
-                            }}
-                          />
+                          <div className="addressListingItem">
+                            {/* <button
+                              onClick={() => handleRemoveResourceAddress(index)}
+                            >
+                              <FiX color="#dc3545" />
+                            </button> */}
+                            <Form.Check
+                              key={index}
+                              type="radio"
+                              label={resourceItem.formattedAddress}
+                              name="resourceAddressRadio"
+                              checked={selectedAddressIndex === index}
+                              onChange={() => {
+                                setSelectedAddressIndex(index);
+                                handleEditCurrentResource({
+                                  target: {
+                                    name: "address",
+                                    value: resourceItem.address,
+                                  },
+                                });
+                              }}
+                            />
+                          </div>
                         );
                       })}
                       {!!currentAddedAddress && !!formattedCurrentAddedAddress && (

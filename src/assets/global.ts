@@ -103,7 +103,8 @@ const GlobalStyle = createGlobalStyle`
     }
 
     .react-confirm-alert-overlay {
-      background-color: transparent;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
     }
 
     .react-confirm-alert-body {
@@ -120,7 +121,7 @@ const GlobalStyle = createGlobalStyle`
         }
 
         button:first-child {
-          background-color: red;
+          background-color: #dc3545;
         }
 
         button:last-child {
