@@ -1,6 +1,6 @@
 import { usePlanData } from "context/PlanData/planDataContext";
 import { useSystem } from "context/System/systemContext";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Tab, Nav, Button } from "react-bootstrap";
 import StepOne from "screens/step1/StepOne";
@@ -51,6 +51,14 @@ const MainTabs = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTab]);
 
+  const isLeftMenuOpen = useMemo(() => {
+    if (selectedTab === "tab4") {
+      return isOpenLeftSideMenu;
+    }
+
+    return true;
+  }, [selectedTab, isOpenLeftSideMenu]);
+
   return (
     <Tab.Container activeKey={selectedTab} onSelect={handleTabChange}>
       <TabHeader isLeftMenuOpen={isOpenLeftSideMenu}>
@@ -83,7 +91,11 @@ const MainTabs = () => {
         </TabItem>
       </TabHeader>
 
-      <Content className="tab-content" isLeftMenuOpen={isOpenLeftSideMenu}>
+      <Content
+        className="tab-content"
+        isLeftMenuOpen={isOpenLeftSideMenu}
+        selectedTab={selectedTab}
+      >
         <Tab.Pane eventKey="tab1">
           <h3>1: DESCRIÇÃO GERAL DO PLANO DE CONTINGÊNCIA</h3>
           <StepOne />

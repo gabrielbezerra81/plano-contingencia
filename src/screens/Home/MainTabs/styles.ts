@@ -15,7 +15,9 @@ export const TabHeader = styled(Nav)<TabHeaderProps>`
   ${({ isLeftMenuOpen }) =>
     !isLeftMenuOpen &&
     css`
-      margin-left: 288px;
+      @media (max-width: 1415px) {
+        margin-left: 288px;
+      }
     `}
 `;
 
@@ -63,6 +65,7 @@ export const TabItem = styled(Nav.Item)<TabItemProps>`
 
 interface ContentProps {
   isLeftMenuOpen: boolean;
+  selectedTab: string;
 }
 
 export const Content = styled.main<ContentProps>`
@@ -70,25 +73,42 @@ export const Content = styled.main<ContentProps>`
   /* height: 600px; */
 
   .tab-pane {
-    padding: 16px 0 80px;
+    padding: 16px 0 40px;
     position: relative;
     height: 100%;
 
     > h3 {
       text-align: center;
       color: #212121;
+      /* margin-left: 288px; */
     }
   }
 
   .nextButton {
     position: absolute;
-    bottom: 120px;
+    bottom: 40px;
     right: 0px;
   }
 
-  ${({ isLeftMenuOpen }) =>
+  ${({ isLeftMenuOpen, selectedTab }) =>
     !isLeftMenuOpen &&
+    selectedTab === "tab4" &&
     css`
-      margin-top: 88px;
+      margin-top: 72px;
+    `}
+
+  ${({ isLeftMenuOpen, selectedTab }) =>
+    !isLeftMenuOpen &&
+    selectedTab === "tab3" &&
+    css`
+      .tab-pane {
+        > h3 {
+          @media (max-width: 1400px) {
+            max-width: 720px;
+            margin: 0 auto;
+            margin-left: 288px;
+          }
+        }
+      }
     `}
 `;
