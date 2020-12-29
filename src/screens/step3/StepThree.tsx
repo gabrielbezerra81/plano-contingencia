@@ -80,6 +80,7 @@ const StepThree: React.FC = () => {
   const [addedKMLs, setAddedKMLs] = useState<string[]>([]);
 
   const [showSearchError, setShowSearchError] = useState(false);
+  const [highlightInputText, setHighlightInputText] = useState(false);
 
   useEffect(() => {
     if (map) {
@@ -126,37 +127,50 @@ const StepThree: React.FC = () => {
     };
   }, [map]);
 
-  const handleSearchFromCEP = useCallback(async () => {
-    try {
-      const parsedCep = address.cep.replace("-", "");
+  const handleSearchFromCEP = useCallback(
+    async (e) => {
+      if (e) {
+        e.preventDefault();
+      }
 
-      const response = await axios.get(
-        `https://viacep.com.br/ws/${parsedCep}/json/`,
-      );
+      try {
+        const parsedCep = address.cep.replace("-", "");
 
-      const {
-        logradouro: street,
-        complemento: complement,
-        bairro: neighbor,
-        localidade: city,
-        uf: state,
-      } = response.data;
+        const response = await axios.get(
+          `https://viacep.com.br/ws/${parsedCep}/json/`,
+        );
 
-      setAddress((oldValue) => ({
-        ...oldValue,
-        street: street || "",
-        complement: complement || "",
-        neighbor: neighbor || "",
-        city: city || "",
-        state: state || "",
-      }));
-    } catch (error) {
-      setShowSearchError(true);
-      setTimeout(() => {
-        setShowSearchError(false);
-      }, 5000);
-    }
-  }, [address.cep]);
+        const {
+          logradouro: street,
+          complemento: complement,
+          bairro: neighbor,
+          localidade: city,
+          uf: state,
+        } = response.data;
+
+        setAddress((oldValue) => ({
+          ...oldValue,
+          street: street || "",
+          complement: complement || "",
+          neighbor: neighbor || "",
+          city: city || "",
+          state: state || "",
+        }));
+
+        setHighlightInputText(true);
+
+        setTimeout(() => {
+          setHighlightInputText(false);
+        }, 4000);
+      } catch (error) {
+        setShowSearchError(true);
+        setTimeout(() => {
+          setShowSearchError(false);
+        }, 5000);
+      }
+    },
+    [address.cep],
+  );
 
   const handleEditCurrentAddress = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -348,7 +362,7 @@ const StepThree: React.FC = () => {
   }, [selectedTabIndex, loadMap, map]);
 
   return (
-    <Container>
+    <Container highlightInputText={highlightInputText}>
       <h6>Orientação: pode ser inserido mais de um endereço</h6>
 
       <main>
@@ -431,7 +445,7 @@ const StepThree: React.FC = () => {
             borderBottomOnly
             onKeyPress={(e) => {
               if (e.key === "Enter") {
-                handleSearchFromCEP();
+                handleSearchFromCEP(e);
               }
             }}
             masked
@@ -463,6 +477,7 @@ const StepThree: React.FC = () => {
               onChange={handleEditCurrentAddress}
               required
               isValidated={validatedAddress}
+              containerClass="hightlightInputOnSearch"
             />
             <Input
               labelOnInput="Bairro:"
@@ -470,6 +485,7 @@ const StepThree: React.FC = () => {
               name="neighbor"
               value={address.neighbor}
               onChange={handleEditCurrentAddress}
+              containerClass="hightlightInputOnSearch"
             />
             <Input
               labelOnInput="Cidade:"
@@ -479,6 +495,7 @@ const StepThree: React.FC = () => {
               onChange={handleEditCurrentAddress}
               required
               isValidated={validatedAddress}
+              containerClass="hightlightInputOnSearch"
             />
             <Input
               labelOnInput="Estado:"
@@ -488,6 +505,7 @@ const StepThree: React.FC = () => {
               onChange={handleEditCurrentAddress}
               required
               isValidated={validatedAddress}
+              containerClass="hightlightInputOnSearch"
             />
             <Input
               labelOnInput="Complemento:"
@@ -495,6 +513,7 @@ const StepThree: React.FC = () => {
               name="complement"
               value={address.complement}
               onChange={handleEditCurrentAddress}
+              containerClass="hightlightInputOnSearch"
             />
             <Input
               labelOnInput="Ponto de Referência:"

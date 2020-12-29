@@ -106,6 +106,7 @@ export const Container = styled.div<ContainerProps>`
     color: #3d3d3d;
     box-shadow: none !important;
     flex: 1;
+    transition: color 0.3s;
     /* #80bdff */
 
     &.form-control::-webkit-input-placeholder {

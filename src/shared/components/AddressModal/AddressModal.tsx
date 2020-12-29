@@ -72,38 +72,50 @@ const AddressModal: React.FC<Props> = ({
   const [validatedAddress, setValidatedAddress] = useState(false);
 
   const [showSearchError, setShowSearchError] = useState(false);
+  const [highlightInputText, setHighlightInputText] = useState(false);
 
-  const handleSearchFromCEP = useCallback(async () => {
-    try {
-      const parsedCep = address.cep.replace("-", "");
+  const handleSearchFromCEP = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-      const response = await axios.get(
-        `https://viacep.com.br/ws/${parsedCep}/json/`,
-      );
+      try {
+        const parsedCep = address.cep.replace("-", "");
 
-      const {
-        logradouro: street,
-        complemento: complement,
-        bairro: neighbor,
-        localidade: city,
-        uf: state,
-      } = response.data;
+        const response = await axios.get(
+          `https://viacep.com.br/ws/${parsedCep}/json/`,
+        );
 
-      setAddress((oldValue) => ({
-        ...oldValue,
-        street: street || "",
-        complement: complement || "",
-        neighbor: neighbor || "",
-        city: city || "",
-        state: state || "",
-      }));
-    } catch (error) {
-      setShowSearchError(true);
-      setTimeout(() => {
-        setShowSearchError(false);
-      }, 5000);
-    }
-  }, [address.cep]);
+        const {
+          logradouro: street,
+          complemento: complement,
+          bairro: neighbor,
+          localidade: city,
+          uf: state,
+        } = response.data;
+
+        setAddress((oldValue) => ({
+          ...oldValue,
+          street: street || "",
+          complement: complement || "",
+          neighbor: neighbor || "",
+          city: city || "",
+          state: state || "",
+        }));
+
+        setHighlightInputText(true);
+
+        setTimeout(() => {
+          setHighlightInputText(false);
+        }, 4000);
+      } catch (error) {
+        setShowSearchError(true);
+        setTimeout(() => {
+          setShowSearchError(false);
+        }, 5000);
+      }
+    },
+    [address.cep],
+  );
 
   const handleEditCurrentAddress = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -233,7 +245,7 @@ const AddressModal: React.FC<Props> = ({
       onHide={() => setShow(false)}
     >
       <ModalCloseButton setShow={setShow} />
-      <Container>
+      <Container highlightInputText={highlightInputText}>
         <div className="borderedContainer">
           <label>Endereço do recurso</label>
           <MapAndAddressListContainer>
@@ -283,7 +295,7 @@ const AddressModal: React.FC<Props> = ({
               borderBottomOnly
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
-                  handleSearchFromCEP();
+                  handleSearchFromCEP(e);
                 }
               }}
               masked
@@ -316,6 +328,7 @@ const AddressModal: React.FC<Props> = ({
                 onChange={handleEditCurrentAddress}
                 required
                 isValidated={validatedAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Bairro:"
@@ -323,6 +336,7 @@ const AddressModal: React.FC<Props> = ({
                 name="neighbor"
                 value={address.neighbor}
                 onChange={handleEditCurrentAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Cidade:"
@@ -332,6 +346,7 @@ const AddressModal: React.FC<Props> = ({
                 onChange={handleEditCurrentAddress}
                 required
                 isValidated={validatedAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Estado:"
@@ -341,6 +356,7 @@ const AddressModal: React.FC<Props> = ({
                 onChange={handleEditCurrentAddress}
                 required
                 isValidated={validatedAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Complemento:"
@@ -348,6 +364,7 @@ const AddressModal: React.FC<Props> = ({
                 name="complement"
                 value={address.complement}
                 onChange={handleEditCurrentAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Ponto de Referência:"

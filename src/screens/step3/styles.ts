@@ -1,9 +1,13 @@
 import colors from "assets/colors";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { shade } from "polished";
 import { Form } from "react-bootstrap";
 
-export const Container = styled.div`
+interface ContainerProps {
+  highlightInputText: boolean;
+}
+
+export const Container = styled.div<ContainerProps>`
   padding: 8px 0 16px;
 
   > h6:first-child {
@@ -16,6 +20,16 @@ export const Container = styled.div`
     margin-top: 32px;
     display: flex;
   }
+
+  ${({ highlightInputText }) =>
+    highlightInputText &&
+    css`
+      .inputContainer.hightlightInputOnSearch {
+        input {
+          color: ${shade(0.2, "#80bdff")};
+        }
+      }
+    `}
 `;
 
 export const MapAndAddressListContainer = styled.div`

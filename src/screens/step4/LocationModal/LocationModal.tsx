@@ -2,7 +2,7 @@ import { LatLngLiteral } from "leaflet";
 import React, { useCallback, useEffect, useState, useMemo } from "react";
 import L from "leaflet";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { GrSearch } from "react-icons/gr";
 
 import icon from "leaflet/dist/images/marker-icon.png";
@@ -80,6 +80,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
   const [validatedAddress, setValidatedAddress] = useState(false);
 
   const [showSearchError, setShowSearchError] = useState(false);
+  const [highlightInputText, setHighlightInputText] = useState(false);
 
   useEffect(() => {
     if (map) {
@@ -126,37 +127,48 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
     };
   }, [map]);
 
-  const handleSearchFromCEP = useCallback(async () => {
-    try {
-      const parsedCep = address.cep.replace("-", "");
+  const handleSearchFromCEP = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-      const response = await axios.get(
-        `https://viacep.com.br/ws/${parsedCep}/json/`,
-      );
+      try {
+        const parsedCep = address.cep.replace("-", "");
 
-      const {
-        logradouro: street,
-        complemento: complement,
-        bairro: neighbor,
-        localidade: city,
-        uf: state,
-      } = response.data;
+        const response = await axios.get(
+          `https://viacep.com.br/ws/${parsedCep}/json/`,
+        );
 
-      setAddress((oldValue) => ({
-        ...oldValue,
-        street: street || "",
-        complement: complement || "",
-        neighbor: neighbor || "",
-        city: city || "",
-        state: state || "",
-      }));
-    } catch (error) {
-      setShowSearchError(true);
-      setTimeout(() => {
-        setShowSearchError(false);
-      }, 5000);
-    }
-  }, [address.cep]);
+        const {
+          logradouro: street,
+          complemento: complement,
+          bairro: neighbor,
+          localidade: city,
+          uf: state,
+        } = response.data;
+
+        setAddress((oldValue) => ({
+          ...oldValue,
+          street: street || "",
+          complement: complement || "",
+          neighbor: neighbor || "",
+          city: city || "",
+          state: state || "",
+        }));
+
+        setHighlightInputText(true);
+
+        setTimeout(() => {
+          setHighlightInputText(false);
+        }, 4000);
+      } catch (error) {
+        setShowSearchError(true);
+        setTimeout(() => {
+          setShowSearchError(false);
+        }, 5000);
+      }
+    },
+    [address.cep],
+  );
 
   const handleEditCurrentAddress = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -262,7 +274,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
 
   return (
     <Modal show={show} centered onHide={() => setShow(false)}>
-      <Container>
+      <Container highlightInputText={highlightInputText}>
         <h6>Adicione locais de risco</h6>
         <ModalCloseButton setShow={setShow} />
 
@@ -328,7 +340,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
               borderBottomOnly
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
-                  handleSearchFromCEP();
+                  handleSearchFromCEP(e);
                 }
               }}
               masked
@@ -360,6 +372,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
                 onChange={handleEditCurrentAddress}
                 required
                 isValidated={validatedAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Bairro:"
@@ -367,6 +380,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
                 name="neighbor"
                 value={address.neighbor}
                 onChange={handleEditCurrentAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Cidade:"
@@ -376,6 +390,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
                 onChange={handleEditCurrentAddress}
                 required
                 isValidated={validatedAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Estado:"
@@ -385,6 +400,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
                 onChange={handleEditCurrentAddress}
                 required
                 isValidated={validatedAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Complemento:"
@@ -392,6 +408,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
                 name="complement"
                 value={address.complement}
                 onChange={handleEditCurrentAddress}
+                containerClass="hightlightInputOnSearch"
               />
               <Input
                 labelOnInput="Ponto de Referência:"

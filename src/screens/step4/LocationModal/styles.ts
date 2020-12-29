@@ -1,5 +1,5 @@
 import colors from "assets/colors";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { shade } from "polished";
 
 import { Form, Modal as BSModal } from "react-bootstrap";
@@ -10,7 +10,11 @@ export const Modal = styled(BSModal)`
   }
 `;
 
-export const Container = styled.div`
+interface ContainerProps {
+  highlightInputText: boolean;
+}
+
+export const Container = styled.div<ContainerProps>`
   padding: 16px 16px 16px;
   min-height: 640px;
 
@@ -24,6 +28,16 @@ export const Container = styled.div`
     margin-top: 24px;
     display: flex;
   }
+
+  ${({ highlightInputText }) =>
+    highlightInputText &&
+    css`
+      .inputContainer.hightlightInputOnSearch {
+        input {
+          color: ${shade(0.2, "#80bdff")};
+        }
+      }
+    `}
 `;
 
 export const MapAndAddressListContainer = styled.div`
