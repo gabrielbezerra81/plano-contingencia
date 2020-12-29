@@ -49,7 +49,7 @@ const emptyAddress: RiskLocation = {
 };
 
 const StepThree: React.FC = () => {
-  const { selectedTabIndex } = useSystem();
+  const { selectedTabIndex, setSelectedTab } = useSystem();
 
   const { planData, addRiskLocation, removeRiskLocation } = usePlanData();
 
@@ -300,6 +300,10 @@ const StepThree: React.FC = () => {
     [map],
   );
 
+  const handleNavigateNextTab = useCallback(() => {
+    setSelectedTab(`tab${selectedTabIndex + 1}`);
+  }, [selectedTabIndex, setSelectedTab]);
+
   const markerEventHandlers = useMemo(() => {
     return {
       dragend: (event: L.DragEndEvent) => {
@@ -535,6 +539,16 @@ const StepThree: React.FC = () => {
                 type="file"
                 onChange={handleUpload}
               />
+            </div>
+
+            <div className="buttonsContainer">
+              <span></span>
+              <Button
+                onClick={handleNavigateNextTab}
+                className="darkBlueButton"
+              >
+                Próximo
+              </Button>
             </div>
           </main>
         </AddLocationContainer>

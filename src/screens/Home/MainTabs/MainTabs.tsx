@@ -121,12 +121,6 @@ const MainTabs = () => {
         <Tab.Pane eventKey="tab3">
           <h3>3: ESPECIFIQUE O ENDEREÇO DOS LOCAIS DE RISCO</h3>
           <StepThree />
-          <Button
-            onClick={handleClickNext}
-            className="darkBlueButton nextButton"
-          >
-            Próximo
-          </Button>
         </Tab.Pane>
 
         <Tab.Pane eventKey="tab4">
