@@ -371,7 +371,7 @@ const StepFour: React.FC = () => {
         />
       )}
 
-      {/* {location.hostname === "localhost" && (
+      {location.hostname === "localhost" && (
         <div style={{ marginTop: 48 }}>
           <div>
             Linhas adicionadas: {scenariosList.length}
@@ -399,7 +399,7 @@ const StepFour: React.FC = () => {
             ))}
           </div>
         </div>
-      )} */}
+      )}
 
       <LocationModal show={showLocationModal} setShow={setShowLocationModal} />
 

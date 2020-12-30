@@ -27,7 +27,7 @@ import NumberInput from "../NumberInput/NumberInput";
 import ModalCloseButton from "../ModalCloseButton/ModalCloseButton";
 import AddResponsibleModal from "../AddResponsibleModal/AddResponsibleModal";
 import { useAddScenario } from "context/Scenario/addScenarioContext";
-import { FiX } from "react-icons/fi";
+import { FiEdit, FiX } from "react-icons/fi";
 import Alert from "../Alert/Alert";
 
 interface Props {
@@ -87,6 +87,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
     currentAddedAddress,
     setCurrentAddedAddress,
   ] = useState<Address | null>(null);
+  const [editingCurrentAddress, setEditingCurrentAddress] = useState(false);
 
   const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
@@ -416,16 +417,20 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
     return titles;
   }, [type]);
 
-  const handleRemoveResourceAddress = useCallback(
-    (index: number) => {
-      Alert({
-        title: "Deseja remover este endereço?",
-        message: filteredByAddressResources[index].formattedAddress,
-        onPositiveClick: () => {},
-      });
-    },
-    [filteredByAddressResources],
-  );
+  const handleRemoveResourceAddress = useCallback(() => {
+    Alert({
+      title: "Deseja remover este endereço?",
+      message: formattedCurrentAddedAddress,
+      onPositiveClick: () => {
+        setCurrentAddedAddress(null);
+      },
+    });
+  }, [formattedCurrentAddedAddress]);
+
+  const handleOpenAddressToEdit = useCallback(() => {
+    setEditingCurrentAddress(true);
+    setShowAddAddressModal(true);
+  }, []);
 
   return (
     <>
@@ -561,50 +566,49 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
                           return null;
                         }
 
-                        console.log(resourceItem.id);
-
                         return (
-                          <div className="addressListingItem">
-                            {/* <button
-                              onClick={() => handleRemoveResourceAddress(index)}
-                            >
-                              <FiX color="#dc3545" />
-                            </button> */}
-                            <Form.Check
-                              key={index}
-                              type="radio"
-                              label={resourceItem.formattedAddress}
-                              name="resourceAddressRadio"
-                              checked={selectedAddressIndex === index}
-                              onChange={() => {
-                                setSelectedAddressIndex(index);
-                                handleEditCurrentResource({
-                                  target: {
-                                    name: "address",
-                                    value: resourceItem.address,
-                                  },
-                                });
-                              }}
-                            />
-                          </div>
+                          <Form.Check
+                            key={index}
+                            type="radio"
+                            label={resourceItem.formattedAddress}
+                            name="resourceAddressRadio"
+                            checked={selectedAddressIndex === index}
+                            onChange={() => {
+                              setSelectedAddressIndex(index);
+                              handleEditCurrentResource({
+                                target: {
+                                  name: "address",
+                                  value: resourceItem.address,
+                                },
+                              });
+                            }}
+                          />
                         );
                       })}
                       {!!currentAddedAddress && !!formattedCurrentAddedAddress && (
-                        <Form.Check
-                          type="radio"
-                          label={formattedCurrentAddedAddress}
-                          name="resourceAddressRadio"
-                          checked={selectedAddressIndex === -2}
-                          onChange={() => {
-                            setSelectedAddressIndex(-2);
-                            handleEditCurrentResource({
-                              target: {
-                                name: "address",
-                                value: currentAddedAddress,
-                              },
-                            });
-                          }}
-                        />
+                        <div className="addressListingItem">
+                          <button onClick={handleRemoveResourceAddress}>
+                            <FiX color="#dc3545" />
+                          </button>
+                          <button onClick={handleOpenAddressToEdit}>
+                            <FiEdit size={13} color="#3d3d3d" />
+                          </button>
+                          <Form.Check
+                            type="radio"
+                            label={formattedCurrentAddedAddress}
+                            name="resourceAddressRadio"
+                            checked={selectedAddressIndex === -2}
+                            onChange={() => {
+                              setSelectedAddressIndex(-2);
+                              handleEditCurrentResource({
+                                target: {
+                                  name: "address",
+                                  value: currentAddedAddress,
+                                },
+                              });
+                            }}
+                          />
+                        </div>
                       )}
 
                       <Button
@@ -711,6 +715,14 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
         setShow={setShowAddAddressModal}
         setExternalAddress={setCurrentAddedAddress}
         selectAddress={() => setSelectedAddressIndex(-2)}
+        editingProps={
+          editingCurrentAddress && currentAddedAddress
+            ? {
+                setEditing: setEditingCurrentAddress,
+                address: currentAddedAddress,
+              }
+            : undefined
+        }
       />
     </>
   );

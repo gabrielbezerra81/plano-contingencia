@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { LatLngLiteral } from "leaflet";
 import L from "leaflet";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { GrSearch } from "react-icons/gr";
 import axios from "axios";
 
@@ -26,6 +26,10 @@ interface Props {
   setShow: (...data: any) => any;
   setExternalAddress: React.Dispatch<React.SetStateAction<Address | null>>;
   selectAddress?: (...data: any) => any;
+  editingProps?: {
+    setEditing: React.Dispatch<React.SetStateAction<boolean>>;
+    address: Address;
+  };
 }
 
 const emptyAddress: Address = {
@@ -47,24 +51,20 @@ const AddressModal: React.FC<Props> = ({
   setShow,
   setExternalAddress,
   selectAddress,
+  editingProps,
 }) => {
   const { getSequenceId } = usePlanData();
 
   const [map, setMap] = useState<L.Map | null>(null);
 
-  const [address, setAddress] = useState<Address>({
-    id: "",
-    cep: "",
-    identification: "",
-    street: "",
-    complement: "",
-    neighbor: "",
-    city: "",
-    state: "Goiás",
-    refPoint: "",
-    lat: "",
-    long: "",
-    number: "",
+  const [address, setAddress] = useState<Address>(() => {
+    const addr = { ...emptyAddress };
+
+    if (editingProps) {
+      Object.assign(addr, editingProps.address);
+    }
+
+    return addr;
   });
 
   const [position, setPosition] = useState<LatLngLiteral | null>(null);
@@ -73,6 +73,22 @@ const AddressModal: React.FC<Props> = ({
 
   const [showSearchError, setShowSearchError] = useState(false);
   const [highlightInputText, setHighlightInputText] = useState(false);
+
+  const onExit = useCallback(() => {
+    setAddress(() => {
+      const clearedAddress = produce(address, (draft) => {
+        Object.assign(draft, { ...emptyAddress });
+      });
+
+      return clearedAddress;
+    });
+
+    if (editingProps) {
+      editingProps.setEditing(false);
+    }
+
+    setShow(false);
+  }, [setShow, editingProps, address]);
 
   const handleSearchFromCEP = useCallback(
     async (e) => {
@@ -129,22 +145,21 @@ const AddressModal: React.FC<Props> = ({
   const handleAddAddress = useCallback(async () => {
     const id = await getSequenceId("enderecos");
 
+    if (!id) {
+      alert("Falha ao tentar adicionar o novo endereço, tente novamente.");
+      return;
+    }
+
     setExternalAddress({ ...address, id });
 
     if (selectAddress) {
       selectAddress();
     }
 
-    setAddress(() => {
-      const clearedAddress = produce(address, (draft) => {
-        Object.assign(draft, { ...emptyAddress });
-      });
+    setPosition(null);
 
-      return clearedAddress;
-    });
-
-    setShow(false);
-  }, [address, setExternalAddress, setShow, selectAddress, getSequenceId]);
+    onExit();
+  }, [address, setExternalAddress, selectAddress, getSequenceId, onExit]);
 
   const handleChangeLat = useCallback(
     (value: any) => {
@@ -190,6 +205,28 @@ const AddressModal: React.FC<Props> = ({
     },
     [handleEditCurrentAddress],
   );
+
+  const markerEventHandlers = useMemo(() => {
+    return {
+      dragend: (event: L.DragEndEvent) => {
+        const { _latlng } = event.target;
+        setPosition(_latlng);
+
+        const latLong = {
+          lat: numberFormatter({
+            value: _latlng.lat,
+            precision: 7,
+          }),
+          long: numberFormatter({
+            value: _latlng.lng,
+            precision: 7,
+          }),
+        };
+
+        setAddress((oldValue) => ({ ...oldValue, ...latLong }));
+      },
+    };
+  }, []);
 
   // Carregar localização, criar função para lidar com eventos de clique no mapa
   useEffect(() => {
@@ -237,14 +274,20 @@ const AddressModal: React.FC<Props> = ({
     };
   }, [map]);
 
+  useEffect(() => {
+    if (editingProps) {
+      setAddress(editingProps.address);
+    }
+  }, [editingProps]);
+
   return (
     <Modal
       backdropClassName="addAddressModalWrapper"
       centered
       show={show}
-      onHide={() => setShow(false)}
+      onHide={onExit}
     >
-      <ModalCloseButton setShow={setShow} />
+      <ModalCloseButton setShow={onExit} />
       <Container highlightInputText={highlightInputText}>
         <div className="borderedContainer">
           <label>Endereço do recurso</label>
@@ -263,22 +306,13 @@ const AddressModal: React.FC<Props> = ({
               />
 
               {position === null ? null : (
-                <Marker position={position}>
-                  <Popup>You are here</Popup>
-                </Marker>
+                <Marker
+                  position={position}
+                  draggable
+                  eventHandlers={markerEventHandlers}
+                />
               )}
             </MapContainer>
-
-            {/* <AttributeListing
-              showCloseButton={false}
-              title="Endereço"
-              items={[address]}
-              name="addressItem"
-              onRemove={() => {}}
-              renderText={(addressItem: Address) =>
-                formatResourceAddress(addressItem)
-              }
-            /> */}
           </MapAndAddressListContainer>
 
           <AddLocationContainer
