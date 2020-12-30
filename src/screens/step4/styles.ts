@@ -89,11 +89,27 @@ export const Table = styled.table`
 `;
 
 export const Container = styled.div`
+  div.titleContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 120px;
+
+    > h3 {
+      text-align: center;
+      color: #212121;
+      position: fixed;
+      margin: 32px auto 0;
+    }
+  }
+
   > .inputContainer {
     width: 350px;
-    margin: 40px auto 24px;
-    position: sticky;
-    left: 288px;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    position: fixed;
+    top: 112px;
   }
 
   > .buttonsContainer {

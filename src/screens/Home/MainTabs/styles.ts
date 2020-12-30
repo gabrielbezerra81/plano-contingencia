@@ -84,8 +84,7 @@ export const Content = styled.main<ContentProps>`
       color: #212121;
       position: sticky;
       left: 288px;
-      max-width: 720px;
-      /* margin-left: 288px; */
+      margin: 0 auto;
     }
   }
 

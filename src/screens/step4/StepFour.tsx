@@ -325,6 +325,9 @@ const StepFour: React.FC = () => {
   return (
     <>
       <Container>
+        <div className="titleContainer">
+          <h3>4: CONSTRUÇÃO DE CENÁRIO</h3>
+        </div>
         <Input
           value={scenarioTitle}
           onChange={handleChangeScenarioTitle}
@@ -363,7 +366,7 @@ const StepFour: React.FC = () => {
         </div>
       </Container>
 
-      {location.hostname === "localhost" && (
+      {location.hostname === "localhostt" && (
         <Form.Check
           label="Salvar cenários"
           checked={scenarioSaveEnabled}
@@ -371,7 +374,7 @@ const StepFour: React.FC = () => {
         />
       )}
 
-      {location.hostname === "localhost" && (
+      {location.hostname === "localhostt" && (
         <div style={{ marginTop: 48 }}>
           <div>
             Linhas adicionadas: {scenariosList.length}

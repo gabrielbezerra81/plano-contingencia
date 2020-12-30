@@ -124,7 +124,6 @@ const MainTabs = () => {
         </Tab.Pane>
 
         <Tab.Pane eventKey="tab4">
-          <h3>4: CONSTRUÇÃO DE CENÁRIO</h3>
           <StepFour />
           <Button
             onClick={handleClickNext}
