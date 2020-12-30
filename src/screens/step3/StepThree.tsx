@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import L from "leaflet";
 
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import JSZip from "jszip";
 
 import { GrSearch } from "react-icons/gr";
 import { kml as KMLP } from "@tmcw/togeojson";
@@ -77,11 +78,20 @@ const StepThree: React.FC = () => {
   const [validatedAddress, setValidatedAddress] = useState(false);
 
   const [kmlFiles, setKmlFiles] = useState<File[]>([]);
-  const [addedKMLs, setAddedKMLs] = useState<string[]>([]);
+  const [addedKMLs, setAddedKMLs] = useState<string[]>(() => {
+    const kmls = localStorage.getItem("addedKMLs");
+
+    if (kmls) {
+      return JSON.parse(kmls);
+    }
+
+    return [];
+  });
 
   const [showSearchError, setShowSearchError] = useState(false);
   const [highlightInputText, setHighlightInputText] = useState(false);
 
+  // Carregar localização, adicionar eventos de clique no mapa;
   useEffect(() => {
     if (map) {
       map.locate();
@@ -238,53 +248,89 @@ const StepThree: React.FC = () => {
     [handleAddAddress],
   );
 
+  const addKMLToMap = useCallback(
+    (kmlText: string) => {
+      if (!map) {
+        return;
+      }
+
+      const parser = new DOMParser();
+
+      const kml = parser.parseFromString(kmlText, "text/xml");
+
+      const convertedWithStyles = KMLP(kml, { styles: true });
+
+      const polygons = convertedWithStyles.features.filter(
+        (item: any) => !!item.geometry && item.geometry.type !== "Point",
+      );
+
+      const points = convertedWithStyles.features.filter(
+        (item: any) => !!item.geometry && item.geometry.type === "Point",
+      );
+
+      const styleKeys = [
+        "fill",
+        "fill-opacity",
+        "stroke",
+        "stroke-opacity",
+        "color",
+        "stroke-width",
+      ];
+
+      polygons.forEach((polygon: any) => {
+        const style = Object.keys(polygon.properties)
+          .filter((key) => styleKeys.includes(key))
+          .reduce((obj: any, key: any) => {
+            obj[key] = polygon.properties[key];
+            return obj;
+          }, {});
+
+        if (style.fill) {
+          style.color = style.fill;
+        }
+
+        L.geoJSON(polygon, { style }).addTo(map);
+      });
+    },
+    [map],
+  );
+
   const handleUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length && map) {
-        const file = e.target.files[0];
+        try {
+          const file = e.target.files[0];
 
-        const text = await file.text();
+          const kmlFilesText: string[] = [];
 
-        const parser = new DOMParser();
+          if (file.name.includes(".kmz")) {
+            const zip = new JSZip();
 
-        const kml = parser.parseFromString(text, "text/xml");
+            const loadedKMZ = await zip.loadAsync(file);
 
-        const convertedWithStyles = KMLP(kml, { styles: true });
+            for (const key in loadedKMZ.files) {
+              if (key.includes(".kml")) {
+                const content = await loadedKMZ.files[key].async("text");
 
-        const polygons = convertedWithStyles.features.filter(
-          (item: any) => !!item.geometry && item.geometry.type !== "Point",
-        );
+                kmlFilesText.push(content);
+              }
+            }
+          } //
+          else {
+            const content = await file.text();
 
-        const points = convertedWithStyles.features.filter(
-          (item: any) => !!item.geometry && item.geometry.type === "Point",
-        );
-
-        const styleKeys = [
-          "fill",
-          "fill-opacity",
-          "stroke",
-          "stroke-opacity",
-          "color",
-          "stroke-width",
-        ];
-
-        polygons.forEach((polygon: any) => {
-          const style = Object.keys(polygon.properties)
-            .filter((key) => styleKeys.includes(key))
-            .reduce((obj: any, key: any) => {
-              obj[key] = polygon.properties[key];
-              return obj;
-            }, {});
-
-          if (style.fill) {
-            style.color = style.fill;
+            kmlFilesText.push(content);
           }
 
-          L.geoJSON(polygon, { style }).addTo(map);
-        });
+          kmlFilesText.forEach((content) => {
+            addKMLToMap(content);
+          });
 
-        setKmlFiles((oldValues) => [...oldValues, file]);
-        setAddedKMLs((oldValues) => [...oldValues, text]);
+          setKmlFiles((oldValues) => [...oldValues, file]);
+          setAddedKMLs((oldValues) => [...oldValues, ...kmlFilesText]);
+        } catch (error) {
+          console.log(error);
+        }
 
         // setGeojson(polygons);
 
@@ -316,7 +362,7 @@ const StepThree: React.FC = () => {
         // setMapKey(Math.random())
       }
     },
-    [map],
+    [map, addKMLToMap],
   );
 
   const handleNavigateNextTab = useCallback(() => {
@@ -360,6 +406,22 @@ const StepThree: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex, loadMap, map]);
+
+  useEffect(() => {
+    localStorage.setItem("addedKMLs", JSON.stringify(addedKMLs));
+  }, [addedKMLs]);
+
+  useEffect(() => {
+    const kmls = localStorage.getItem("addedKMLs");
+
+    if (kmls) {
+      const parsedKMLs: string[] = JSON.parse(kmls);
+
+      parsedKMLs.forEach((content) => {
+        addKMLToMap(content);
+      });
+    }
+  }, [addKMLToMap]);
 
   return (
     <Container highlightInputText={highlightInputText}>

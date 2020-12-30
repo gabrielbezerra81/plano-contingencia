@@ -444,8 +444,6 @@ const ScenarioProvider: React.FC = ({ children }) => {
         compareMode: "attrOnly",
       });
 
-      console.log(isPreviousChecked);
-
       if (!isPreviousChecked) {
         alert(message);
         return false;
