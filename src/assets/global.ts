@@ -129,6 +129,10 @@ const GlobalStyle = createGlobalStyle`
         }
       }
     }
+
+    .sr-only {
+      display: none;
+    }
   `}
 
 

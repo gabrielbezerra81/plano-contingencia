@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { LatLngLiteral } from "leaflet";
 import L from "leaflet";
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import { Map, TileLayer, Marker } from "react-leaflet";
 import { GrSearch } from "react-icons/gr";
 import axios from "axios";
 
@@ -55,7 +55,7 @@ const AddressModal: React.FC<Props> = ({
 }) => {
   const { getSequenceId } = usePlanData();
 
-  const [map, setMap] = useState<L.Map | null>(null);
+  const [mapRef, setMapRef] = useState<Map | null>(null);
 
   const [address, setAddress] = useState<Address>(() => {
     const addr = { ...emptyAddress };
@@ -230,7 +230,10 @@ const AddressModal: React.FC<Props> = ({
 
   // Carregar localização, criar função para lidar com eventos de clique no mapa
   useEffect(() => {
+    const map = mapRef?.leafletElement;
+
     if (map) {
+      map.invalidateSize();
       map.locate();
       map.addOneTimeEventListener("locationfound", (e) => {
         setPosition(e.latlng);
@@ -272,7 +275,7 @@ const AddressModal: React.FC<Props> = ({
         map.clearAllEventListeners();
       }
     };
-  }, [map]);
+  }, [mapRef]);
 
   useEffect(() => {
     if (editingProps) {
@@ -292,13 +295,11 @@ const AddressModal: React.FC<Props> = ({
         <div className="borderedContainer">
           <label>Endereço do recurso</label>
           <MapAndAddressListContainer>
-            <MapContainer
+            <Map
               center={[-15.77972, -47.92972]}
+              ref={setMapRef}
               style={{ height: 350, width: 350 }}
               zoom={3}
-              whenCreated={(LMap) => {
-                setMap(LMap);
-              }}
             >
               <TileLayer
                 attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -312,7 +313,7 @@ const AddressModal: React.FC<Props> = ({
                   eventHandlers={markerEventHandlers}
                 />
               )}
-            </MapContainer>
+            </Map>
           </MapAndAddressListContainer>
 
           <AddLocationContainer

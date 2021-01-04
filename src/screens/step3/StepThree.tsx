@@ -1,8 +1,14 @@
 import { LatLngLiteral } from "leaflet";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import L from "leaflet";
 
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import { Map, TileLayer, Marker } from "react-leaflet";
 import JSZip from "jszip";
 
 import { GrSearch } from "react-icons/gr";
@@ -27,6 +33,7 @@ import { RiskLocation } from "types/Plan";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { useSystem } from "context/System/systemContext";
 import formatRiskLocation from "shared/utils/format/formatRiskLocation";
+import DrawControl from "./DrawControl/DrawControl";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -50,14 +57,13 @@ const emptyAddress: RiskLocation = {
 };
 
 const StepThree: React.FC = () => {
-  const { selectedTabIndex, setSelectedTab } = useSystem();
+  const { selectedTabIndex, setSelectedTab, isOpenLeftSideMenu } = useSystem();
 
   const { planData, addRiskLocation, removeRiskLocation } = usePlanData();
 
-  const [loadMap, setLoadMap] = useState(false);
-  const [mapKey, setMapKey] = useState(Math.random());
+  const mapRef = useRef<Map | null>(null);
 
-  const [map, setMap] = useState<L.Map | null>(null);
+  const [loadMap, setLoadMap] = useState(false);
 
   const [position, setPosition] = useState<LatLngLiteral | null>(null);
 
@@ -88,11 +94,15 @@ const StepThree: React.FC = () => {
     return [];
   });
 
+  const [drawedPolygons, setDrawedPolygons] = useState<any[]>([]);
+
   const [showSearchError, setShowSearchError] = useState(false);
   const [highlightInputText, setHighlightInputText] = useState(false);
 
   // Carregar localização, adicionar eventos de clique no mapa;
   useEffect(() => {
+    const map = mapRef.current?.leafletElement;
+
     if (map) {
       map.locate();
       map.addOneTimeEventListener("locationfound", (e) => {
@@ -135,7 +145,7 @@ const StepThree: React.FC = () => {
         map.clearAllEventListeners();
       }
     };
-  }, [map]);
+  }, []);
 
   const handleSearchFromCEP = useCallback(
     async (e) => {
@@ -248,56 +258,51 @@ const StepThree: React.FC = () => {
     [handleAddAddress],
   );
 
-  const addKMLToMap = useCallback(
-    (kmlText: string) => {
-      if (!map) {
-        return;
+  const addKMLToMap = useCallback((kmlText: string) => {
+    const parser = new DOMParser();
+
+    const kml = parser.parseFromString(kmlText, "text/xml");
+
+    const convertedWithStyles = KMLP(kml, { styles: true });
+
+    const polygons = convertedWithStyles.features.filter(
+      (item: any) => !!item.geometry && item.geometry.type !== "Point",
+    );
+
+    // const points = convertedWithStyles.features.filter(
+    //   (item: any) => !!item.geometry && item.geometry.type === "Point",
+    // );
+
+    const styleKeys = [
+      "fill",
+      "fill-opacity",
+      "stroke",
+      "stroke-opacity",
+      "color",
+      "stroke-width",
+    ];
+
+    polygons.forEach((polygon: any) => {
+      const style = Object.keys(polygon.properties)
+        .filter((key) => styleKeys.includes(key))
+        .reduce((obj: any, key: any) => {
+          obj[key] = polygon.properties[key];
+          return obj;
+        }, {});
+
+      if (style.fill) {
+        style.color = style.fill;
       }
 
-      const parser = new DOMParser();
-
-      const kml = parser.parseFromString(kmlText, "text/xml");
-
-      const convertedWithStyles = KMLP(kml, { styles: true });
-
-      const polygons = convertedWithStyles.features.filter(
-        (item: any) => !!item.geometry && item.geometry.type !== "Point",
-      );
-
-      const points = convertedWithStyles.features.filter(
-        (item: any) => !!item.geometry && item.geometry.type === "Point",
-      );
-
-      const styleKeys = [
-        "fill",
-        "fill-opacity",
-        "stroke",
-        "stroke-opacity",
-        "color",
-        "stroke-width",
-      ];
-
-      polygons.forEach((polygon: any) => {
-        const style = Object.keys(polygon.properties)
-          .filter((key) => styleKeys.includes(key))
-          .reduce((obj: any, key: any) => {
-            obj[key] = polygon.properties[key];
-            return obj;
-          }, {});
-
-        if (style.fill) {
-          style.color = style.fill;
-        }
-
-        L.geoJSON(polygon, { style }).addTo(map);
-      });
-    },
-    [map],
-  );
+      if (mapRef.current?.leafletElement) {
+        L.geoJSON(polygon, { style }).addTo(mapRef.current.leafletElement);
+      }
+    });
+  }, []);
 
   const handleUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files.length && map) {
+      if (e.target.files && e.target.files.length) {
         try {
           const file = e.target.files[0];
 
@@ -362,7 +367,7 @@ const StepThree: React.FC = () => {
         // setMapKey(Math.random())
       }
     },
-    [map, addKMLToMap],
+    [addKMLToMap],
   );
 
   const handleNavigateNextTab = useCallback(() => {
@@ -391,6 +396,7 @@ const StepThree: React.FC = () => {
     };
   }, []);
 
+  // Permitir atualizar mapa se carregar a página em outra aba senão a terceira
   useEffect(() => {
     if (selectedTabIndex !== 3) {
       setLoadMap(true);
@@ -398,19 +404,22 @@ const StepThree: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Atualizar mapa quando vem de outra aba
   useEffect(() => {
-    if (selectedTabIndex === 3 && loadMap && map) {
-      setMapKey(Math.random());
+    if (selectedTabIndex === 3 && loadMap) {
+      mapRef.current?.leafletElement.invalidateSize();
 
       setLoadMap(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTabIndex, loadMap, map]);
+  }, [selectedTabIndex, loadMap]);
 
+  // Salvar KMLs adicionados
   useEffect(() => {
     localStorage.setItem("addedKMLs", JSON.stringify(addedKMLs));
   }, [addedKMLs]);
 
+  // Carregar KMLs salvos no armazenamento
   useEffect(() => {
     const kmls = localStorage.getItem("addedKMLs");
 
@@ -423,20 +432,25 @@ const StepThree: React.FC = () => {
     }
   }, [addKMLToMap]);
 
+  useEffect(() => {
+    if (!isOpenLeftSideMenu) {
+      setTimeout(function () {
+        mapRef.current?.leafletElement.invalidateSize();
+      }, 500);
+    }
+  }, [isOpenLeftSideMenu]);
+
   return (
     <Container highlightInputText={highlightInputText}>
       <h6>Orientação: pode ser inserido mais de um endereço</h6>
 
       <main>
         <MapAndAddressListContainer>
-          <MapContainer
-            center={[-15.77972, -47.92972]}
-            style={{ height: 500, minWidth: 500, flex: 1 }}
+          <Map
+            ref={mapRef}
+            center={[-0.77972, -47.92972]}
+            style={{ height: 500, minWidth: 500 }}
             zoom={3}
-            whenCreated={(LMap) => {
-              setMap(LMap);
-            }}
-            key={mapKey}
           >
             <TileLayer
               attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -450,6 +464,11 @@ const StepThree: React.FC = () => {
                 eventHandlers={markerEventHandlers}
               />
             )}
+
+            <DrawControl
+              drawedPolygons={drawedPolygons}
+              setDrawedPolygons={setDrawedPolygons}
+            />
 
             {/* {geojson.map((item, index) => {
               if (item.geometry.type === "Point") {
@@ -480,7 +499,7 @@ const StepThree: React.FC = () => {
             {/* {kmlFiles.map((kml, index) => (
               <ReactLeafletKml key={index} kml={kml} />
             ))} */}
-          </MapContainer>
+          </Map>
 
           <AttributeListing
             title="Endereços cadastrados"

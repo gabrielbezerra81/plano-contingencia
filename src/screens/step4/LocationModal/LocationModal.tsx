@@ -1,8 +1,13 @@
 import { LatLngLiteral } from "leaflet";
-import React, { useCallback, useEffect, useState, useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
 import L from "leaflet";
 
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import { Map, TileLayer, Marker } from "react-leaflet";
 import { GrSearch } from "react-icons/gr";
 
 import icon from "leaflet/dist/images/marker-icon.png";
@@ -57,9 +62,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
 
   const { addInitialScenarioLines } = useScenario();
 
-  const [mapKey] = useState(Math.random());
-
-  const [map, setMap] = useState<L.Map | null>(null);
+  const [mapRef, setMapRef] = useState<Map | null>(null);
 
   const [position, setPosition] = useState<LatLngLiteral | null>(null);
 
@@ -83,7 +86,10 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
   const [highlightInputText, setHighlightInputText] = useState(false);
 
   useEffect(() => {
+    const map = mapRef?.leafletElement;
+
     if (map) {
+      map.invalidateSize();
       map.locate();
       map.addOneTimeEventListener("locationfound", (e) => {
         setPosition(e.latlng);
@@ -125,7 +131,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
         map.clearAllEventListeners();
       }
     };
-  }, [map]);
+  }, [mapRef]);
 
   const handleSearchFromCEP = useCallback(
     async (e) => {
@@ -280,14 +286,11 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
 
         <main>
           <MapAndAddressListContainer>
-            <MapContainer
+            <Map
               center={[-15.77972, -47.92972]}
-              style={{ height: 500, minWidth: 500, flex: 1 }}
+              ref={setMapRef}
+              style={{ height: 500, minWidth: 500 }}
               zoom={3}
-              whenCreated={(LMap) => {
-                setMap(LMap);
-              }}
-              key={mapKey}
             >
               <TileLayer
                 attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -301,7 +304,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
                   eventHandlers={markerEventHandlers}
                 />
               )}
-            </MapContainer>
+            </Map>
 
             <AttributeListing
               title="Endereços cadastrados"
@@ -453,13 +456,13 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
               <div className="buttonsContainer">
                 <Button type="submit">Adicionar</Button>
 
-                <Button
+                {/* <Button
                   onClick={handleChooseFile}
                   size="sm"
                   variant="secondary"
                 >
                   Escolher arquivo
-                </Button>
+                </Button> */}
               </div>
             </main>
           </AddLocationContainer>
