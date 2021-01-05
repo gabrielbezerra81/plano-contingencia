@@ -1,14 +1,222 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-// Refactored v3 EditControl.js file
 import { useCallback, useEffect, useState } from "react";
-import Draw from "leaflet-draw"; // eslint-disable-line
 import L from "leaflet";
 import { EditControl } from "react-leaflet-draw";
 
 import { FeatureGroup } from "react-leaflet";
 
 import "./config";
-import produce from "immer";
+
+const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
+  const [_editableFG, setEditableFG] = useState(null);
+
+  const onFeatureGroupReady = useCallback((reactFGref) => {
+    if (!reactFGref) {
+      return;
+    }
+
+    setEditableFG(reactFGref);
+  }, []);
+
+  const onEdited = useCallback(
+    (e) => {
+      const idsToUpdate = [];
+
+      const leafletIds = Object.keys(e.layers._layers).map((id) => Number(id));
+
+      leafletIds.forEach((leafletId) => {
+        const layer = e.layers._layers[leafletId];
+        idsToUpdate.push(Number(layer.feature.properties.id));
+      });
+
+      setDrawedPolygons((oldValues) => {
+        let updated = [...oldValues];
+
+        updated = updated.filter((layerData) => {
+          const wasEdited = leafletIds.some((leafletId) => {
+            return (
+              e.layers._layers[leafletId].feature.properties.id ===
+              layerData.properties.id
+            );
+          });
+
+          return !wasEdited;
+        });
+
+        leafletIds.forEach((leafletId) => {
+          const layer = e.layers._layers[leafletId];
+
+          const updatedLayerData = layer.toGeoJSON();
+
+          if (!updatedLayerData.type) {
+            updatedLayerData.type = "Feature";
+          }
+
+          if (layer._mRadius) {
+            updatedLayerData.properties.radius = layer._mRadius;
+          }
+
+          updated.push(updatedLayerData);
+        });
+
+        localStorage.setItem("drawedPolygons", JSON.stringify(updated));
+
+        return updated;
+      });
+    },
+    [setDrawedPolygons],
+  );
+
+  const onCreated = useCallback(
+    (e) => {
+      let type = e.layerType;
+      let layer = e.layer;
+
+      const layerData = layer.toGeoJSON();
+
+      layerData.properties.id = layer._leaflet_id;
+      layerData.properties.type = type;
+
+      if (type === "circle" || type === "circlemarker") {
+        layerData.properties.radius = layer.getRadius();
+
+        // console.log("_onCreated: circle created", e);
+      } else {
+        // console.log("_onCreated: something else created:", type, e);
+      }
+
+      layer.feature = {
+        properties: layerData.properties,
+      };
+
+      Object.assign(layer.feature.properties, layer.options);
+
+      setDrawedPolygons((oldValues) => {
+        const updatedGeoJSON = [...oldValues, layerData];
+
+        localStorage.setItem("drawedPolygons", JSON.stringify(updatedGeoJSON));
+
+        return updatedGeoJSON;
+      });
+    },
+    [setDrawedPolygons],
+  );
+
+  const onDeleted = useCallback(
+    (e) => {
+      const idsToRemove = [];
+
+      for (const key in e.layers._layers) {
+        const layer = e.layers._layers[key];
+        idsToRemove.push(Number(layer.feature.properties.id));
+      }
+
+      setDrawedPolygons((oldValues) => {
+        const filtered = oldValues.filter(
+          (layerData) => !idsToRemove.includes(layerData.properties.id),
+        );
+
+        localStorage.setItem("drawedPolygons", JSON.stringify(filtered));
+
+        return filtered;
+      });
+    },
+    [setDrawedPolygons],
+  );
+
+  // const _onMounted = (drawControl) => {
+  //   console.log("_onMounted", drawControl);
+  // };
+
+  // const _onEditStart = (e) => {
+  //   console.log("_onEditStart", e);
+  // };
+
+  // const _onEditStop = (e) => {
+  //   console.log("_onEditStop", e);
+  // };
+
+  // const _onDeleteStart = (e) => {
+  //   console.log("_onDeleteStart", e);
+  // };
+
+  useEffect(() => {
+    if (_editableFG) {
+      let leafletFG = _editableFG.leafletElement;
+
+      const data = localStorage.getItem("drawedPolygons");
+
+      if (data) {
+        const parsedData = JSON.parse(data);
+
+        const rectangles = parsedData.filter(
+          (data) => data.properties.type === "rectangle",
+        );
+
+        rectangles.forEach((geojson) => {
+          const geojson_layer = new L.GeoJSON(geojson, {
+            style: (feature) => feature.properties,
+          });
+
+          const rect = new L.Rectangle(geojson_layer.getBounds(), {
+            ...geojson.properties,
+          });
+
+          rect.feature = {
+            properties: geojson.properties,
+          };
+
+          rect.addTo(leafletFG);
+        });
+
+        const leafletGeoJSON = new L.GeoJSON(parsedData, {
+          pointToLayer: function (feature, latlng) {
+            if (feature.properties.radius) {
+              if (feature.properties.type === "circle") {
+                return new L.Circle(latlng, feature.properties.radius);
+              } //
+              else if (feature.properties.type === "circlemarker") {
+                return new L.CircleMarker(latlng, feature.properties.radius);
+              }
+            }
+
+            return;
+          },
+          style: (feature) => feature.properties,
+          filter: (geojsonFeature) => {
+            return geojsonFeature.properties.type !== "rectangle";
+          },
+        });
+
+        setDrawedPolygons(parsedData);
+
+        leafletGeoJSON.eachLayer((layer) => {
+          leafletFG.addLayer(layer);
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_editableFG]);
+
+  return (
+    <FeatureGroup ref={onFeatureGroupReady}>
+      <EditControl
+        position="topright"
+        onEdited={onEdited}
+        onCreated={onCreated}
+        onDeleted={onDeleted}
+        // onMounted={_onMounted}
+        // onEditStart={_onEditStart}
+        // onEditStop={_onEditStop}
+        // onDeleteStart={_onDeleteStart}
+        draw={{
+          marker: false,
+        }}
+      />
+    </FeatureGroup>
+  );
+};
+
+export default DrawControl;
 
 // function EControl(props) {
 //   const context = useLeafletContext();
@@ -127,160 +335,3 @@ import produce from "immer";
 //     "bottomleft",
 //   ]),
 // };
-
-// export default EditControl;
-
-const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
-  const [_editableFG, setEditableFG] = useState(null);
-
-  const onFeatureGroupReady = useCallback((reactFGref) => {
-    if (!reactFGref) {
-      return;
-    }
-
-    setEditableFG(reactFGref);
-  }, []);
-
-  const onChange = () => {
-    // _editableFG contains the edited geometry, which can be manipulated through the leaflet API
-
-    if (!_editableFG) {
-      return;
-    }
-
-    const geojsonData = _editableFG.leafletElement.toGeoJSON();
-
-    console.log(_editableFG.leafletElement);
-
-    // updateGeoJSONData(geojsonData);
-  };
-
-  const onEdited = useCallback(
-    (e) => {
-      let numEdited = 0;
-      e.layers.eachLayer((layer) => {
-        numEdited += 1;
-      });
-      // console.log(`_onEdited: edited ${numEdited} layers`, e);
-
-      onChange();
-    },
-    [onChange],
-  );
-
-  const onCreated = useCallback(
-    (e) => {
-      let type = e.layerType;
-      let layer = e.layer;
-
-      const layerData = layer.toGeoJSON();
-
-      layerData.properties.id = layer._leaflet_id;
-
-      if (type === "circle") {
-        layerData.properties.radius = layer.getRadius();
-        // console.log("_onCreated: circle created", e);
-      } else {
-        // console.log("_onCreated: something else created:", type, e);
-      }
-
-      layer.feature = {
-        properties: layerData.properties,
-      };
-
-      setDrawedPolygons((oldValues) => {
-        const updatedGeoJSON = [...oldValues, layerData];
-
-        localStorage.setItem("drawedPolygons", JSON.stringify(updatedGeoJSON));
-
-        return updatedGeoJSON;
-      });
-    },
-    [setDrawedPolygons],
-  );
-
-  const onDeleted = useCallback(
-    (e) => {
-      const idsToRemove = [];
-
-      for (const key in e.layers._layers) {
-        const layer = e.layers._layers[key];
-        idsToRemove.push(Number(layer.feature.properties.id));
-      }
-
-      setDrawedPolygons((oldValues) => {
-        const filtered = oldValues.filter(
-          (layerData) => !idsToRemove.includes(layerData.properties.id),
-        );
-
-        localStorage.setItem("drawedPolygons", JSON.stringify(filtered));
-
-        return filtered;
-      });
-    },
-    [setDrawedPolygons],
-  );
-
-  // const _onMounted = (drawControl) => {
-  //   console.log("_onMounted", drawControl);
-  // };
-
-  // const _onEditStart = (e) => {
-  //   console.log("_onEditStart", e);
-  // };
-
-  // const _onEditStop = (e) => {
-  //   console.log("_onEditStop", e);
-  // };
-
-  // const _onDeleteStart = (e) => {
-  //   console.log("_onDeleteStart", e);
-  // };
-
-  useEffect(() => {
-    if (_editableFG) {
-      let leafletFG = _editableFG.leafletElement;
-
-      const data = localStorage.getItem("drawedPolygons");
-
-      if (data) {
-        const parsedData = JSON.parse(data);
-        const leafletGeoJSON = new L.GeoJSON(parsedData, {
-          pointToLayer: function (feature, latlng) {
-            if (feature.properties.radius) {
-              return new L.Circle(latlng, feature.properties.radius);
-            }
-
-            return;
-          },
-        });
-
-        setDrawedPolygons(parsedData);
-
-        leafletGeoJSON.eachLayer((layer) => {
-          leafletFG.addLayer(layer);
-        });
-      }
-    }
-  }, [_editableFG]);
-
-  return (
-    <FeatureGroup ref={onFeatureGroupReady}>
-      <EditControl
-        position="topright"
-        onEdited={onEdited}
-        onCreated={onCreated}
-        onDeleted={onDeleted}
-        // onMounted={_onMounted}
-        // onEditStart={_onEditStart}
-        // onEditStop={_onEditStop}
-        // onDeleteStart={_onDeleteStart}
-        draw={{
-          marker: false,
-        }}
-      />
-    </FeatureGroup>
-  );
-};
-
-export default DrawControl;
