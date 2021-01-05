@@ -157,13 +157,68 @@ const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
 
   const onEdited = useCallback(
     (e) => {
-      let numEdited = 0;
-      e.layers.eachLayer((layer) => {
-        numEdited += 1;
-      });
-      // console.log(`_onEdited: edited ${numEdited} layers`, e);
+      const idsToUpdate = [];
 
-      onChange();
+      const leafletIds = Object.keys(e.layers._layers).map((id) => Number(id));
+
+      leafletIds.forEach((leafletId) => {
+        const layer = e.layers._layers[leafletId];
+        idsToUpdate.push(Number(layer.feature.properties.id));
+      });
+
+      setDrawedPolygons((oldValues) => {
+        let updated = [...oldValues];
+
+        updated = updated.filter((layerData) => {
+          const wasEdited = leafletIds.some((leafletId) => {
+            return (
+              e.layers._layers[leafletId].feature.properties.id ===
+              layerData.properties.id
+            );
+          });
+
+          return !wasEdited;
+
+          // if (editedLayerId) {
+          //   const editedLayer = e.layers._layers[editedLayerId].toGeoJSON();
+
+          //   console.log(layerData);
+
+          //   updated.unshift(editedLayer);
+
+          //   // console.log("layerData to update", layerData);
+          //   // console.log("updated Layer", editedLayer);
+
+          //   // Object.assign(layerData.properties, editedLayer.feature.properties);
+
+          //   // layerData.geometry.coordinates =
+          //   //   editedLayer.feature.geometry.coordinates;
+
+          //   // console.log("layerData to update", layerData);
+          //   // console.log("updated Layer", editedLayer);
+          // }
+          // layerData.properties.id
+          // !idsToUpdate.includes()
+        });
+
+        leafletIds.forEach((leafletId) => {
+          const layer = e.layers._layers[leafletId];
+
+          console.log(layer);
+
+          const updatedLayerData = layer.toGeoJSON();
+
+          if (layer._mRadius) {
+            updatedLayerData.properties.radius = layer._mRadius;
+          }
+
+          updated.push(updatedLayerData);
+        });
+
+        localStorage.setItem("drawedPolygons", JSON.stringify(updated));
+
+        return updated;
+      });
     },
     [onChange],
   );
