@@ -8,7 +8,6 @@ import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButto
 import cobradesImg from "assets/images/cobrades3.png";
 
 import { Modal, Container } from "./styles";
-import Input from "shared/components/Input/Input";
 import api from "api/config";
 import { useAddScenario } from "context/Scenario/addScenarioContext";
 

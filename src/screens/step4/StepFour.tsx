@@ -3,8 +3,6 @@ import api from "api/config";
 import produce from "immer";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { confirmAlert } from "react-confirm-alert"; // Import
-
 import Input from "shared/components/Input/Input";
 import ResourcesModal from "shared/components/ResourcesModal/ResourcesModal";
 
