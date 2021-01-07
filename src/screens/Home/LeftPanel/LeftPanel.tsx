@@ -8,20 +8,35 @@ import { useSystem } from "context/System/systemContext";
 
 const LeftPanel: React.FC = () => {
   const {
-    // activeAppTab,
-    // setActiveAppTab,
+    activeAppTab,
     selectedTab,
     isOpenLeftSideMenu,
     changeLeftSideMenuVisibility,
+    handleAppTabChange,
   } = useSystem();
 
   const handleOpenMenu = useCallback(() => {}, []);
 
-  const handleListPlans = useCallback(() => {}, []);
+  const handleListPlans = useCallback(
+    (e) => {
+      handleAppTabChange(e.currentTarget.name);
+    },
+    [handleAppTabChange]
+  );
 
-  const handleSearchPlan = useCallback(() => {}, []);
+  const handleSearchPlan = useCallback(
+    (e) => {
+      handleAppTabChange(e.currentTarget.name);
+    },
+    [handleAppTabChange]
+  );
 
-  const handleCreatePlan = useCallback(() => {}, []);
+  const handleCreatePlan = useCallback(
+    (e) => {
+      handleAppTabChange(e.currentTarget.name);
+    },
+    [handleAppTabChange]
+  );
 
   useEffect(() => {
     if (["tab3", "tab4"].includes(selectedTab)) {
@@ -33,7 +48,7 @@ const LeftPanel: React.FC = () => {
   }, [selectedTab, changeLeftSideMenuVisibility]);
 
   return (
-    <Container isOpen={isOpenLeftSideMenu}>
+    <Container activeAppTab={activeAppTab} isOpen={isOpenLeftSideMenu}>
       <header>
         <img src={defesaCivilImg} alt="Defesa Civil" />
         <h6>DEFESA CIVIL</h6>
@@ -48,17 +63,25 @@ const LeftPanel: React.FC = () => {
         </div>
         {isOpenLeftSideMenu && (
           <>
-            <button onClick={handleListPlans} className="menuItem">
+            <button onClick={handleListPlans} name="plans" className="menuItem">
               <div>
                 <h6>PLANOS DE CONTINGÊNCIA</h6>
               </div>
             </button>
-            <button onClick={handleSearchPlan} className="menuItem">
+            <button
+              onClick={handleSearchPlan}
+              name="searchPlan"
+              className="menuItem"
+            >
               <div>
                 <h6>PESQUISAR PLANO</h6>
               </div>
             </button>
-            <button onClick={handleCreatePlan} className="menuItem">
+            <button
+              onClick={handleCreatePlan}
+              name="createPlan"
+              className="menuItem"
+            >
               <div>
                 <h6>CADASTRAR NOVO PLANO</h6>
               </div>

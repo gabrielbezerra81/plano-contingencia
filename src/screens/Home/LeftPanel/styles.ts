@@ -1,7 +1,9 @@
+import { ActiveAppTab } from "context/System/systemContext";
 import styled, { css } from "styled-components";
 
 interface ContainerProps {
   isOpen: boolean;
+  activeAppTab: ActiveAppTab;
 }
 
 export const Container = styled.div<ContainerProps>`
@@ -9,6 +11,24 @@ export const Container = styled.div<ContainerProps>`
   min-height: calc(100vh - 24px);
   width: 300px;
   transition: width 0.2s;
+
+  ${({ activeAppTab }) => {
+    let tabNumber = 2;
+
+    if (activeAppTab === "searchPlan") {
+      tabNumber = 3;
+    } else if (activeAppTab === "createPlan") {
+      tabNumber = 4;
+    }
+
+    return css`
+      .menuItem:nth-child(${tabNumber}) {
+        h6 {
+          color: #ff7802;
+        }
+      }
+    `;
+  }}
 
   header {
     background-color: #fff;
@@ -40,6 +60,7 @@ export const Container = styled.div<ContainerProps>`
       h6 {
         color: #a8a8a8;
         font-weight: 400;
+        transition: color 0.2s;
       }
     }
 

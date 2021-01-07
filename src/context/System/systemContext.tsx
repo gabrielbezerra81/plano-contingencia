@@ -6,7 +6,7 @@ interface SystemContextData {
   changeRightSideMenuVisibility: (visibility?: boolean) => void;
   changeLeftSideMenuVisibility: (visibility?: boolean) => void;
   activeAppTab: ActiveAppTab;
-  setActiveAppTab: React.Dispatch<React.SetStateAction<ActiveAppTab>>;
+  handleAppTabChange: (key: string) => void;
   handleTabChange: (key: string | null) => void;
   selectedTab: string;
   selectedTabIndex: number;
@@ -14,16 +14,24 @@ interface SystemContextData {
 }
 
 const SystemContext = React.createContext<SystemContextData>(
-  {} as SystemContextData,
+  {} as SystemContextData
 );
 
-type ActiveAppTab = "plans" | "searchPlan" | "createPlan";
+export type ActiveAppTab = "plans" | "searchPlan" | "createPlan";
 
 const SystemProvider: React.FC = ({ children }) => {
   const [isOpenRightSideMenu, setIsOpenRightSideMenu] = useState(false);
   const [isOpenLeftSideMenu, setIsOpenLeftSideMenu] = useState(true);
 
-  const [activeAppTab, setActiveAppTab] = useState<ActiveAppTab>("plans");
+  const [activeAppTab, setActiveAppTab] = useState<ActiveAppTab>(() => {
+    const tabKey = localStorage.getItem("@plan:appTab");
+
+    if (tabKey) {
+      return tabKey as ActiveAppTab;
+    }
+
+    return "plans";
+  });
 
   const [selectedTab, setSelectedTab] = useState<string>(() => {
     const tabKey = localStorage.getItem("@plan:selectedTab");
@@ -40,6 +48,12 @@ const SystemProvider: React.FC = ({ children }) => {
       localStorage.setItem("@plan:selectedTab", key);
       setSelectedTab(key);
     }
+  }, []);
+
+  const handleAppTabChange = useCallback((key: string) => {
+    localStorage.setItem("@plan:appTab", key);
+
+    setActiveAppTab(key as ActiveAppTab);
   }, []);
 
   const changeRightSideMenuVisibility = useCallback((visibility?: boolean) => {
@@ -72,7 +86,7 @@ const SystemProvider: React.FC = ({ children }) => {
         isOpenLeftSideMenu,
         changeLeftSideMenuVisibility,
         activeAppTab,
-        setActiveAppTab,
+        handleAppTabChange,
         handleTabChange,
         selectedTab,
         selectedTabIndex,
