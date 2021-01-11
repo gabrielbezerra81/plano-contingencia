@@ -39,13 +39,16 @@ const LeftPanel: React.FC = () => {
   );
 
   useEffect(() => {
-    if (["tab3", "tab4"].includes(selectedTab)) {
+    if (
+      ["tab3", "tab4"].includes(selectedTab) &&
+      activeAppTab === "createPlan"
+    ) {
       changeLeftSideMenuVisibility(false);
     } //
     else {
       changeLeftSideMenuVisibility(true);
     }
-  }, [selectedTab, changeLeftSideMenuVisibility]);
+  }, [selectedTab, changeLeftSideMenuVisibility, activeAppTab]);
 
   return (
     <Container activeAppTab={activeAppTab} isOpen={isOpenLeftSideMenu}>
