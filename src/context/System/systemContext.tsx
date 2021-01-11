@@ -30,7 +30,7 @@ const SystemProvider: React.FC = ({ children }) => {
       return tabKey as ActiveAppTab;
     }
 
-    return "plans";
+    return "createPlan";
   });
 
   const [selectedTab, setSelectedTab] = useState<string>(() => {
