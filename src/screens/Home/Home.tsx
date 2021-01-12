@@ -5,6 +5,7 @@ import RightSideMenu from "./RightSideMenu/RightSideMenu";
 import { Container } from "./styles";
 import MainTabs from "./MainTabs/MainTabs";
 import { useSystem } from "context/System/systemContext";
+import ListPlans from "screens/ListPlans/ListPlans";
 
 const Home: React.FC = () => {
   const { activeAppTab } = useSystem();
@@ -12,7 +13,11 @@ const Home: React.FC = () => {
   return (
     <Container>
       <LeftPanel />
-      <main>{activeAppTab === "createPlan" && <MainTabs />}</main>
+      <main>
+        {activeAppTab === "plans" && <ListPlans />}
+
+        {activeAppTab === "createPlan" && <MainTabs />}
+      </main>
       <RightSideMenu />
     </Container>
   );
