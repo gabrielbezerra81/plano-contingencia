@@ -63,7 +63,7 @@ const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
         return updated;
       });
     },
-    [setDrawedPolygons],
+    [setDrawedPolygons]
   );
 
   const onCreated = useCallback(
@@ -98,7 +98,7 @@ const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
         return updatedGeoJSON;
       });
     },
-    [setDrawedPolygons],
+    [setDrawedPolygons]
   );
 
   const onDeleted = useCallback(
@@ -112,7 +112,7 @@ const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
 
       setDrawedPolygons((oldValues) => {
         const filtered = oldValues.filter(
-          (layerData) => !idsToRemove.includes(layerData.properties.id),
+          (layerData) => !idsToRemove.includes(layerData.properties.id)
         );
 
         localStorage.setItem("drawedPolygons", JSON.stringify(filtered));
@@ -120,7 +120,7 @@ const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
         return filtered;
       });
     },
-    [setDrawedPolygons],
+    [setDrawedPolygons]
   );
 
   // const _onMounted = (drawControl) => {
@@ -149,7 +149,7 @@ const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
         const parsedData = JSON.parse(data);
 
         const rectangles = parsedData.filter(
-          (data) => data.properties.type === "rectangle",
+          (data) => data.properties.type === "rectangle"
         );
 
         rectangles.forEach((geojson) => {
@@ -210,6 +210,10 @@ const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
         // onDeleteStart={_onDeleteStart}
         draw={{
           marker: false,
+          circle: false,
+          rectangle: false,
+          circlemarker: false,
+          polyline: false,
         }}
       />
     </FeatureGroup>
