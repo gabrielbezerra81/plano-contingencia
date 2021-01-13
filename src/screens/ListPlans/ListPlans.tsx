@@ -13,27 +13,31 @@ const ListPlans: React.FC = () => {
     api
       .get("planos")
       .then((response) => {
-        response.data.splice(0, 153);
         setPlans(response.data);
+        // console.log(response.data);
+        // setPlans([response.data[151]]);
       })
       .catch(console.log);
   }, []);
+
+  console.log(plans);
 
   return (
     <Container>
       {plans.map((plan) => (
         <>
           <h5>{plan.titulo}</h5>
-          {plan.locaisDeRisco.map((local) => {
-            const location = mapEnderecoToAddress(local);
+          {!!plan.locaisDeRisco &&
+            plan.locaisDeRisco.map((local) => {
+              const location = mapEnderecoToAddress(local);
 
-            return (
-              <>
-                <span>{formatRiskLocation(location)}</span>
-                <br />
-              </>
-            );
-          })}
+              return (
+                <>
+                  <span>{formatRiskLocation(location)}</span>
+                  <br />
+                </>
+              );
+            })}
         </>
       ))}
     </Container>

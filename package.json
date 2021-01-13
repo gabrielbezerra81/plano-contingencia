@@ -23,6 +23,7 @@
     "leaflet-draw": "^1.0.4",
     "lodash": "^4.17.20",
     "polished": "^4.0.3",
+    "qs": "^6.9.4",
     "react": "^17.0.1",
     "react-bootstrap": "^1.4.0",
     "react-confirm-alert": "^2.6.2",
@@ -71,6 +72,7 @@
   "devDependencies": {
     "@types/leaflet": "^1.5.19",
     "@types/lodash": "^4.14.165",
+    "@types/qs": "^6.9.5",
     "@types/react-input-mask": "^3.0.0",
     "@types/react-leaflet": "^2.5.2",
     "@types/react-select": "^3.0.27",
