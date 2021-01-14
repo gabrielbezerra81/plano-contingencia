@@ -33,7 +33,7 @@ import { RiskLocation } from "types/Plan";
 import { usePlanData } from "context/PlanData/planDataContext";
 import { useSystem } from "context/System/systemContext";
 import formatRiskLocation from "shared/utils/format/formatRiskLocation";
-import DrawControl from "./DrawControl/DrawControl";
+import DrawControl from "shared/components/DrawControl/DrawControl";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -93,8 +93,6 @@ const StepThree: React.FC = () => {
 
     return [];
   });
-
-  const [drawedPolygons, setDrawedPolygons] = useState<any[]>([]);
 
   const [showSearchError, setShowSearchError] = useState(false);
   const [highlightInputText, setHighlightInputText] = useState(false);
@@ -157,7 +155,7 @@ const StepThree: React.FC = () => {
         const parsedCep = address.cep.replace("-", "");
 
         const response = await axios.get(
-          `https://viacep.com.br/ws/${parsedCep}/json/`,
+          `https://viacep.com.br/ws/${parsedCep}/json/`
         );
 
         const {
@@ -189,7 +187,7 @@ const StepThree: React.FC = () => {
         }, 5000);
       }
     },
-    [address.cep],
+    [address.cep]
   );
 
   const handleEditCurrentAddress = useCallback(
@@ -198,7 +196,7 @@ const StepThree: React.FC = () => {
 
       setAddress((oldValue) => ({ ...oldValue, [name]: value }));
     },
-    [],
+    []
   );
 
   const handleAddAddress = useCallback(async () => {
@@ -222,7 +220,7 @@ const StepThree: React.FC = () => {
         },
       } as any);
     },
-    [handleEditCurrentAddress],
+    [handleEditCurrentAddress]
   );
 
   const handleChangeLong = useCallback(
@@ -234,7 +232,7 @@ const StepThree: React.FC = () => {
         },
       } as any);
     },
-    [handleEditCurrentAddress],
+    [handleEditCurrentAddress]
   );
 
   const handleSubmitForm = useCallback(
@@ -255,7 +253,7 @@ const StepThree: React.FC = () => {
 
       setValidatedAddress(true);
     },
-    [handleAddAddress],
+    [handleAddAddress]
   );
 
   const addKMLToMap = useCallback((kmlText: string) => {
@@ -266,7 +264,7 @@ const StepThree: React.FC = () => {
     const convertedWithStyles = KMLP(kml, { styles: true });
 
     const polygons = convertedWithStyles.features.filter(
-      (item: any) => !!item.geometry && item.geometry.type !== "Point",
+      (item: any) => !!item.geometry && item.geometry.type !== "Point"
     );
 
     // const points = convertedWithStyles.features.filter(
@@ -367,7 +365,7 @@ const StepThree: React.FC = () => {
         // setMapKey(Math.random())
       }
     },
-    [addKMLToMap],
+    [addKMLToMap]
   );
 
   const handleNavigateNextTab = useCallback(() => {
@@ -465,46 +463,14 @@ const StepThree: React.FC = () => {
               />
             )}
 
-            <DrawControl
-              drawedPolygons={drawedPolygons}
-              setDrawedPolygons={setDrawedPolygons}
-            />
-
-            {/* {geojson.map((item, index) => {
-              if (item.geometry.type === "Point") {
-                console.log(item);
-              }
-              switch (item.geometry.type) {
-                case "Polygon":
-                  return (
-                    <Polygon
-                      pathOptions={{ color: "purple" }}
-                      positions={item.geometry.coordinates}
-                      key={index}
-                    />
-                  );
-                case "Polyline":
-                  return (
-                    <Polyline
-                      pathOptions={{ color: "purple" }}
-                      positions={item.geometry.coordinates}
-                      key={index}
-                    />
-                  );
-
-                default:
-                  return null;
-              }
-            })} */}
-            {/* {kmlFiles.map((kml, index) => (
-              <ReactLeafletKml key={index} kml={kml} />
-            ))} */}
+            <DrawControl />
           </Map>
 
           <AttributeListing
             title="Endereços cadastrados"
             items={planData.riskLocations}
             name="addressItem"
+            numeration
             onRemove={(_, index) => removeRiskLocation(index)}
             renderText={(addressItem: RiskLocation) =>
               formatRiskLocation(addressItem)
@@ -530,7 +496,9 @@ const StepThree: React.FC = () => {
               }
             }}
             masked
-            maskProps={{ mask: "99999-999" }}
+            maskProps={{
+              mask: "99999-999 ",
+            }}
             onRightIconClick={handleSearchFromCEP}
             required
             isValidated={validatedAddress}

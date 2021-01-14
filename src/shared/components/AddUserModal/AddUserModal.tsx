@@ -117,7 +117,7 @@ const AddUserModal: React.FC<Props> = ({
         } //
         else if (attr === "phones") {
           const alreadyHasMainPhone = draft.phones.some(
-            (phoneItem) => phoneItem.priority === 1,
+            (phoneItem) => phoneItem.priority === 1
           );
 
           if (phonePriority === 1 && alreadyHasMainPhone) {
@@ -160,7 +160,7 @@ const AddUserModal: React.FC<Props> = ({
       currentAddress,
       currentDocument,
       phonePriority,
-    ],
+    ]
   );
 
   const handleEditCurrentAddress = useCallback(
@@ -173,7 +173,7 @@ const AddUserModal: React.FC<Props> = ({
 
       setCurrentAddress(updatedAddress);
     },
-    [currentAddress],
+    [currentAddress]
   );
 
   const handleEditCurrentDocument = useCallback(
@@ -186,7 +186,7 @@ const AddUserModal: React.FC<Props> = ({
 
       setCurrentDocument(updatedDocument);
     },
-    [currentDocument],
+    [currentDocument]
   );
 
   const handleRemoveItemOfList = useCallback(
@@ -212,7 +212,7 @@ const AddUserModal: React.FC<Props> = ({
 
       setUser(updatedUser);
     },
-    [user],
+    [user]
   );
 
   const handleAddUser = useCallback(async () => {
@@ -229,7 +229,7 @@ const AddUserModal: React.FC<Props> = ({
     } //
     else {
       alert(
-        "Erro ao cadastrar pessoa, verifique seus dados e tente novamente!",
+        "Erro ao cadastrar pessoa, verifique seus dados e tente novamente!"
       );
     }
   }, [
@@ -288,7 +288,7 @@ const AddUserModal: React.FC<Props> = ({
 
       setUser(updatedUser);
     },
-    [user],
+    [user]
   );
 
   const handleSubmitForm = useCallback(
@@ -315,7 +315,7 @@ const AddUserModal: React.FC<Props> = ({
 
       setValidated(true);
     },
-    [handleEditUser],
+    [handleEditUser]
   );
 
   const hasAnyMainNumber = useMemo(() => {
@@ -557,7 +557,9 @@ const AddUserModal: React.FC<Props> = ({
                   value={currentAddress.cep}
                   onChange={handleEditCurrentAddress}
                   masked
-                  maskProps={{ mask: "99999-999" }}
+                  maskProps={{
+                    mask: "99999-999 ",
+                  }}
                   required
                   isValidated={validatedAddress}
                 />

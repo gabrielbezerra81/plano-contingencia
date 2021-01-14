@@ -1,11 +1,12 @@
 import React, {
   InputHTMLAttributes,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { FormControl, FormControlProps } from "react-bootstrap";
+import { Form, FormControlProps } from "react-bootstrap";
 import InputMask, { Props as MaskedProps } from "react-input-mask";
 import { Container } from "./styles";
 
@@ -47,6 +48,7 @@ const Input: React.FC<InputProps> = ({
   as,
   errorMessage = "",
   hasError = false,
+  onChange,
   ...rest
 }) => {
   const inputRef = useRef<any>(null);
@@ -54,6 +56,19 @@ const Input: React.FC<InputProps> = ({
   const [isValid, setIsValid] = useState(true);
 
   const valid = inputRef.current ? inputRef.current.validity.valid : true;
+
+  const handleInputChange = useCallback(
+    (e) => {
+      if (e.target.name === "cep") {
+        e.target.value = e.target.value.trimEnd();
+      }
+
+      if (onChange) {
+        onChange(e);
+      }
+    },
+    [onChange]
+  );
 
   useEffect(() => {
     if (inputRef.current) {
@@ -149,9 +164,10 @@ const Input: React.FC<InputProps> = ({
           }}
           {...rest}
           {...maskProps}
+          onChange={handleInputChange}
         />
       ) : (
-        <FormControl
+        <Form.Control
           as={as}
           ref={inputRef}
           rows={2}

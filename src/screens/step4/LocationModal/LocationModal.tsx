@@ -1,10 +1,5 @@
 import { LatLngLiteral } from "leaflet";
-import React, {
-  useCallback,
-  useEffect,
-  useState,
-  useMemo,
-} from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import L from "leaflet";
 
 import { Map, TileLayer, Marker } from "react-leaflet";
@@ -30,6 +25,7 @@ import { usePlanData } from "context/PlanData/planDataContext";
 import ModalCloseButton from "shared/components/ModalCloseButton/ModalCloseButton";
 import formatRiskLocation from "shared/utils/format/formatRiskLocation";
 import { useScenario } from "context/Scenario/scenarioContext";
+import DrawControl from "shared/components/DrawControl/DrawControl";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -141,7 +137,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
         const parsedCep = address.cep.replace("-", "");
 
         const response = await axios.get(
-          `https://viacep.com.br/ws/${parsedCep}/json/`,
+          `https://viacep.com.br/ws/${parsedCep}/json/`
         );
 
         const {
@@ -173,7 +169,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
         }, 5000);
       }
     },
-    [address.cep],
+    [address.cep]
   );
 
   const handleEditCurrentAddress = useCallback(
@@ -182,7 +178,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
 
       setAddress((oldValue) => ({ ...oldValue, [name]: value }));
     },
-    [],
+    []
   );
 
   const handleAddAddress = useCallback(async () => {
@@ -208,7 +204,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
         },
       } as any);
     },
-    [handleEditCurrentAddress],
+    [handleEditCurrentAddress]
   );
 
   const handleChangeLong = useCallback(
@@ -220,7 +216,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
         },
       } as any);
     },
-    [handleEditCurrentAddress],
+    [handleEditCurrentAddress]
   );
 
   const handleAddLocationToScenario = useCallback(
@@ -232,7 +228,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
 
       setShow(false);
     },
-    [addInitialScenarioLines, setShow],
+    [addInitialScenarioLines, setShow]
   );
 
   const handleSubmitForm = useCallback(
@@ -253,7 +249,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
 
       setValidatedAddress(true);
     },
-    [handleAddAddress],
+    [handleAddAddress]
   );
 
   const markerEventHandlers = useMemo(() => {
@@ -304,12 +300,15 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
                   eventHandlers={markerEventHandlers}
                 />
               )}
+
+              <DrawControl />
             </Map>
 
             <AttributeListing
               title="Endereços cadastrados"
               items={planData.riskLocations}
               name="addressItem"
+              numeration
               onRemove={(_, index) => removeRiskLocation(index)}
               children={(index: number, addressItem: RiskLocation) => {
                 return (
@@ -347,7 +346,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
                 }
               }}
               masked
-              maskProps={{ mask: "99999-999" }}
+              maskProps={{ mask: "99999-999 " }}
               onRightIconClick={handleSearchFromCEP}
               required
               isValidated={validatedAddress}

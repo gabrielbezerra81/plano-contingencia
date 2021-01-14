@@ -98,7 +98,7 @@ const AddressModal: React.FC<Props> = ({
         const parsedCep = address.cep.replace("-", "");
 
         const response = await axios.get(
-          `https://viacep.com.br/ws/${parsedCep}/json/`,
+          `https://viacep.com.br/ws/${parsedCep}/json/`
         );
 
         const {
@@ -130,7 +130,7 @@ const AddressModal: React.FC<Props> = ({
         }, 5000);
       }
     },
-    [address.cep],
+    [address.cep]
   );
 
   const handleEditCurrentAddress = useCallback(
@@ -139,7 +139,7 @@ const AddressModal: React.FC<Props> = ({
 
       setAddress((oldValue) => ({ ...oldValue, [name]: value }));
     },
-    [],
+    []
   );
 
   const handleAddAddress = useCallback(async () => {
@@ -170,7 +170,7 @@ const AddressModal: React.FC<Props> = ({
         },
       } as any);
     },
-    [handleEditCurrentAddress],
+    [handleEditCurrentAddress]
   );
 
   const handleSubmitForm = useCallback(
@@ -191,7 +191,7 @@ const AddressModal: React.FC<Props> = ({
 
       setValidatedAddress(true);
     },
-    [handleAddAddress],
+    [handleAddAddress]
   );
 
   const handleChangeLong = useCallback(
@@ -203,7 +203,7 @@ const AddressModal: React.FC<Props> = ({
         },
       } as any);
     },
-    [handleEditCurrentAddress],
+    [handleEditCurrentAddress]
   );
 
   const markerEventHandlers = useMemo(() => {
@@ -334,7 +334,9 @@ const AddressModal: React.FC<Props> = ({
                 }
               }}
               masked
-              maskProps={{ mask: "99999-999" }}
+              maskProps={{
+                mask: "99999-999 ",
+              }}
               onRightIconClick={handleSearchFromCEP}
               size="small"
               required
