@@ -5,8 +5,11 @@ import { EditControl } from "react-leaflet-draw";
 import { FeatureGroup } from "react-leaflet";
 
 import "./config";
+import { usePlanData } from "context/PlanData/planDataContext";
 
-const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
+const DrawControl = () => {
+  const { setDrawedPolygons, drawedPolygons } = usePlanData();
+
   const [_editableFG, setEditableFG] = useState(null);
 
   const onFeatureGroupReady = useCallback((reactFGref) => {
@@ -143,59 +146,84 @@ const DrawControl = ({ drawedPolygons: _, setDrawedPolygons }) => {
     if (_editableFG) {
       let leafletFG = _editableFG.leafletElement;
 
-      const data = localStorage.getItem("drawedPolygons");
+      // const data = localStorage.getItem("drawedPolygons");
 
-      if (data) {
-        const parsedData = JSON.parse(data);
+      // const parsedData = JSON.parse(data);
+      leafletFG.clearLayers();
 
-        const rectangles = parsedData.filter(
-          (data) => data.properties.type === "rectangle"
-        );
+      // const rectangles = drawedPolygons.filter(
+      //   (data) => data.properties.type === "rectangle"
+      // );
 
-        rectangles.forEach((geojson) => {
-          const geojson_layer = new L.GeoJSON(geojson, {
-            style: (feature) => feature.properties,
-          });
+      // rectangles.forEach((geojson) => {
+      //   const geojson_layer = new L.GeoJSON(geojson, {
+      //     style: (feature) => feature.properties,
+      //   });
 
-          const rect = new L.Rectangle(geojson_layer.getBounds(), {
-            ...geojson.properties,
-          });
+      //   const rect = new L.Rectangle(geojson_layer.getBounds(), {
+      //     ...geojson.properties,
+      //   });
 
-          rect.feature = {
-            properties: geojson.properties,
-          };
+      //   rect.feature = {
+      //     properties: geojson.properties,
+      //   };
 
-          rect.addTo(leafletFG);
-        });
+      //   rect.addTo(leafletFG);
+      // });
 
-        const leafletGeoJSON = new L.GeoJSON(parsedData, {
-          pointToLayer: function (feature, latlng) {
-            if (feature.properties.radius) {
-              if (feature.properties.type === "circle") {
-                return new L.Circle(latlng, feature.properties.radius);
-              } //
-              else if (feature.properties.type === "circlemarker") {
-                return new L.CircleMarker(latlng, feature.properties.radius);
-              }
+      const leafletGeoJSON = new L.GeoJSON(drawedPolygons, {
+        pointToLayer: function (feature, latlng) {
+          if (feature.properties.radius) {
+            if (feature.properties.type === "circle") {
+              return new L.Circle(latlng, feature.properties.radius);
+            } //
+            else if (feature.properties.type === "circlemarker") {
+              return new L.CircleMarker(latlng, feature.properties.radius);
             }
+          }
 
-            return;
-          },
-          style: (feature) => feature.properties,
-          filter: (geojsonFeature) => {
-            return geojsonFeature.properties.type !== "rectangle";
-          },
-        });
+          return;
+        },
+        style: (feature) => feature.properties,
+        filter: (geojsonFeature) => {
+          return geojsonFeature.properties.type !== "rectangle";
+        },
+      });
 
-        setDrawedPolygons(parsedData);
-
-        leafletGeoJSON.eachLayer((layer) => {
-          leafletFG.addLayer(layer);
-        });
-      }
+      leafletGeoJSON.eachLayer((layer) => {
+        leafletFG.addLayer(layer);
+      });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [_editableFG]);
+  }, [_editableFG, drawedPolygons]);
+
+  // useEffect(() => {
+  //   if (_editableFG) {
+  //     var tooltipThreshold = 12;
+
+  //     let leafletFG = _editableFG.leafletElement;
+
+  //     leafletFG._map.on("zoomend", function () {
+  //       const shouldBind = leafletFG._map.getZoom() > tooltipThreshold;
+
+  //       leafletFG.eachLayer((layer) => {
+  //         layer.unbindTooltip();
+
+  //         if (shouldBind) {
+  //           const index = drawedPolygons.findIndex(
+  //             (polygon) => polygon.properties.id === layer.feature.properties.id
+  //           );
+
+  //           layer.bindTooltip(`${index + 1}`, {
+  //             permanent: true,
+  //             interactive: true,
+  //             className: "polygonTooltip",
+  //             zoomAnimation: true,
+  //           });
+  //         }
+  //       });
+  //     });
+  //   }
+  // }, [_editableFG, drawedPolygons]);
 
   return (
     <FeatureGroup ref={onFeatureGroupReady}>
