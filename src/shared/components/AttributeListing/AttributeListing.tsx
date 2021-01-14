@@ -12,6 +12,7 @@ interface Props {
   containerClass?: string;
   size?: "small" | "normal";
   showCloseButton?: boolean;
+  numeration?: boolean;
 }
 
 const AttributeListing: React.FC<Props> = ({
@@ -24,6 +25,7 @@ const AttributeListing: React.FC<Props> = ({
   size = "normal",
   showCloseButton = true,
   children,
+  numeration = false,
 }) => {
   return (
     <Container
@@ -40,7 +42,18 @@ const AttributeListing: React.FC<Props> = ({
             </button>
           )}
 
-          {!!renderText && <span>{renderText(item)}</span>}
+          {!!renderText && (
+            <span>
+              {numeration && (
+                <>
+                  <span className="numeration">{`${index + 1}`}</span>
+                  <span> - </span>
+                </>
+              )}
+
+              {renderText(item)}
+            </span>
+          )}
           {!!children &&
             typeof children === "function" &&
             children(index, item)}

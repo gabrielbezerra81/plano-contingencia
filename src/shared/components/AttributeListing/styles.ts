@@ -27,11 +27,17 @@ export const Container = styled.div<ContainerProps>`
     margin-top: 4px;
     align-items: center;
 
+    .numeration {
+      color: red;
+      font-weight: 500;
+    }
+
     button {
       svg {
         fill: ${colors.darkBlue};
         stroke: #fff;
         stroke-width: 3px;
+        height: 24px;
       }
     }
 
