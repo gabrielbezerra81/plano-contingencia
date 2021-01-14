@@ -1,4 +1,5 @@
 import { css, createGlobalStyle } from "styled-components";
+import "bootstrap/dist/js/bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "leaflet/dist/leaflet.css";
 import colors from "./colors";
@@ -132,6 +133,20 @@ const GlobalStyle = createGlobalStyle`
 
     .sr-only {
       display: none;
+    }
+
+    .polygonTooltip {
+      background-color: transparent;
+      border: none;
+      box-shadow: none;
+      color: red;
+      font-weight: 700;
+      font-size: 18px;
+      /* display: none; */
+
+      &::before {
+        content: none;
+      }
     }
   `}
 

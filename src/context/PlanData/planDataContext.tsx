@@ -33,10 +33,12 @@ interface PlanDataContextData {
   notIncludedPersons: Array<Person>;
   addResource: (resource: Resource) => Promise<void>;
   getSequenceId: (seqType: SequenceType) => Promise<string>;
+  drawedPolygons: Array<PolygonGeoJSON>;
+  setDrawedPolygons: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 const PlanDataContext = React.createContext<PlanDataContextData>(
-  {} as PlanDataContextData,
+  {} as PlanDataContextData
 );
 
 const PlanDataProvider: React.FC = ({ children }) => {
@@ -56,6 +58,16 @@ const PlanDataProvider: React.FC = ({ children }) => {
   const [includedPersons, setIncludedPersons] = useState<Person[]>([]);
 
   const [persons, setPersons] = useState<Person[]>([]);
+
+  const [drawedPolygons, setDrawedPolygons] = useState<PolygonGeoJSON[]>(() => {
+    const data = localStorage.getItem("drawedPolygons");
+
+    if (data) {
+      return JSON.parse(data);
+    }
+
+    return [];
+  });
 
   const getSequenceId = useCallback(async (seqType: SequenceType) => {
     try {
@@ -80,11 +92,11 @@ const PlanDataProvider: React.FC = ({ children }) => {
         setData(updatedPlanData);
         localStorage.setItem(
           plan_LocalStorageString,
-          JSON.stringify(updatedPlanData),
+          JSON.stringify(updatedPlanData)
         );
       } catch (error) {}
     },
-    [data],
+    [data]
   );
 
   const updateAPIPlanData = useCallback(async () => {
@@ -114,7 +126,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
           setData(updatedPlan);
           localStorage.setItem(
             plan_LocalStorageString,
-            JSON.stringify(updatedPlan),
+            JSON.stringify(updatedPlan)
           );
         }
       }
@@ -147,12 +159,12 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       localStorage.setItem(
         includedPersons_LocalStorageString,
-        JSON.stringify(updatedIncludedPersons),
+        JSON.stringify(updatedIncludedPersons)
       );
 
       updateLocalPlanData({ workGroup: [...data.workGroup, newMember] });
     },
-    [includedPersons, updateLocalPlanData, data, getSequenceId],
+    [includedPersons, updateLocalPlanData, data, getSequenceId]
   );
 
   const addNewUser = useCallback(
@@ -177,7 +189,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
         return null;
       }
     },
-    [persons],
+    [persons]
   );
 
   const addRiskLocation = useCallback(
@@ -197,7 +209,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       updateLocalPlanData(updatedPlanData);
     },
-    [data, updateLocalPlanData, getSequenceId],
+    [data, updateLocalPlanData, getSequenceId]
   );
 
   const removeRiskLocation = useCallback(
@@ -208,7 +220,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       updateLocalPlanData(updatedPlanData);
     },
-    [data, updateLocalPlanData],
+    [data, updateLocalPlanData]
   );
 
   const addResource = useCallback(
@@ -221,7 +233,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       updateLocalPlanData(updatedPlanData);
     },
-    [data, updateLocalPlanData, getSequenceId],
+    [data, updateLocalPlanData, getSequenceId]
   );
 
   // carregar dados do armazenamento local
@@ -239,7 +251,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
     }
 
     const includedPersonsString = localStorage.getItem(
-      includedPersons_LocalStorageString,
+      includedPersons_LocalStorageString
     );
 
     if (includedPersonsString) {
@@ -252,7 +264,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
       const alreadyIncluded = includedPersons.some(
         (includedItem) =>
           includedItem.name === personItem.name &&
-          includedItem.id === personItem.id,
+          includedItem.id === personItem.id
       );
 
       return !alreadyIncluded;
@@ -265,7 +277,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
       .then((response) => {
         if (response.data) {
           setPersons(
-            response.data.map((endereco) => mapPessoaToLocalPerson(endereco)),
+            response.data.map((endereco) => mapPessoaToLocalPerson(endereco))
           );
         }
       })
@@ -288,6 +300,8 @@ const PlanDataProvider: React.FC = ({ children }) => {
         updateLocalPlanFromAPI,
         addResource,
         getSequenceId,
+        drawedPolygons,
+        setDrawedPolygons,
       }}
     >
       {children}
@@ -308,4 +322,17 @@ type SequenceType = "cenarios" | "enderecos" | "membros" | "recursos";
 interface AddToWorkGroupProps extends Person {
   permission: any;
   anotherRole?: string;
+}
+
+interface PolygonGeoJSON {
+  type: string;
+  properties: {
+    id: number;
+    type: "polygon";
+    [key: string]: any;
+  };
+  geometry: {
+    type: "Polygon";
+    coordinates: Array<Array<[number, number]>>;
+  };
 }
