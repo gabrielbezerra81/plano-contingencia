@@ -45,7 +45,7 @@ const MainTabs = () => {
     } //
 
     if (selectedTab === "tab2") {
-      updateLocalPlanFromAPI();
+      // updateLocalPlanFromAPI();
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

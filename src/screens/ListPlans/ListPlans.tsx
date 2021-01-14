@@ -14,7 +14,7 @@ const ListPlans: React.FC = () => {
       .get("planos")
       .then((response) => {
         setPlans(response.data);
-        // console.log(response.data);
+        console.log(response.data);
         // setPlans([response.data[151]]);
       })
       .catch(console.log);
@@ -25,7 +25,7 @@ const ListPlans: React.FC = () => {
   return (
     <Container>
       {plans.map((plan) => (
-        <>
+        <div>
           <h5>{plan.titulo}</h5>
           {!!plan.locaisDeRisco &&
             plan.locaisDeRisco.map((local) => {
@@ -38,7 +38,7 @@ const ListPlans: React.FC = () => {
                 </>
               );
             })}
-        </>
+        </div>
       ))}
     </Container>
   );

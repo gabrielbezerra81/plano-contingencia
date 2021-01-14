@@ -35,7 +35,7 @@ const AuthProvider: React.FC = ({ children }) => {
 
       const { token_type, access_token } = parsedData;
 
-      api.defaults.headers.authorization = `${token_type} ${access_token}`;
+      // api.defaults.headers.authorization = `${token_type} ${access_token}`;
 
       return parsedData;
     }
@@ -83,7 +83,7 @@ const AuthProvider: React.FC = ({ children }) => {
 
       const { token_type, access_token } = data;
 
-      api.defaults.headers.authorization = `${token_type} ${access_token}`;
+      // api.defaults.headers.authorization = `${token_type} ${access_token}`;
 
       setAuthData(data);
       setIsLogged(true);
