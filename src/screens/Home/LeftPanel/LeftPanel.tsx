@@ -13,11 +13,14 @@ const LeftPanel: React.FC = () => {
     isOpenLeftSideMenu,
     changeLeftSideMenuVisibility,
     handleAppTabChange,
+    changeLogoutMenuVisibility,
   } = useSystem();
 
   const [openMenuOnMap, setOpenMenuOnMap] = useState(false);
 
-  const handleOpenMenu = useCallback(() => {}, []);
+  const handleOpenLogoutMenu = useCallback(() => {
+    changeLogoutMenuVisibility();
+  }, [changeLogoutMenuVisibility]);
 
   const handleListPlans = useCallback(
     (e) => {
@@ -84,7 +87,7 @@ const LeftPanel: React.FC = () => {
       </header>
       <div>
         <div className="menuItem">
-          <button className="logoutButton" onClick={handleOpenMenu}>
+          <button className="logoutButton" onClick={handleOpenLogoutMenu}>
             <img src={menuIcon} alt="Menu" />
           </button>
           <button

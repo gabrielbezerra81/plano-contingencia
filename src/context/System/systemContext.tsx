@@ -11,6 +11,8 @@ interface SystemContextData {
   selectedTab: string;
   selectedTabIndex: number;
   setSelectedTab: React.Dispatch<React.SetStateAction<string>>;
+  isOpenLogoutMenu: boolean;
+  changeLogoutMenuVisibility: (visibility?: boolean | undefined) => void;
 }
 
 const SystemContext = React.createContext<SystemContextData>(
@@ -22,6 +24,7 @@ export type ActiveAppTab = "plans" | "searchPlan" | "createPlan";
 const SystemProvider: React.FC = ({ children }) => {
   const [isOpenRightSideMenu, setIsOpenRightSideMenu] = useState(false);
   const [isOpenLeftSideMenu, setIsOpenLeftSideMenu] = useState(true);
+  const [isOpenLogoutMenu, setIsOpenLogoutMenu] = useState(true);
 
   const [activeAppTab, setActiveAppTab] = useState<ActiveAppTab>(() => {
     const tabKey = localStorage.getItem("@plan:appTab");
@@ -74,6 +77,15 @@ const SystemProvider: React.FC = ({ children }) => {
     }
   }, []);
 
+  const changeLogoutMenuVisibility = useCallback((visibility?: boolean) => {
+    if (visibility === true || visibility === false) {
+      setIsOpenLogoutMenu(visibility);
+    } //
+    else {
+      setIsOpenLogoutMenu((oldValue) => !oldValue);
+    }
+  }, []);
+
   const selectedTabIndex = useMemo(() => {
     return Number(selectedTab.replace("tab", ""));
   }, [selectedTab]);
@@ -91,6 +103,8 @@ const SystemProvider: React.FC = ({ children }) => {
         selectedTab,
         selectedTabIndex,
         setSelectedTab,
+        isOpenLogoutMenu,
+        changeLogoutMenuVisibility,
       }}
     >
       {children}
