@@ -7,6 +7,7 @@ import api from "api/config";
 interface AuthContextData {
   isLogged: boolean;
   authenticate: (code: string) => Promise<void>;
+  signOut: () => void;
 }
 
 const AuthContext = React.createContext<AuthContextData>({} as AuthContextData);
@@ -16,6 +17,12 @@ const redirectURL =
   location.hostname === "localhost"
     ? "http://localhost:3000/logged"
     : "https://plano-contingencia.herokuapp.com/logged";
+
+const homeURL =
+  // eslint-disable-next-line no-restricted-globals
+  location.hostname === "localhost"
+    ? "http://localhost:3000/"
+    : "https://plano-contingencia.herokuapp.com/";
 
 const AuthProvider: React.FC = ({ children }) => {
   const [isLogged, setIsLogged] = useState(() => {
@@ -60,6 +67,8 @@ const AuthProvider: React.FC = ({ children }) => {
 
   const authenticate = useCallback(async (code: string) => {
     try {
+      console.log("tentou buscar os dados de auth");
+
       const response = await axios.post(
         `https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/token`,
         qs.stringify({
@@ -80,6 +89,8 @@ const AuthProvider: React.FC = ({ children }) => {
 
       const { token_type, access_token } = data;
 
+      console.log("buscou os dados ", access_token);
+
       // api.defaults.headers.authorization = `${token_type} ${access_token}`;
 
       setAuthData(data);
@@ -87,8 +98,21 @@ const AuthProvider: React.FC = ({ children }) => {
 
       localStorage.setItem("@plan:authData", JSON.stringify(data));
     } catch (error) {
+      alert("Falha de autenticação, atualize a página");
       console.log("authError", error);
     }
+  }, []);
+
+  const signOut = useCallback(async () => {
+    const url =
+      "https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/logout?redirect_uri=" +
+      homeURL;
+
+    window.open(url);
+
+    setIsLogged(false);
+    setAuthData(null);
+    localStorage.removeItem("@plan:authData");
   }, []);
 
   useEffect(() => {
@@ -98,7 +122,7 @@ const AuthProvider: React.FC = ({ children }) => {
   }, [isLogged, redirectToKeycloak]);
 
   return (
-    <AuthContext.Provider value={{ isLogged, authenticate }}>
+    <AuthContext.Provider value={{ isLogged, authenticate, signOut }}>
       {children}
     </AuthContext.Provider>
   );

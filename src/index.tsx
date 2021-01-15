@@ -1,14 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { BrowserRouter, Switch } from "react-router-dom";
+
 import App from "./App";
 import AppProvider from "./context";
 import reportWebVitals from "./reportWebVitals";
 
 ReactDOM.render(
-  <AppProvider>
-    <App />
-  </AppProvider>,
-  document.getElementById("root"),
+  <BrowserRouter>
+    <Switch>
+      <AppProvider>
+        <App />
+      </AppProvider>
+    </Switch>
+  </BrowserRouter>,
+  document.getElementById("root")
 );
 
 // If you want to start measuring performance in your app, pass a function

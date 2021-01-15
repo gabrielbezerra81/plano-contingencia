@@ -6,6 +6,7 @@ import moment from "moment";
 import "moment/locale/pt-br";
 
 import { Container } from "./styles";
+import { useAuth } from "context/Auth/authContext";
 
 let dayOfWeek = moment().format("dddd");
 
@@ -13,15 +14,28 @@ dayOfWeek = dayOfWeek.substr(0, 1).toLocaleUpperCase() + dayOfWeek.substr(1);
 
 const date = moment().format("DD [de] MMMM");
 
+const homeURL =
+  // eslint-disable-next-line no-restricted-globals
+  location.hostname === "localhost"
+    ? "http://localhost:3000/"
+    : "https://plano-contingencia.herokuapp.com/";
+
+const url =
+  "https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/logout?redirect_uri=" +
+  homeURL;
+
 const LogoutMenu: React.FC = () => {
   const { changeLogoutMenuVisibility, isOpenLogoutMenu } = useSystem();
 
+  const { signOut } = useAuth();
+
   const handleLogout = useCallback(() => {
+    signOut();
     changeLogoutMenuVisibility(false);
-  }, [changeLogoutMenuVisibility]);
+  }, [changeLogoutMenuVisibility, signOut]);
 
   return (
-    <Container isOpen={isOpenLogoutMenu} >
+    <Container isOpen={isOpenLogoutMenu}>
       <div className="menuItem">
         <h6>Gabriel</h6>
       </div>

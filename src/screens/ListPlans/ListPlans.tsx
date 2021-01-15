@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 
 import { Table } from "react-bootstrap";
 
-import formatRiskLocation from "shared/utils/format/formatRiskLocation";
 import formatScenarioAddress from "shared/utils/format/formatScenarioAddress";
 import mapEnderecoToAddress from "shared/utils/typesMapping/address/mapEnderecoToAddress";
 import { Plano } from "types/ModelsAPI";
@@ -12,8 +11,6 @@ import { Plano } from "types/ModelsAPI";
 import { Container } from "./styled";
 
 const ListPlans: React.FC = () => {
-  const { planData } = usePlanData();
-
   const [plans, setPlans] = useState<Plano[]>([]);
 
   useEffect(() => {
@@ -21,7 +18,6 @@ const ListPlans: React.FC = () => {
       .get("planos")
       .then((response) => {
         setPlans(response.data);
-        // setPlans([response.data[151]]);
       })
       .catch(console.log);
   }, []);
