@@ -1,12 +1,19 @@
 import api from "api/config";
+import { usePlanData } from "context/PlanData/planDataContext";
 import React, { useEffect, useState } from "react";
+
+import { Table } from "react-bootstrap";
+
 import formatRiskLocation from "shared/utils/format/formatRiskLocation";
+import formatScenarioAddress from "shared/utils/format/formatScenarioAddress";
 import mapEnderecoToAddress from "shared/utils/typesMapping/address/mapEnderecoToAddress";
 import { Plano } from "types/ModelsAPI";
 
 import { Container } from "./styled";
 
 const ListPlans: React.FC = () => {
+  const { planData } = usePlanData();
+
   const [plans, setPlans] = useState<Plano[]>([]);
 
   useEffect(() => {
@@ -24,10 +31,56 @@ const ListPlans: React.FC = () => {
 
   return (
     <Container>
+      <Table>
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Título</th>
+            <th>Endereços</th>
+            <th>Ameaças</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plans.map((plan, index) => (
+            <tr key={index}>
+              <td>{plan.id}</td>
+              <td>{plan.titulo}</td>
+              <td>
+                {plan.cenarios.map((cenario) => {
+                  const address = planData.riskLocations.find(
+                    (address) => address.id === cenario.enderecoId
+                  );
+
+                  if (!address) {
+                    return null;
+                  }
+
+                  const { fullAddress } = formatScenarioAddress(address);
+
+                  return (
+                    <>
+                      {fullAddress}
+                      <br />
+                    </>
+                  );
+                })}
+              </td>
+
+              <td>
+                {plan.cenarios.map((cenario) => (
+                  <>
+                    {cenario.ameaca.cobrade} - {cenario.ameaca.descricao}
+                    <br />
+                  </>
+                ))}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
       {plans.map((plan) => (
         <div>
-          <h5>{plan.titulo}</h5>
-          {!!plan.locaisDeRisco &&
+          {/* {!!plan.locaisDeRisco &&
             plan.locaisDeRisco.map((local) => {
               const location = mapEnderecoToAddress(local);
 
@@ -37,7 +90,7 @@ const ListPlans: React.FC = () => {
                   <br />
                 </>
               );
-            })}
+            })} */}
         </div>
       ))}
     </Container>

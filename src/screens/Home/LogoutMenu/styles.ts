@@ -11,6 +11,7 @@ export const Container = styled.div<ContainerProps>`
   transition: 0.2s;
   transition-property: opacity width;
   overflow: hidden;
+  border-right: 1px solid #919191;
 
   ${({ isOpen }) =>
     !isOpen &&

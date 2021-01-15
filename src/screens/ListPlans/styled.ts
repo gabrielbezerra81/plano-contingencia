@@ -3,6 +3,10 @@ import styled from "styled-components";
 export const Container = styled.div`
   padding-top: 16px;
 
+  table {
+    table-layout: fixed;
+  }
+
   div {
     & + div {
       margin-top: 16px;
