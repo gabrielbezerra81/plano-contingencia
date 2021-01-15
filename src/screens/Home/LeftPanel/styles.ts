@@ -46,6 +46,14 @@ export const Container = styled.div<ContainerProps>`
   }
 
   > div {
+    pointer-events: none;
+
+    ${({ isOpen }) =>
+      isOpen &&
+      css`
+        pointer-events: auto;
+      `}
+
     .menuItemsContainer {
       transition: opacity 0.25s;
     }
@@ -77,6 +85,7 @@ export const Container = styled.div<ContainerProps>`
       align-items: center;
       justify-content: center;
       position: relative;
+      pointer-events: auto;
 
       &:hover {
         opacity: 1;

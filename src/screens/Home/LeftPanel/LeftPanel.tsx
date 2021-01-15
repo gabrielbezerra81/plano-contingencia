@@ -72,8 +72,6 @@ const LeftPanel: React.FC = () => {
     } //
     else {
       style.opacity = 0;
-      style.pointerEvents = "none";
-      style.display = "none";
     }
 
     return style;
