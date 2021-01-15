@@ -22,8 +22,6 @@ const ListPlans: React.FC = () => {
       .catch(console.log);
   }, []);
 
-  console.log(plans);
-
   return (
     <Container>
       <Table>
