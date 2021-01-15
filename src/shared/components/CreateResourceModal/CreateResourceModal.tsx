@@ -111,7 +111,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
           otherwise: yup.string().optional(),
         }),
       }),
-    [type],
+    [type]
   );
 
   const handleEditCurrentResource = useCallback(
@@ -129,7 +129,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
 
       setResource(updatedResource);
     },
-    [resource],
+    [resource]
   );
 
   const handleRemoveResponsible = useCallback(
@@ -140,7 +140,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
 
       setResource(updatedResource);
     },
-    [resource],
+    [resource]
   );
 
   const openAddToGroupModal = useCallback(() => {
@@ -166,7 +166,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
 
       handleAddValueToScenario({ attr: "resourceId", value: resourceValue });
     },
-    [generateMergeKey, handleAddValueToScenario],
+    [generateMergeKey, handleAddValueToScenario]
   );
 
   const clearInputs = useCallback(() => {
@@ -197,8 +197,9 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
 
     if (!address?.city) {
       alert(
-        "Por favor, indique o endereço do recurso para incluir um novo recurso.",
+        "Por favor, indique o endereço do recurso para incluir um novo recurso."
       );
+      return;
     }
 
     await addResource({ ...resource, address, type });
@@ -244,7 +245,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
 
       setValidatedResource(true);
     },
-    [validationSchema, handleIncludeResourceInPlan, resource],
+    [validationSchema, handleIncludeResourceInPlan, resource]
   );
 
   const onExit = useCallback(() => {
@@ -267,7 +268,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
 
     formattedResources.forEach((resourceItem) => {
       const alreadyAdded = filterRepeated.some(
-        (added) => added.formattedAddress === resourceItem.formattedAddress,
+        (added) => added.formattedAddress === resourceItem.formattedAddress
       );
 
       if (!alreadyAdded) {
@@ -279,7 +280,7 @@ const CreateResourceModal: React.FC<Props> = ({ show, setShow, type }) => {
       return filterRepeated.filter((resourceItem) =>
         resourceItem.formattedAddress
           .toLocaleLowerCase()
-          .includes(addressFilterText.toLocaleLowerCase()),
+          .includes(addressFilterText.toLocaleLowerCase())
       );
     }
 
