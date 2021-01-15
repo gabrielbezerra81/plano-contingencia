@@ -68,7 +68,7 @@ const StepFour: React.FC = () => {
       });
       setScenariosList(updatedScenariosList);
     },
-    [scenariosList, setScenarioTitle, setScenariosList],
+    [scenariosList, setScenarioTitle, setScenariosList]
   );
 
   const handleUncheckAll = useCallback(() => {
@@ -121,7 +121,7 @@ const StepFour: React.FC = () => {
                 headers: {
                   "Content-Type": "text/plain",
                 },
-              },
+              }
             );
 
             suggestions.push(...response.data);
@@ -274,14 +274,16 @@ const StepFour: React.FC = () => {
     },
     (hooks) => {
       hooks.useInstance.push(useRowSpan);
-    },
+    }
   );
 
   const shouldUpdatePlanData = useMemo(() => {
+    return true;
+
     const hasCompletedScenarios = planData.resources.some((resource) => {
       const checked = verifyIfScenariosHistoryHasValue(
         "resourceId",
-        resource.id,
+        resource.id
       );
 
       return checked;
@@ -303,7 +305,7 @@ const StepFour: React.FC = () => {
                   scenario.id = id;
                 }
               }
-            },
+            }
           );
 
           setScenariosList(scenariosWithIds);
