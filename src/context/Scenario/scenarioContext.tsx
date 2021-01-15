@@ -52,7 +52,7 @@ const emptyScenario: Scenario = {
 };
 
 const ScenarioProvider: React.FC = ({ children }) => {
-  const [scenarioSaveEnabled, setScenarioSaveEnabled] = useState(false);
+  const [scenarioSaveEnabled, setScenarioSaveEnabled] = useState(true);
 
   const [scenarioTitle, setScenarioTitle] = useState(() => {
     const title = localStorage.getItem("scenarioTitle");
