@@ -42,7 +42,7 @@ const AuthProvider: React.FC = ({ children }) => {
 
       const { token_type, access_token } = parsedData;
 
-      // api.defaults.headers.authorization = `${token_type} ${access_token}`;
+      api.defaults.headers.authorization = `${token_type} ${access_token}`;
 
       return parsedData;
     }
@@ -91,8 +91,9 @@ const AuthProvider: React.FC = ({ children }) => {
 
       console.log("buscou os dados ", access_token);
 
-      // api.defaults.headers.authorization = `${token_type} ${access_token}`;
+      api.defaults.headers.authorization = `${token_type} ${access_token}`;
 
+      console.log(data);
       setAuthData(data);
       setIsLogged(true);
 
@@ -108,11 +109,13 @@ const AuthProvider: React.FC = ({ children }) => {
       "https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/logout?redirect_uri=" +
       homeURL;
 
-    window.open(url);
+    window.open(url, "_self");
 
-    setIsLogged(false);
-    setAuthData(null);
-    localStorage.removeItem("@plan:authData");
+    setTimeout(() => {
+      setIsLogged(false);
+      setAuthData(null);
+      localStorage.removeItem("@plan:authData");
+    }, 200);
   }, []);
 
   useEffect(() => {
