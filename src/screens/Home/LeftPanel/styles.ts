@@ -13,12 +13,12 @@ export const Container = styled.div<ContainerProps>`
   transition: width 0.2s;
 
   ${({ activeAppTab }) => {
-    let tabNumber = 2;
+    let tabNumber = 1;
 
     if (activeAppTab === "searchPlan") {
-      tabNumber = 3;
+      tabNumber = 2;
     } else if (activeAppTab === "createPlan") {
-      tabNumber = 4;
+      tabNumber = 3;
     }
 
     return css`
@@ -46,16 +46,24 @@ export const Container = styled.div<ContainerProps>`
   }
 
   > div {
-    > .menuItem {
+    .menuItemsContainer {
+      transition: opacity 0.25s;
+    }
+
+    .menuItem {
       padding: 12px;
       border-bottom: 1px solid #919191;
       width: 100%;
       text-align: left;
       transition: opacity 0.2s;
 
-      &:hover {
-        opacity: 0.6;
-      }
+      ${({ isOpen }) =>
+        isOpen &&
+        css`
+          &:hover {
+            opacity: 0.6;
+          }
+        `}
 
       h6 {
         color: #a8a8a8;
@@ -74,7 +82,7 @@ export const Container = styled.div<ContainerProps>`
         opacity: 1;
       }
 
-      button {
+      button.logoutButton {
         position: absolute;
         left: 8px;
 
@@ -85,6 +93,9 @@ export const Container = styled.div<ContainerProps>`
         img {
           height: 30px;
         }
+      }
+
+      button.menuButton {
       }
     }
   }

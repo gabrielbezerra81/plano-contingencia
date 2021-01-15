@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Container } from "./styles";
 
 import defesaCivilImg from "assets/images/defesaCivil.png";
@@ -14,6 +14,8 @@ const LeftPanel: React.FC = () => {
     changeLeftSideMenuVisibility,
     handleAppTabChange,
   } = useSystem();
+
+  const [openMenuOnMap, setOpenMenuOnMap] = useState(false);
 
   const handleOpenMenu = useCallback(() => {}, []);
 
@@ -38,6 +40,10 @@ const LeftPanel: React.FC = () => {
     [handleAppTabChange]
   );
 
+  const handleMenuClick = useCallback(() => {
+    setOpenMenuOnMap((oldValue) => !oldValue);
+  }, []);
+
   useEffect(() => {
     if (
       ["tab3", "tab4"].includes(selectedTab) &&
@@ -50,6 +56,25 @@ const LeftPanel: React.FC = () => {
     }
   }, [selectedTab, changeLeftSideMenuVisibility, activeAppTab]);
 
+  const menuItensStyle = useMemo(() => {
+    const style: React.CSSProperties = {};
+
+    if (isOpenLeftSideMenu) {
+      return style;
+    }
+
+    if (openMenuOnMap) {
+      style.opacity = 1;
+      style.pointerEvents = "auto";
+    } //
+    else {
+      style.opacity = 0;
+      style.pointerEvents = "none";
+    }
+
+    return style;
+  }, [isOpenLeftSideMenu, openMenuOnMap]);
+
   return (
     <Container activeAppTab={activeAppTab} isOpen={isOpenLeftSideMenu}>
       <header>
@@ -59,38 +84,43 @@ const LeftPanel: React.FC = () => {
       </header>
       <div>
         <div className="menuItem">
-          <button onClick={handleOpenMenu}>
+          <button className="logoutButton" onClick={handleOpenMenu}>
             <img src={menuIcon} alt="Menu" />
           </button>
-          <h6>MENU</h6>
+          <button
+            onClick={handleMenuClick}
+            disabled={isOpenLeftSideMenu}
+            className="menuButton"
+          >
+            <h6>MENU</h6>
+          </button>
         </div>
-        {isOpenLeftSideMenu && (
-          <>
-            <button onClick={handleListPlans} name="plans" className="menuItem">
-              <div>
-                <h6>PLANOS DE CONTINGÊNCIA</h6>
-              </div>
-            </button>
-            <button
-              onClick={handleSearchPlan}
-              name="searchPlan"
-              className="menuItem"
-            >
-              <div>
-                <h6>PESQUISAR PLANO</h6>
-              </div>
-            </button>
-            <button
-              onClick={handleCreatePlan}
-              name="createPlan"
-              className="menuItem"
-            >
-              <div>
-                <h6>CADASTRAR NOVO PLANO</h6>
-              </div>
-            </button>
-          </>
-        )}
+
+        <div className="menuItemsContainer" style={menuItensStyle}>
+          <button onClick={handleListPlans} name="plans" className="menuItem">
+            <div>
+              <h6>PLANOS DE CONTINGÊNCIA</h6>
+            </div>
+          </button>
+          <button
+            onClick={handleSearchPlan}
+            name="searchPlan"
+            className="menuItem"
+          >
+            <div>
+              <h6>PESQUISAR PLANO</h6>
+            </div>
+          </button>
+          <button
+            onClick={handleCreatePlan}
+            name="createPlan"
+            className="menuItem"
+          >
+            <div>
+              <h6>CADASTRAR NOVO PLANO</h6>
+            </div>
+          </button>
+        </div>
       </div>
     </Container>
   );
