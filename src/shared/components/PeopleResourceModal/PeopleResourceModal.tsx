@@ -45,7 +45,7 @@ const PeopleResourceModal: React.FC<Props> = ({ show, setShow }) => {
   >("none");
 
   const [responsible, setResponsible] = useState<Responsible | undefined>(
-    undefined,
+    undefined
   );
 
   const [role, setRole] = useState("");
@@ -189,7 +189,7 @@ const PeopleResourceModal: React.FC<Props> = ({ show, setShow }) => {
       setCurrentView("none");
       setValidatedSearch(true);
     },
-    [handleSearchPerson, searchText],
+    [handleSearchPerson, searchText]
   );
 
   const onExit = useCallback(() => {
@@ -268,7 +268,11 @@ const PeopleResourceModal: React.FC<Props> = ({ show, setShow }) => {
                 telefone.
               </small>
               <div>
-                <Button className="darkBlueButton" size="sm">
+                <Button
+                  className="darkBlueButton"
+                  size="sm"
+                  onClick={() => setShowAddUserModal(true)}
+                >
                   Adicionar novo usuário
                 </Button>
                 <Button
