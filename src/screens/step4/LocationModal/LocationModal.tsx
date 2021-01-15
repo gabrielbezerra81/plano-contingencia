@@ -54,7 +54,12 @@ interface Props {
 }
 
 const LocationModal: React.FC<Props> = ({ show, setShow }) => {
-  const { planData, addRiskLocation, removeRiskLocation } = usePlanData();
+  const {
+    planData,
+    addRiskLocation,
+    removeRiskLocation,
+    getSequenceId,
+  } = usePlanData();
 
   const { addInitialScenarioLines } = useScenario();
 
@@ -182,7 +187,9 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
   );
 
   const handleAddAddress = useCallback(async () => {
-    await addRiskLocation(address);
+    const id = await getSequenceId("enderecos");
+
+    await addRiskLocation({ ...address, id });
 
     setAddress(() => {
       const clearedAddress = produce(address, (draft) => {
@@ -191,7 +198,7 @@ const LocationModal: React.FC<Props> = ({ show, setShow }) => {
 
       return clearedAddress;
     });
-  }, [address, addRiskLocation]);
+  }, [address, addRiskLocation, getSequenceId]);
 
   const handleChooseFile = useCallback(() => {}, []);
 

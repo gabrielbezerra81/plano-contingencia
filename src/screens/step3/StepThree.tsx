@@ -59,7 +59,12 @@ const emptyAddress: RiskLocation = {
 const StepThree: React.FC = () => {
   const { selectedTabIndex, setSelectedTab, isOpenLeftSideMenu } = useSystem();
 
-  const { planData, addRiskLocation, removeRiskLocation } = usePlanData();
+  const {
+    planData,
+    addRiskLocation,
+    removeRiskLocation,
+    getSequenceId,
+  } = usePlanData();
 
   const mapRef = useRef<Map | null>(null);
 
@@ -200,7 +205,9 @@ const StepThree: React.FC = () => {
   );
 
   const handleAddAddress = useCallback(async () => {
-    await addRiskLocation(address);
+    const id = await getSequenceId("enderecos");
+
+    await addRiskLocation({ ...address, id });
 
     setAddress(() => {
       const clearedAddress = produce(address, (draft) => {
@@ -209,7 +216,7 @@ const StepThree: React.FC = () => {
 
       return clearedAddress;
     });
-  }, [address, addRiskLocation]);
+  }, [address, addRiskLocation, getSequenceId]);
 
   const handleChangeLat = useCallback(
     (value: any) => {

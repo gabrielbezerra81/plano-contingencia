@@ -21,7 +21,6 @@ const ListPlans: React.FC = () => {
       .get("planos")
       .then((response) => {
         setPlans(response.data);
-        console.log(response.data);
         // setPlans([response.data[151]]);
       })
       .catch(console.log);
@@ -47,13 +46,15 @@ const ListPlans: React.FC = () => {
               <td>{plan.titulo}</td>
               <td>
                 {plan.cenarios.map((cenario) => {
-                  const address = planData.riskLocations.find(
-                    (address) => address.id === cenario.enderecoId
+                  const endereco = plan.locaisDeRisco.find(
+                    (endereco) => endereco.id === cenario.enderecoId
                   );
 
-                  if (!address) {
+                  if (!endereco) {
                     return null;
                   }
+
+                  const address = mapEnderecoToAddress(endereco);
 
                   const { fullAddress } = formatScenarioAddress(address);
 
