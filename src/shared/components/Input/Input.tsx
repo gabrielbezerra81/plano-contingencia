@@ -172,6 +172,7 @@ const Input: React.FC<InputProps> = ({
           ref={inputRef}
           rows={2}
           className={inputClass}
+          onChange={handleInputChange}
           {...rest}
         />
       )}
