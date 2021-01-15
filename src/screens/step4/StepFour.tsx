@@ -28,14 +28,13 @@ import Alert from "shared/components/Alert/Alert";
 const StepFour: React.FC = () => {
   const { selectedTab } = useSystem();
 
-  const { planData, getSequenceId, updateLocalPlanData } = usePlanData();
+  const { getSequenceId, updateLocalPlanData } = usePlanData();
 
   const {
     scenariosList,
     setScenariosList,
     scenarioTitle,
     setScenarioTitle,
-    verifyIfScenariosHistoryHasValue,
     checkedValues,
     setCheckedValues,
     setScenarioSaveEnabled,
@@ -277,27 +276,16 @@ const StepFour: React.FC = () => {
     }
   );
 
-  const shouldUpdatePlanData = useMemo(() => {
-    return true;
-
-    const hasCompletedScenarios = planData.resources.some((resource) => {
-      const checked = verifyIfScenariosHistoryHasValue(
-        "resourceId",
-        resource.id
-      );
-
-      return checked;
-    });
-
-    return hasCompletedScenarios;
-  }, [verifyIfScenariosHistoryHasValue, planData.resources]);
-
   useEffect(() => {
     async function submitScenariosChange() {
-      if (shouldUpdatePlanData && selectedTab !== "tab4") {
+      if (selectedTab !== "tab4") {
         try {
+          const completeScenarios = scenariosList.filter(
+            (scenario) => !!scenario.resourceId
+          );
+
           const scenariosWithIds = await produce(
-            scenariosList,
+            completeScenarios,
             async (draft) => {
               for await (const scenario of draft) {
                 if (!scenario.id) {
@@ -316,7 +304,7 @@ const StepFour: React.FC = () => {
 
     submitScenariosChange();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldUpdatePlanData, selectedTab]);
+  }, [selectedTab]);
 
   useEffect(() => {
     setIsUndoDisabled(false);

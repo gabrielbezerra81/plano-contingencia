@@ -56,9 +56,6 @@ const AuthProvider: React.FC = ({ children }) => {
       .error(() => {
         console.log("Authenticated Failed");
       });
-
-    // setIsLogged(true);
-    // localStorage.setItem("@plan:auth", JSON.stringify({}));
   }, []);
 
   const authenticate = useCallback(async (code: string) => {
