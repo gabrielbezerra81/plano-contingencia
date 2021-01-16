@@ -47,6 +47,8 @@ const AuthProvider: React.FC = ({ children }) => {
     return null;
   });
 
+  const [interceptorId, setInterceptorId] = useState(-1);
+
   const updateAuthData = useCallback((data: any) => {
     const { token_type, access_token } = data;
 
@@ -62,6 +64,29 @@ const AuthProvider: React.FC = ({ children }) => {
     localStorage.setItem("@plan:authData", JSON.stringify(updatedData));
   }, []);
 
+  const handleTokenRefresh = useCallback(async () => {
+    try {
+      const response = await axios.post(
+        `https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/token`,
+        qs.stringify({
+          grant_type: "refresh_token",
+          client_id: "contingencia_react",
+          refresh_token: authData?.refresh_token,
+          //   client_secret: "367afb37-8884-42c3-b5b6-b455b9b7db59",
+        }),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+      updateAuthData(response.data);
+    } catch (error) {
+      alert("Falha ao manter sua sessão aberta, Faça login novamente");
+      console.log(error);
+    }
+  }, [authData, updateAuthData]);
+
   const redirectToKeycloak = useCallback(() => {
     keycloak
       .init({
@@ -74,11 +99,25 @@ const AuthProvider: React.FC = ({ children }) => {
         } else {
           console.log("Authenticated");
         }
+
+        const data = {
+          access_token: keycloak.token || "",
+          id_token: keycloak.idToken || "",
+          refresh_token: keycloak.refreshToken || "",
+          token_type: "Bearer",
+          expires_in: 3600,
+          refresh_expires_in: 4500,
+          session_state: "",
+          scope: "",
+          "not-before-policy": 0,
+        };
+
+        updateAuthData(data);
       })
       .error(() => {
         console.log("Authenticated Failed");
       });
-  }, []);
+  }, [updateAuthData]);
 
   const authenticate = useCallback(
     async (code: string) => {
@@ -100,6 +139,28 @@ const AuthProvider: React.FC = ({ children }) => {
         );
 
         const { data } = response;
+
+        // const { expires_in } = data;
+
+        // if (interceptorId !== -1) {
+        //   api.interceptors.request.eject(interceptorId);
+        // }
+
+        // const date = new Date().getTime();
+
+        // const interceptor = api.interceptors.request.use(async (config) => {
+        //   const isExpired = isTokenExpired(date, expires_in);
+
+        //   console.log(isExpired);
+
+        //   if (isExpired) {
+        //     await handleTokenRefresh();
+        //   }
+
+        //   return config;
+        // });
+
+        // setInterceptorId(interceptor);
 
         updateAuthData(data);
       } catch (error) {
@@ -134,43 +195,23 @@ const AuthProvider: React.FC = ({ children }) => {
     }
   }, [authData]);
 
-  const handleTokenRefresh = useCallback(async () => {
-    try {
-      const response = await axios.post(
-        `https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/token`,
-        qs.stringify({
-          grant_type: "refresh_token",
-          client_id: "contingencia_react",
-          refresh_token: authData?.refresh_token,
-          //   client_secret: "367afb37-8884-42c3-b5b6-b455b9b7db59",
-        }),
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
-      updateAuthData(response.data);
-    } catch (error) {
-      alert("Falha ao manter sua sessão aberta, Faça login novamente");
-      console.log(error);
-    }
-  }, [authData, updateAuthData]);
-
   useEffect(() => {
     if (authData) {
       const { token_date, expires_in } = authData;
-
-      const isExpired = isTokenExpired(token_date, expires_in);
-
-      console.log(isExpired);
-
-      if (isExpired) {
-        handleTokenRefresh();
+      if (interceptorId !== -1) {
+        api.interceptors.request.eject(interceptorId);
       }
+      const interceptor = api.interceptors.request.use(async (config) => {
+        const isExpired = isTokenExpired(token_date, expires_in);
+        if (isExpired) {
+          await handleTokenRefresh();
+        }
+        return config;
+      });
+      setInterceptorId(interceptor);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authData, handleTokenRefresh, updateAuthData]);
 
   useEffect(() => {
     if (!isLogged) {
@@ -178,7 +219,49 @@ const AuthProvider: React.FC = ({ children }) => {
     }
   }, [isLogged, redirectToKeycloak]);
 
-  useEffect(() => {
+  return (
+    <AuthContext.Provider value={{ isLogged, authenticate, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export default AuthProvider;
+
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
+
+interface AuthData {
+  access_token: string;
+  expires_in: number;
+  id_token: string;
+  "not-before-policy": number;
+  refresh_expires_in: number;
+  refresh_token: string;
+  scope: string;
+  session_state: string;
+  token_type: string;
+  token_date: number;
+}
+
+// this.props.keycloak.loadUserInfo().then(userInfo => {
+//   this.setState({name: userInfo.name, email: userInfo.email, id: userInfo.sub})
+// });
+
+function isTokenExpired(tokenDate: number, expiresIn: number) {
+  const expireDate = new Date(tokenDate);
+  expireDate.setSeconds(expireDate.getSeconds() + expiresIn - 1800); //900
+  const currentDate = new Date();
+
+  const isExpired = moment(currentDate).isAfter(expireDate, "milliseconds");
+
+  return isExpired;
+}
+
+/*
+
+ useEffect(() => {
     function updateSession() {
       keycloak.init({ onLoad: "check-sso" }).success((result) => {
         keycloak.onTokenExpired = () => {
@@ -221,42 +304,4 @@ const AuthProvider: React.FC = ({ children }) => {
     // updateSession();
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ isLogged, authenticate, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export default AuthProvider;
-
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
-
-interface AuthData {
-  access_token: string;
-  expires_in: number;
-  id_token: string;
-  "not-before-policy": number;
-  refresh_expires_in: number;
-  refresh_token: string;
-  scope: string;
-  session_state: string;
-  token_type: string;
-  token_date: number;
-}
-
-// this.props.keycloak.loadUserInfo().then(userInfo => {
-//   this.setState({name: userInfo.name, email: userInfo.email, id: userInfo.sub})
-// });
-
-function isTokenExpired(tokenDate: number, expiresIn: number) {
-  const expireDate = new Date(tokenDate);
-  expireDate.setSeconds(expireDate.getSeconds() + expiresIn - 30);
-  const currentDate = new Date();
-
-  const isExpired = moment(currentDate).isAfter(expireDate, "milliseconds");
-
-  return isExpired;
-}
+*/

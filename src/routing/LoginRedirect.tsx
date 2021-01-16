@@ -12,7 +12,7 @@ const LoginRedirect: React.FC = () => {
   useEffect(() => {
     async function login() {
       if (code) {
-        await authenticate(code);
+        // await authenticate(code);
       }
     }
 
