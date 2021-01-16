@@ -47,7 +47,8 @@ const AuthProvider: React.FC = ({ children }) => {
     return null;
   });
 
-  const [interceptorId, setInterceptorId] = useState(-1);
+  const [requestInterceptor, setRequestInterceptor] = useState(-1);
+  const [responseInterceptor, setResponseInterceptor] = useState(-1);
 
   const updateAuthData = useCallback((data: any) => {
     const { token_type, access_token } = data;
@@ -198,8 +199,8 @@ const AuthProvider: React.FC = ({ children }) => {
   useEffect(() => {
     if (authData) {
       const { token_date, expires_in } = authData;
-      if (interceptorId !== -1) {
-        api.interceptors.request.eject(interceptorId);
+      if (requestInterceptor !== -1) {
+        api.interceptors.request.eject(requestInterceptor);
       }
       const interceptor = api.interceptors.request.use(async (config) => {
         const isExpired = isTokenExpired(token_date, expires_in);
@@ -208,9 +209,9 @@ const AuthProvider: React.FC = ({ children }) => {
         }
         return config;
       });
-      setInterceptorId(interceptor);
+      setRequestInterceptor(interceptor);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authData, handleTokenRefresh, updateAuthData]);
 
   useEffect(() => {
@@ -218,6 +219,24 @@ const AuthProvider: React.FC = ({ children }) => {
       redirectToKeycloak();
     }
   }, [isLogged, redirectToKeycloak]);
+
+  useEffect(() => {
+    if (responseInterceptor !== -1) {
+      api.interceptors.response.eject(responseInterceptor);
+    }
+
+    const id = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        signOut();
+        alert("Sua sessão expirou, faça login novamente");
+        return Promise.reject(error);
+      }
+    );
+
+    setResponseInterceptor(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signOut]);
 
   return (
     <AuthContext.Provider value={{ isLogged, authenticate, signOut }}>
