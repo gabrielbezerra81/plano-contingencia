@@ -27,7 +27,7 @@ const url =
 const LogoutMenu: React.FC = () => {
   const { changeLogoutMenuVisibility, isOpenLogoutMenu } = useSystem();
 
-  const { signOut } = useAuth();
+  const { signOut, name } = useAuth();
 
   const handleLogout = useCallback(() => {
     signOut();
@@ -37,7 +37,7 @@ const LogoutMenu: React.FC = () => {
   return (
     <Container isOpen={isOpenLogoutMenu}>
       <div className="menuItem">
-        <h6>Gabriel</h6>
+        <h6>{name}</h6>
       </div>
       <button onClick={handleLogout} className="menuItem">
         <div>

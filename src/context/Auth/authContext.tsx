@@ -11,6 +11,7 @@ interface AuthContextData {
   isLogged: boolean;
   authenticate: (code: string) => Promise<void>;
   signOut: () => void;
+  name: string;
 }
 
 const AuthContext = React.createContext<AuthContextData>({} as AuthContextData);
@@ -94,7 +95,7 @@ const AuthProvider: React.FC = ({ children }) => {
         onLoad: "login-required",
         redirectUri: redirectURL,
       })
-      .success((auth) => {
+      .success(async (auth) => {
         if (!auth) {
           window.location.reload();
         } else {
@@ -113,7 +114,20 @@ const AuthProvider: React.FC = ({ children }) => {
           "not-before-policy": 0,
         };
 
-        updateAuthData(data);
+        await new Promise((resolve, reject) => {
+          keycloak
+            .loadUserInfo()
+            .success(() => {
+              resolve(true);
+            })
+            .error(() => {
+              reject(false);
+            });
+        });
+
+        const info = keycloak.userInfo as any;
+
+        updateAuthData({ ...data, name: info ? info.given_name : "" });
       })
       .error(() => {
         console.log("Authenticated Failed");
@@ -242,7 +256,14 @@ const AuthProvider: React.FC = ({ children }) => {
   }, [signOut]);
 
   return (
-    <AuthContext.Provider value={{ isLogged, authenticate, signOut }}>
+    <AuthContext.Provider
+      value={{
+        isLogged,
+        authenticate,
+        signOut,
+        name: authData ? authData.name : "",
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -265,6 +286,7 @@ interface AuthData {
   session_state: string;
   token_type: string;
   token_date: number;
+  name: string;
 }
 
 // this.props.keycloak.loadUserInfo().then(userInfo => {
