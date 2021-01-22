@@ -228,8 +228,11 @@ const AuthProvider: React.FC = ({ children }) => {
     const id = api.interceptors.response.use(
       (response) => response,
       async (error) => {
-        signOut();
-        alert("Sua sessão expirou, faça login novamente");
+        if (error.response.status === 401) {
+          signOut();
+
+          alert("Sua sessão expirou, faça login novamente");
+        }
         return Promise.reject(error);
       },
     );
