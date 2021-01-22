@@ -79,7 +79,7 @@ const AuthProvider: React.FC = ({ children }) => {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-        }
+        },
       );
       updateAuthData(response.data);
     } catch (error) {
@@ -136,7 +136,7 @@ const AuthProvider: React.FC = ({ children }) => {
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
             },
-          }
+          },
         );
 
         const { data } = response;
@@ -169,7 +169,7 @@ const AuthProvider: React.FC = ({ children }) => {
         console.log("authError", error);
       }
     },
-    [updateAuthData]
+    [updateAuthData],
   );
 
   const signOut = useCallback(async () => {
@@ -184,15 +184,15 @@ const AuthProvider: React.FC = ({ children }) => {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-        }
+        },
       );
-
+    } catch (error) {
+      console.log(error);
+      console.log("Falha ao encerrar sessão");
+    } finally {
       setIsLogged(false);
       setAuthData(null);
       localStorage.removeItem("@plan:authData");
-    } catch (error) {
-      console.log(error);
-      alert("Falha ao encerrar sessão");
     }
   }, [authData]);
 
@@ -231,7 +231,7 @@ const AuthProvider: React.FC = ({ children }) => {
         signOut();
         alert("Sua sessão expirou, faça login novamente");
         return Promise.reject(error);
-      }
+      },
     );
 
     setResponseInterceptor(id);
