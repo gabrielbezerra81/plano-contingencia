@@ -237,6 +237,8 @@ const PlanDataProvider: React.FC = ({ children }) => {
     [data, updateLocalPlanData],
   );
 
+  const editRiskLocation = useCallback(() => {}, []);
+
   const addResource = useCallback(
     async (resource: Resource) => {
       const id = await getSequenceId("recursos");

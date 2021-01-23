@@ -160,7 +160,7 @@ const StepThree: React.FC = () => {
         const parsedCep = address.cep.replace("-", "");
 
         const response = await axios.get(
-          `https://viacep.com.br/ws/${parsedCep}/json/`
+          `https://viacep.com.br/ws/${parsedCep}/json/`,
         );
 
         const {
@@ -192,7 +192,7 @@ const StepThree: React.FC = () => {
         }, 5000);
       }
     },
-    [address.cep]
+    [address.cep],
   );
 
   const handleEditCurrentAddress = useCallback(
@@ -201,7 +201,7 @@ const StepThree: React.FC = () => {
 
       setAddress((oldValue) => ({ ...oldValue, [name]: value }));
     },
-    []
+    [],
   );
 
   const handleAddAddress = useCallback(async () => {
@@ -227,7 +227,7 @@ const StepThree: React.FC = () => {
         },
       } as any);
     },
-    [handleEditCurrentAddress]
+    [handleEditCurrentAddress],
   );
 
   const handleChangeLong = useCallback(
@@ -239,7 +239,7 @@ const StepThree: React.FC = () => {
         },
       } as any);
     },
-    [handleEditCurrentAddress]
+    [handleEditCurrentAddress],
   );
 
   const handleSubmitForm = useCallback(
@@ -260,7 +260,7 @@ const StepThree: React.FC = () => {
 
       setValidatedAddress(true);
     },
-    [handleAddAddress]
+    [handleAddAddress],
   );
 
   const addKMLToMap = useCallback((kmlText: string) => {
@@ -271,7 +271,7 @@ const StepThree: React.FC = () => {
     const convertedWithStyles = KMLP(kml, { styles: true });
 
     const polygons = convertedWithStyles.features.filter(
-      (item: any) => !!item.geometry && item.geometry.type !== "Point"
+      (item: any) => !!item.geometry && item.geometry.type !== "Point",
     );
 
     // const points = convertedWithStyles.features.filter(
@@ -372,7 +372,7 @@ const StepThree: React.FC = () => {
         // setMapKey(Math.random())
       }
     },
-    [addKMLToMap]
+    [addKMLToMap],
   );
 
   const handleNavigateNextTab = useCallback(() => {
@@ -479,9 +479,11 @@ const StepThree: React.FC = () => {
             name="addressItem"
             numeration
             onRemove={(_, index) => removeRiskLocation(index)}
+            onEdit={(e, index) => {}}
             renderText={(addressItem: RiskLocation) =>
               formatRiskLocation(addressItem)
             }
+            showEditButton
           />
         </MapAndAddressListContainer>
 

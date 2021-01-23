@@ -33,11 +33,22 @@ export const Container = styled.div<ContainerProps>`
     }
 
     button {
-      svg {
-        fill: ${colors.darkBlue};
-        stroke: #fff;
-        stroke-width: 3px;
-        height: 24px;
+      &:first-child {
+        svg {
+          fill: ${colors.darkBlue};
+          stroke: #fff;
+          stroke-width: 3px;
+          height: 23px;
+        }
+      }
+
+      &:nth-child(2) {
+        svg {
+          stroke: ${colors.darkBlue};
+          stroke-width: 3px;
+          height: 24px;
+          margin-right: 4px;
+        }
       }
     }
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { FiXCircle } from "react-icons/fi";
+import { FiXCircle, FiEdit } from "react-icons/fi";
 
 import { Container } from "./styles";
 
@@ -13,6 +13,9 @@ interface Props {
   size?: "small" | "normal";
   showCloseButton?: boolean;
   numeration?: boolean;
+  showEditButton?: boolean;
+  editButtonName?: string;
+  onEdit?: (...data: any[]) => any;
 }
 
 const AttributeListing: React.FC<Props> = ({
@@ -26,6 +29,9 @@ const AttributeListing: React.FC<Props> = ({
   showCloseButton = true,
   children,
   numeration = false,
+  showEditButton = false,
+  editButtonName = "",
+  onEdit = () => {},
 }) => {
   return (
     <Container
@@ -38,7 +44,13 @@ const AttributeListing: React.FC<Props> = ({
         <div key={index} className="attributeListItem">
           {showCloseButton && (
             <button name={name} onClick={(e) => onRemove(e, index)}>
-              <FiXCircle></FiXCircle>
+              <FiXCircle />
+            </button>
+          )}
+
+          {showEditButton && (
+            <button name={editButtonName} onClick={(e) => onEdit(e, index)}>
+              <FiEdit size={15} />
             </button>
           )}
 
