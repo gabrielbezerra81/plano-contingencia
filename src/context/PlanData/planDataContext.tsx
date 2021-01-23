@@ -38,22 +38,35 @@ interface PlanDataContextData {
 }
 
 const PlanDataContext = React.createContext<PlanDataContextData>(
-  {} as PlanDataContextData
+  {} as PlanDataContextData,
 );
 
 const PlanDataProvider: React.FC = ({ children }) => {
-  const [data, setData] = useState<PlanData>({
-    generalDescription: {
-      title: "",
-      description: "",
-    },
-    workGroup: [],
-    riskLocations: [],
-    resources: [],
-    scenarios: [],
+  const [data, setData] = useState<PlanData>(() => {
+    const planString = localStorage.getItem(plan_LocalStorageString);
+
+    if (planString) {
+      const data = JSON.parse(planString);
+      return data;
+    }
+
+    return {
+      generalDescription: {
+        title: "",
+        description: "",
+      },
+      workGroup: [],
+      riskLocations: [],
+      resources: [],
+      scenarios: [],
+    };
   });
 
-  const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
+  const [currentPlanId, setCurrentPlanId] = useState<string | null>(() => {
+    const id = localStorage.getItem(planId_LocalStorageString);
+
+    return id;
+  });
 
   const [includedPersons, setIncludedPersons] = useState<Person[]>([]);
 
@@ -90,13 +103,14 @@ const PlanDataProvider: React.FC = ({ children }) => {
         });
 
         setData(updatedPlanData);
+        console.log("atualizou");
         localStorage.setItem(
           plan_LocalStorageString,
-          JSON.stringify(updatedPlanData)
+          JSON.stringify(updatedPlanData),
         );
       } catch (error) {}
     },
-    [data]
+    [data],
   );
 
   const updateAPIPlanData = useCallback(async () => {
@@ -126,7 +140,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
           setData(updatedPlan);
           localStorage.setItem(
             plan_LocalStorageString,
-            JSON.stringify(updatedPlan)
+            JSON.stringify(updatedPlan),
           );
         }
       }
@@ -159,12 +173,12 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       localStorage.setItem(
         includedPersons_LocalStorageString,
-        JSON.stringify(updatedIncludedPersons)
+        JSON.stringify(updatedIncludedPersons),
       );
 
       updateLocalPlanData({ workGroup: [...data.workGroup, newMember] });
     },
-    [includedPersons, updateLocalPlanData, data, getSequenceId]
+    [includedPersons, updateLocalPlanData, data, getSequenceId],
   );
 
   const addNewUser = useCallback(
@@ -189,7 +203,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
         return null;
       }
     },
-    [persons]
+    [persons],
   );
 
   const addRiskLocation = useCallback(
@@ -209,7 +223,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       updateLocalPlanData(updatedPlanData);
     },
-    [data, updateLocalPlanData, getSequenceId]
+    [data, updateLocalPlanData, getSequenceId],
   );
 
   const removeRiskLocation = useCallback(
@@ -220,7 +234,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       updateLocalPlanData(updatedPlanData);
     },
-    [data, updateLocalPlanData]
+    [data, updateLocalPlanData],
   );
 
   const addResource = useCallback(
@@ -233,25 +247,13 @@ const PlanDataProvider: React.FC = ({ children }) => {
 
       updateLocalPlanData(updatedPlanData);
     },
-    [data, updateLocalPlanData, getSequenceId]
+    [data, updateLocalPlanData, getSequenceId],
   );
 
   // carregar dados do armazenamento local
   useEffect(() => {
-    const id = localStorage.getItem(planId_LocalStorageString);
-
-    if (id) {
-      setCurrentPlanId(id);
-    }
-
-    const planString = localStorage.getItem(plan_LocalStorageString);
-
-    if (planString) {
-      setData(JSON.parse(planString));
-    }
-
     const includedPersonsString = localStorage.getItem(
-      includedPersons_LocalStorageString
+      includedPersons_LocalStorageString,
     );
 
     if (includedPersonsString) {
@@ -264,7 +266,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
       const alreadyIncluded = includedPersons.some(
         (includedItem) =>
           includedItem.name === personItem.name &&
-          includedItem.id === personItem.id
+          includedItem.id === personItem.id,
       );
 
       return !alreadyIncluded;
@@ -277,7 +279,7 @@ const PlanDataProvider: React.FC = ({ children }) => {
       .then((response) => {
         if (response.data) {
           setPersons(
-            response.data.map((endereco) => mapPessoaToLocalPerson(endereco))
+            response.data.map((endereco) => mapPessoaToLocalPerson(endereco)),
           );
         }
       })
