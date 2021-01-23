@@ -53,6 +53,8 @@ const StepFour: React.FC = () => {
 
   const [suggestionList, setSuggestionList] = useState<SuggestionList[]>([]);
 
+  const [saveCountdown, setSaveCountdown] = useState(10);
+
   const handleChangeScenarioTitle = useCallback(
     (e) => {
       const title = e.target.value;
@@ -67,7 +69,7 @@ const StepFour: React.FC = () => {
       });
       setScenariosList(updatedScenariosList);
     },
-    [scenariosList, setScenarioTitle, setScenariosList]
+    [scenariosList, setScenarioTitle, setScenariosList],
   );
 
   const handleUncheckAll = useCallback(() => {
@@ -100,6 +102,10 @@ const StepFour: React.FC = () => {
     setTimeout(() => setIsUndoDisabled(true), 500);
   }, [setScenariosList, setCheckedValues]);
 
+  const handleSave = useCallback(() => {
+    setSaveCountdown(60);
+  }, []);
+
   // Carregar Cobrade
   useEffect(() => {
     async function loadSuggestions() {
@@ -120,7 +126,7 @@ const StepFour: React.FC = () => {
                 headers: {
                   "Content-Type": "text/plain",
                 },
-              }
+              },
             );
 
             suggestions.push(...response.data);
@@ -273,7 +279,7 @@ const StepFour: React.FC = () => {
     },
     (hooks) => {
       hooks.useInstance.push(useRowSpan);
-    }
+    },
   );
 
   useEffect(() => {
@@ -281,7 +287,7 @@ const StepFour: React.FC = () => {
       if (selectedTab !== "tab4") {
         try {
           const completeScenarios = scenariosList.filter(
-            (scenario) => !!scenario.resourceId
+            (scenario) => !!scenario.resourceId,
           );
 
           const scenariosWithIds = await produce(
@@ -293,7 +299,7 @@ const StepFour: React.FC = () => {
                   scenario.id = id;
                 }
               }
-            }
+            },
           );
 
           setScenariosList(scenariosWithIds);
@@ -310,11 +316,29 @@ const StepFour: React.FC = () => {
     setIsUndoDisabled(false);
   }, [scenariosList]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSaveCountdown((oldValue) => {
+        const newValue = oldValue - 1;
+
+        if (newValue === 0) {
+          return 10;
+        }
+
+        return newValue;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
   return (
     <>
       <Container>
         <div className="titleContainer">
-          <h3>4: CONSTRUÇÃO DE CENÁRIO</h3>
+          <h4>4: CONSTRUÇÃO DE CENÁRIO</h4>
         </div>
         <Input
           value={scenarioTitle}
@@ -350,6 +374,15 @@ const StepFour: React.FC = () => {
             size="sm"
           >
             Limpar tudo
+          </Button>
+
+          <Button
+            style={{ marginLeft: 24 }}
+            className="darkBlueButton"
+            size="sm"
+            onClick={handleSave}
+          >
+            Salvar - {saveCountdown}
           </Button>
         </div>
       </Container>

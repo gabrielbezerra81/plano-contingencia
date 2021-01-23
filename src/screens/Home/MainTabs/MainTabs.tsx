@@ -89,7 +89,7 @@ const MainTabs = () => {
         selectedTab={selectedTab}
       >
         <Tab.Pane eventKey="tab1">
-          <h3>1: DESCRIÇÃO GERAL DO PLANO DE CONTINGÊNCIA</h3>
+          <h4>1: DESCRIÇÃO GERAL DO PLANO DE CONTINGÊNCIA</h4>
           <StepOne />
           <Button
             onClick={handleClickNext}
@@ -100,7 +100,7 @@ const MainTabs = () => {
         </Tab.Pane>
 
         <Tab.Pane eventKey="tab2">
-          <h3>2: GRUPO DE TRABALHO</h3>
+          <h4>2: GRUPO DE TRABALHO</h4>
           <StepTwo />
           <Button
             onClick={handleClickNext}
@@ -111,7 +111,7 @@ const MainTabs = () => {
         </Tab.Pane>
 
         <Tab.Pane eventKey="tab3">
-          <h3>3: ESPECIFIQUE O ENDEREÇO DOS LOCAIS DE RISCO</h3>
+          <h4>3: ESPECIFIQUE O ENDEREÇO DOS LOCAIS DE RISCO</h4>
           <StepThree />
         </Tab.Pane>
 

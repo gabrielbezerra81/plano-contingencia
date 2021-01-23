@@ -79,7 +79,7 @@ export const Content = styled.main<ContentProps>`
     position: relative;
     height: 100%;
 
-    > h3 {
+    > h4 {
       text-align: center;
       color: #212121;
       position: sticky;
@@ -106,7 +106,7 @@ export const Content = styled.main<ContentProps>`
     selectedTab === "tab3" &&
     css`
       .tab-pane {
-        > h3 {
+        > h4 {
           @media (max-width: 1400px) {
             margin: 0 auto;
             margin-left: 288px;

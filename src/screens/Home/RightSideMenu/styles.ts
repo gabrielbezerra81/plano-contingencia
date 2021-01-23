@@ -14,6 +14,7 @@ export const Container = styled.div<ContainerProps>`
   min-width: 80px;
   width: 80px;
   pointer-events: none;
+  z-index: 1;
 
   ${({ isOpen }) =>
     isOpen &&
