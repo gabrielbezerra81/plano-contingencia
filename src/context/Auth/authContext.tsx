@@ -126,6 +126,7 @@ const AuthProvider: React.FC = ({ children }) => {
         });
 
         const info = keycloak.userInfo as any;
+        console.log(keycloak.tokenParsed);
 
         updateAuthData({ ...data, name: info ? info.given_name : "" });
       })
@@ -242,10 +243,10 @@ const AuthProvider: React.FC = ({ children }) => {
     const id = api.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response.status === 401) {
+        if (error.response && error.response.status === 401) {
           signOut();
 
-          alert("Sua sessão expirou, faça login novamente");
+          // alert("Sua sessão expirou, faça login novamente");
         }
         return Promise.reject(error);
       },
