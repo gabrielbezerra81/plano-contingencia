@@ -8,7 +8,7 @@ Instale as dependências com o comando abaixo:
 
 Depois execute o projeto:
 
-### `yarn start`
+### `yarn dev`
 
 
 
