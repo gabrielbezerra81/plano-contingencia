@@ -21,7 +21,7 @@ const homeURL =
     : "https://plano-contingencia.herokuapp.com/";
 
 const url =
-  "https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/logout?redirect_uri=" +
+  "https://auth.defesacivil.website/auth/realms/dc_auth/protocol/openid-connect/logout?redirect_uri=" +
   homeURL;
 
 const LogoutMenu: React.FC = () => {
