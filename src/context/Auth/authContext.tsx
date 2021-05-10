@@ -69,7 +69,7 @@ const AuthProvider: React.FC = ({ children }) => {
   const handleTokenRefresh = useCallback(async () => {
     try {
       const response = await axios.post(
-        `https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/token`,
+        `https://auth.defesacivil.website/auth/realms/dc_auth/protocol/openid-connect/token`,
         qs.stringify({
           grant_type: "refresh_token",
           client_id: "contingencia_react",
@@ -139,7 +139,7 @@ const AuthProvider: React.FC = ({ children }) => {
     async (code: string) => {
       try {
         const response = await axios.post(
-          `https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/token`,
+          `https://auth.defesacivil.website/auth/realms/dc_auth/protocol/openid-connect/token`,
           qs.stringify({
             code,
             redirect_uri: redirectURL,
@@ -190,7 +190,7 @@ const AuthProvider: React.FC = ({ children }) => {
   const signOut = useCallback(async () => {
     try {
       await axios.post(
-        "https://auth.defesacivil.site/auth/realms/dc_auth/protocol/openid-connect/logout",
+        "https://auth.defesacivil.website/auth/realms/dc_auth/protocol/openid-connect/logout",
         qs.stringify({
           client_id: "contingencia_react",
           refresh_token: authData?.refresh_token,
